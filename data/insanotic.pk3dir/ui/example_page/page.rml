@@ -1,0 +1,24 @@
+<rml>
+<head>
+	<title>Example page</title>
+	<link type="text/template" href="/ui/templates/dialog.rml"/>
+</head>
+<body template="dialog">
+	<!-- A page from a server. It may use the game's stylesheets and templates,
+	     and its own. A button answers the server with data-reply; the page
+	     cannot run commands on the player's computer, and data-cvar does
+	     nothing in it. Named fields (name="...") are sent with every answer. -->
+	<div class="dialog-bar">
+		<div class="dialog-title">Example server page</div>
+		<div class="dialog-close" data-close>&#215;</div>
+	</div>
+	<div class="dialog-body">
+		<div class="row"><div class="caption">Leave a note</div><div class="control"><input type="text" class="text" name="note" maxlength="60"/></div></div>
+		<label class="check"><input type="checkbox" class="checkbox" name="agree"/> I like this server</label>
+	</div>
+	<div class="dialog-buttons">
+		<div class="button" data-reply="heal">Heal me</div>
+		<div class="button primary" data-reply="send">Send</div>
+	</div>
+</body>
+</rml>

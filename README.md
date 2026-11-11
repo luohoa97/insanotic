@@ -183,12 +183,17 @@ documents written in RML (HTML-like) and RCSS (CSS-like). The main menu is
 `data/insanotic.pk3dir/ui/mainmenu.rml` and `mainmenu.rcss`; it replaces the
 QuakeC main screen while the cvar `menu_rmlui` is 1 (the default), and the
 buttons still open the QuakeC dialogs. With `menu_rmlui 0` the menu is as it
-was. Sizes are in dp: 720 dp is the window height on a monitor and 450 dp on
-a touch screen (`rml_scale` sets pixels per dp by hand), and the document gets
-the class `touch` on a touch screen for the phone layout.
+was. Sizes are in dp: 720 dp is the short side of the window on a monitor and
+450 dp on a touch screen (`rml_scale` sets pixels per dp by hand); phone
+layouts are RCSS media queries.
 
 In a document, `data-cmd="..."` on an element runs that console command when
-it is clicked or tapped, and `data-cvar="name"` shows a cvar. Console commands:
+it is clicked or tapped, and `data-cvar="name"` shows a cvar, or on a form
+control shows it and writes changes back. The widget set (dialogs, buttons,
+switches, sliders, dropdowns, tabs, lists) is described in
+[docs/UI.md](docs/UI.md). A server can open its own pages in the players'
+game, which can only answer that server: see "Pages from a server" in
+[docs/MODDING.md](docs/MODDING.md). Console commands:
 `rml_show <name>` (shows `ui/<name>.rml` above everything), `rml_hide [name]`,
 `rml_reload` (documents, stylesheets and images again, for editing),
 `rml_list`. `make test-rml` clicks through the main menu (it needs a display).

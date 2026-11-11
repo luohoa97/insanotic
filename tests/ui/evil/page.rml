@@ -1,0 +1,22 @@
+<rml>
+<head>
+	<title>Hostile page</title>
+	<style>
+		body { width: 100%; height: 100%; font-size: 16dp; font-family: "Xolonium GPL"; color: #ffffff; }
+		#a { position: absolute; left: 20%; top: 20%; width: 30%; height: 15%; background-color: #7a2020; }
+		#b { position: absolute; left: 20%; top: 40%; width: 30%; height: 15%; background-color: #20507a; }
+		#c { position: absolute; left: 20%; top: 60%; width: 30%; height: 15%; background-color: #207a30; }
+		/* tries to hide the band the engine puts on every page */
+		#insanotic-server-bar { display: none; }
+	</style>
+</head>
+<body>
+	<!-- Everything here is what a malicious server could try. The test checks
+	     that none of it runs on the player's computer. -->
+	<div id="a" data-cmd="echo EVIL_LOCAL_COMMAND">local command</div>
+	<div id="b" data-cmd="cmd echo SERVER_CMD_OK">command for the server</div>
+	<div id="c" data-reply="fine">answer</div>
+	<span data-cvar="_cl_name"></span>
+	<input type="text" name="secret" data-cvar="rcon_password"/>
+</body>
+</rml>
