@@ -50,10 +50,23 @@ help:
 	@printf "  make client                Compile \e[1m$(CLIENT)\e[m\n"
 	@echo   "  make both"
 	@echo
+	@printf "     \e[1;33m===== Insanotic (git checkout) =====\e[m\n"
+	@echo
+	@echo   "  make run-server            Build engine + QC, start a dedicated server with Lua plugins"
+	@echo   "  make test-plugins          Run the Lua plugin sandbox tests"
+	@echo   "  make insanotic             Build the dedicated engine and the QC"
+	@echo   "  make insanotic-client      Build the SDL client"
+	@echo   "  make insanotic-hooks       Regenerate docs/hooks.md and the QC hook forwarders"
+	@echo
+
+# Insanotic targets (run-server, test-plugins, ...); see misc/insanotic/insanotic.mk
+include misc/insanotic/insanotic.mk
 
 GIT := $(shell [ -d .git ] && printf "\e[1;31mThis Makefile only supports stable releases and autobuilds, whereas you are using a git repository.  To compile from git, please read https://gitlab.com/xonotic/xonotic/-/wikis/Repository_Access\e[m")
+ifndef INSANOTIC_BUILD
 ifdef GIT
   $(error $(GIT))
+endif
 endif
 
 .EXTRA_PREREQS := $(findstring update-stable,$(MAKECMDGOALS)) $(findstring update-beta,$(MAKECMDGOALS))
