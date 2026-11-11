@@ -242,7 +242,7 @@ jobs:
           # Android wants an integer that grows with every build, tags and
           # nightlies alike (the app updates itself by comparing it): the run
           # number of this workflow, above the codes of local builds
-          code=$((1000 + RUN_NUMBER))
+          code=$((2000 + RUN_NUMBER))
           # Signing: with the ANDROID_KEYSTORE_BASE64 secret (and the
           # password/alias secrets) the APK is signed with that key. Without
           # them it is signed with the debug key: it installs fine, but can

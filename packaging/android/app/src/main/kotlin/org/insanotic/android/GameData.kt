@@ -31,6 +31,21 @@ object GameData {
 
 	fun dataDir(ctx: Context): File = File(baseDir(ctx), "data").also { it.mkdirs() }
 
+	/**
+	 * Development builds were debugged by pushing an autoexec.cfg over adb
+	 * that sends the console to a computer on the network (log_dest_udp)
+	 * and checks every GL call (gl_paranoid, very slow). Players never
+	 * write such a file; remove it so a test device plays normally again.
+	 */
+	fun removeDebugAutoexec(ctx: Context) {
+		val f = File(dataDir(ctx), "autoexec.cfg")
+		if (f.isFile && f.length() < 4096) {
+			val text = runCatching { f.readText() }.getOrDefault("")
+			if (text.contains("log_dest_udp") || text.contains("gl_paranoid"))
+				f.delete()
+		}
+	}
+
 	fun packsInstalled(ctx: Context): Boolean = File(dataDir(ctx), PACKS_MARKER).isFile
 
 	fun markPacksInstalled(ctx: Context, withMusic: Boolean) {

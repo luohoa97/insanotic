@@ -12,6 +12,7 @@ class GameActivity : SDLActivity() {
 	override fun getArguments(): Array<String> {
 		val base = GameData.baseDir(this)
 		val user = GameData.userDir(this)
+		GameData.removeDebugAutoexec(this)
 		val firstRun = !File(user, "data/config.cfg").isFile
 
 		// SDL's argv[0] is not a game name, so name the game explicitly
