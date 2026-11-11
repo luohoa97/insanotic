@@ -1,0 +1,179 @@
+/* The main menu. Sizes are in dp: 720 dp is the height of the window on a
+   monitor, and about 450 dp on a touch screen (see rml_scale), so the same
+   numbers give bigger things on phones. */
+
+div {
+	display: block;
+}
+
+body {
+	display: block;
+	width: 100%;
+	height: 100%;
+	font-family: "Xolonium GPL";
+	font-size: 16dp;
+	color: #ffffff;
+}
+
+#stage {
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 0;
+	bottom: 0;
+}
+
+/* the three big buttons share a row across the middle of the screen */
+#big {
+	position: absolute;
+	left: 8%;
+	right: 8%;
+	top: 44%;
+	height: 20%;
+	display: flex;
+	flex-direction: row;
+}
+
+.card {
+	position: relative;
+	flex: 1 1 0;
+	height: 100%;
+	margin-right: 2%;
+	border: 1dp #ffffff40;
+	background-color: #0d1424;
+	cursor: pointer;
+	animation: rise 0.45s cubic-out;
+}
+.card:last-child {
+	margin-right: 0;
+}
+#singleplayer { decorator: image(/maps/implosion.jpg cover center center); }
+#multiplayer { decorator: image(/maps/stormkeep.jpg cover center center); }
+#settings { decorator: image(/maps/solarium.jpg cover center center); }
+
+.card {
+	image-color: #808080;
+}
+
+.card:hover, .card:active {
+	border-color: #4da6ff;
+}
+
+/* darker towards the bottom, where the text is */
+.shade {
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 40%;
+	bottom: 0;
+	decorator: vertical-gradient(#00000000 #000000b3);
+}
+
+/* light that comes on under a pointer or finger */
+.glow {
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 0;
+	bottom: 0;
+	background-color: #4da6ff00;
+	transition: background-color 0.12s;
+}
+.card:hover .glow, .chip:hover .glow {
+	background-color: #4da6ff33;
+}
+.card:active .glow, .chip:active .glow {
+	background-color: #4da6ff66;
+}
+
+.text {
+	position: absolute;
+	left: 12dp;
+	right: 12dp;
+	bottom: 10dp;
+}
+.title {
+	font-size: 29dp;
+	font-weight: bold;
+	white-space: nowrap;
+}
+.sub {
+	font-size: 12dp;
+	color: #ccd9e6;
+	margin-bottom: 4dp;
+}
+
+/* Credits and Quit, centered below */
+#small {
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 69%;
+	height: 7%;
+	text-align: center;
+}
+.chip {
+	display: inline-block;
+	position: relative;
+	width: 14%;
+	height: 100%;
+	margin: 0 1%;
+	border: 1dp #ffffff40;
+	background-color: #0d1424cc;
+	cursor: pointer;
+}
+.chip:hover, .chip:active {
+	border-color: #4da6ff;
+}
+.label {
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 50%;
+	margin-top: -11dp;
+	font-size: 20dp;
+	text-align: center;
+}
+
+#version {
+	position: absolute;
+	right: 10dp;
+	bottom: 8dp;
+	font-size: 14dp;
+	color: #ffffff73;
+}
+
+@keyframes rise {
+	from { top: 24dp; }
+	to { top: 0dp; }
+}
+
+/* Phones: fewer dp, so the buttons are tall and every target is far above
+   48 dp. The picture buttons grow to fill the space, and Credits and Quit
+   become wide bars. */
+body.touch #big {
+	top: 24%;
+	height: 46%;
+	left: 5%;
+	right: 5%;
+}
+body.touch .title {
+	font-size: 26dp;
+}
+body.touch .sub {
+	font-size: 13dp;
+}
+body.touch #small {
+	top: 74%;
+	height: 14%;
+}
+body.touch .chip {
+	width: 30%;
+	min-height: 56dp;
+}
+body.touch .label {
+	font-size: 22dp;
+}
+body.touch #version {
+	font-size: 12dp;
+}

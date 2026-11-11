@@ -1,0 +1,44 @@
+<rml>
+<head>
+	<title>Insanotic main menu</title>
+	<link type="text/rcss" href="mainmenu.rcss"/>
+</head>
+<body>
+	<!-- The three big picture buttons and the two small ones below them, as in
+	     the QuakeC menu. A data-cmd is the console command a click runs;
+	     "menu_cmd directmenu X" makes the QuakeC menu open its dialog X. -->
+	<div id="stage">
+		<div id="big">
+			<div class="card" id="singleplayer" data-cmd="menu_cmd directmenu Singleplayer">
+				<div class="shade"></div>
+				<div class="glow"></div>
+				<div class="text">
+					<div class="sub">Campaign and instant action against bots</div>
+					<div class="title">Singleplayer</div>
+				</div>
+			</div>
+			<div class="card" id="multiplayer" data-cmd="menu_cmd directmenu Multiplayer">
+				<div class="shade"></div>
+				<div class="glow"></div>
+				<div class="text">
+					<div class="sub">Play online or on your network</div>
+					<div class="title">Multiplayer</div>
+				</div>
+			</div>
+			<div class="card" id="settings" data-cmd="menu_cmd directmenu settings">
+				<div class="shade"></div>
+				<div class="glow"></div>
+				<div class="text">
+					<div class="sub">Controls, video and audio</div>
+					<div class="title">Settings</div>
+				</div>
+			</div>
+		</div>
+		<div id="small">
+			<div class="chip" data-cmd="menu_cmd directmenu Credits"><div class="glow"></div><div class="label">Credits</div></div>
+			<div class="chip" data-cmd="menu_cmd directmenu Quit"><div class="glow"></div><div class="label">Quit</div></div>
+		</div>
+	</div>
+	<div id="version">Insanotic <span data-cvar="insanotic_version"></span>  |  Xonotic <span data-cvar="g_xonoticversion"></span></div>
+</body>
+</rml>

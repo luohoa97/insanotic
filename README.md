@@ -149,10 +149,33 @@ Android APK, and publishes them on the GitHub release of that tag:
 git tag v0.1.0 && git push github v0.1.0
 ```
 
+## RmlUi menus
+
+The engine carries [RmlUi](https://github.com/mikke89/RmlUi), which lays out
+documents written in RML (HTML-like) and RCSS (CSS-like). The main menu is
+`data/insanotic.pk3dir/ui/mainmenu.rml` and `mainmenu.rcss`; it replaces the
+QuakeC main screen while the cvar `menu_rmlui` is 1 (the default), and the
+buttons still open the QuakeC dialogs. With `menu_rmlui 0` the menu is as it
+was. Sizes are in dp: 720 dp is the window height on a monitor and 450 dp on
+a touch screen (`rml_scale` sets pixels per dp by hand), and the document gets
+the class `touch` on a touch screen for the phone layout.
+
+In a document, `data-cmd="..."` on an element runs that console command when
+it is clicked or tapped, and `data-cvar="name"` shows a cvar. Console commands:
+`rml_show <name>` (shows `ui/<name>.rml` above everything), `rml_hide [name]`,
+`rml_reload` (documents, stylesheets and images again, for editing),
+`rml_list`. `make test-rml` clicks through the main menu (it needs a display).
+
 ## Credits
 
 Insanotic is made by Neil Luo, on top of Xonotic by Team Xonotic and
 DarkPlaces by Forest "LordHavoc" Hale and contributors.
+
+The menus are drawn by [RmlUi](https://github.com/mikke89/RmlUi) (MIT,
+Copyright 2008-2014 CodePoint Ltd, Shift Technology Ltd, and contributors;
+2019-2026 The RmlUi Team, and contributors), vendored in `darkplaces/rmlui/`
+with its license. Its text is set in the Xolonium font by Severin Meyer
+(GPL with the font exception, `data/insanotic.pk3dir/ui/fonts/README.txt`).
 
 The menu music is a darker mix (a semitone lower, softer highs, light reverb)
 of Xonotic's "Rising of the Phoenix", made for Insanotic
