@@ -62,6 +62,9 @@ cvar("aim_assist_lead_extra", 0.05, "seconds added to the lead for network delay
 cvar("aim_assist_feet", 1, "1 = splash weapons aim at a standing enemy's feet")
 cvar("aim_assist_rifle_head", 1, "1 = the Rifle aims for the head")
 cvar("aim_assist_steer", 1, "1 = steer Devastator rockets onto the enemy and detonate them next to it")
+cvar("aim_assist_turn", 1, "1 = when an enemy hits you, turn toward them (only someone who just hit you and can see you)")
+cvar("aim_assist_turn_speed", 12, "how fast the turn toward an attacker is (share of the angle per second)")
+cvar("aim_assist_hit_marker", 1, "1 = show where the last hit came from at the edge of the crosshair")
 cvar("aim_assist_debug", 0, "1 = print once a second what aim assist sees and why it does or does not fire")
 cvar("aim_assist_autoswitch", 1, "1 = switch to the best weapon for the fight")
 cvar("aim_assist_switch_delay", 1.5, "seconds between automatic weapon switches")
@@ -199,6 +202,71 @@ local state = {
 	wounds = {},            -- player number -> damage we dealt since they spawned
 	dealt = nil,            -- last damage_dealt total
 }
+
+-- who just hurt us: an enemy facing us within 30 degrees with a clear line
+-- to our eye, the nearest of them. Only someone who shot at us is ever
+-- chosen, so this never points at enemies you could not know about.
+local function find_attacker(eye)
+	local _, my_color, my_team = xon.me()
+	local teamplay = xon.teamplay()
+	if teamplay == nil then teamplay = true end
+	local best, bestd
+	for _, p in ipairs(xon.players()) do
+		local mate
+		if p.team ~= nil and my_team ~= nil then mate = teamplay and p.team == my_team
+		else mate = teamplay and my_color ~= nil and p.team_color == my_color end
+		if not p.is_me and p.alive and not mate and p.angles then
+			local c = p.origin + (p.mins + p.maxs) * 0.5
+			local to_me = (eye - c):normalize()
+			local facing = xon.forward(V(0, p.angles.y, 0))
+			local flat = V(to_me.x, to_me.y, 0):normalize()
+			local d = (eye - c):len()
+			if facing * flat > math.cos(math.rad(30)) and xon.traceline(c, eye).fraction >= 0.999
+			   and (not bestd or d < bestd) then
+				best, bestd = p, d
+			end
+		end
+	end
+	return best
+end
+
+local function track_hits(eye, now, has_target)
+	local st = xon.stats()
+	local hp = (st.health or 0) + (st.armor or 0)
+	if state.hp and hp < state.hp and st.health > 0 then
+		local a = find_attacker(eye)
+		if a then
+			state.attacker = { num = a.num, at = now, pos = a.origin + (a.mins + a.maxs) * 0.5 }
+			-- turn only when not already fighting someone in front of us
+			if xon.cvar("aim_assist_turn") ~= 0 and not has_target then
+				state.turning = { num = a.num, started = now }
+			end
+		end
+	end
+	state.hp = hp
+end
+
+-- smooth fast turn toward the attacker; normal assist takes over once they
+-- are in front (or after a moment, or when they hide or die)
+local function turn_to_attacker(ev, eye, now)
+	local tr = state.turning
+	if not tr then return false end
+	if now - tr.started > 0.7 then state.turning = nil return false end
+	local target
+	for _, p in ipairs(xon.players()) do
+		if p.num == tr.num and p.alive then target = p end
+	end
+	if not target then state.turning = nil return false end
+	local c = target.origin + (target.mins + target.maxs) * 0.5
+	if xon.traceline(eye, c).fraction < 0.999 then state.turning = nil return false end
+	local want = xon.vectoangles(c - eye)
+	local a = ev.angles
+	local dy, dx = angle_diff(a.y, want.y), angle_diff(a.x, want.x)
+	if math.abs(dy) < 5 and math.abs(dx) < 5 then state.turning = nil return false end
+	local k = 1 - math.exp(-xon.cvar("aim_assist_turn_speed") * ev.frametime)
+	ev.angles = V(a.x + dx * k, a.y + dy * k, a.z)
+	return true
+end
 
 -- credit damage we deal to the enemy we are shooting; forget it when they die
 local function track_wounds(enemies_all)
@@ -421,6 +489,9 @@ xon.on("Input", function(ev)
 
 	auto_switch(ev, enemies, now)
 
+	track_hits(eye, now, state.target ~= nil)
+	if turn_to_attacker(ev, eye, now) then return end
+
 	if w and w.kind == "none" then state.on_since = nil return end
 	local t = pick_target(eye, xon.forward(ev.angles), enemies, w)
 	state.target = t and t.e.p.num or nil
@@ -492,3 +563,22 @@ xon.on("Connect", function()
 			or "aim assist off: this server does not allow it (sv_allow_assist)")
 	end
 end)
+
+-- where the last hit came from: a red dot on a ring around the crosshair,
+-- fading out over two seconds
+xon.on("HUD", function(ev)
+	local a = state.attacker
+	if not ev.in_game or not a or xon.cvar("aim_assist_hit_marker") == 0 or not enabled() then return end
+	local age = xon.realtime() - a.at
+	if age > 2 then return end
+	local eye, angles = xon.view()
+	local want = xon.vectoangles(a.pos - eye)
+	local rel = math.rad(angle_diff(angles.y, want.y)) -- positive: to the left
+	local r = math.min(ev.width, ev.height) * 0.18
+	local x = ev.width / 2 - math.sin(rel) * r
+	local y = ev.height / 2 - math.cos(rel) * r
+	local alpha = 1 - age / 2
+	xon.draw_circle(x, y, 9, 1, 0.15, 0.1, 0.85 * alpha)
+	xon.draw_ring(x, y, 12, 1, 0.6, 0.5, 0.6 * alpha)
+end)
+
