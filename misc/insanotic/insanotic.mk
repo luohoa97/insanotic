@@ -94,5 +94,7 @@ launcher-install: launcher
 	sed 's|^Exec=.*|Exec=$(INSANOTIC_PREFIX)/bin/insanotic-launcher|' \
 		launcher/data/io.github.luohoa97.Insanotic.desktop \
 		> $(INSANOTIC_PREFIX)/share/applications/io.github.luohoa97.Insanotic.desktop
+	install -Dm644 launcher/data/io.github.luohoa97.Insanotic.metainfo.xml \
+		$(INSANOTIC_PREFIX)/share/metainfo/io.github.luohoa97.Insanotic.metainfo.xml
 	-gtk-update-icon-cache -q -t $(INSANOTIC_PREFIX)/share/icons/hicolor
 	-update-desktop-database -q $(INSANOTIC_PREFIX)/share/applications

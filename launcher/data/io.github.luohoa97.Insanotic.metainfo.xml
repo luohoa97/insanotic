@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<component type="desktop-application">
+  <id>io.github.luohoa97.Insanotic</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+  <name>Insanotic</name>
+  <summary>Xonotic with Lua scripting, mods and a launcher</summary>
+  <developer id="io.github.luohoa97">
+    <name>The Insanotic contributors</name>
+  </developer>
+  <description>
+    <p>
+      Insanotic is a fork of Xonotic 0.8.6, the fast-paced arena shooter. It adds
+      Lua scripting: server plugins hook gameplay events of a dedicated server
+      inside a sandbox, and client mods such as touch controls and aim assist run
+      inside the game. Players can still join servers with an unmodified
+      Xonotic 0.8.6 client.
+    </p>
+    <p>This launcher lets you:</p>
+    <ul>
+      <li>Start the game in a window or fullscreen</li>
+      <li>Host a local server with bots and watch its console</li>
+      <li>Switch client mods and server plugins on and off</li>
+      <li>Toggle aim assist and touch controls</li>
+    </ul>
+  </description>
+  <launchable type="desktop-id">io.github.luohoa97.Insanotic.desktop</launchable>
+  <screenshots>
+    <screenshot type="default">
+      <image>https://raw.githubusercontent.com/luohoa97/insanotic/main/launcher/data/screenshots/play.png</image>
+      <caption>Start the game</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://raw.githubusercontent.com/luohoa97/insanotic/main/launcher/data/screenshots/host.png</image>
+      <caption>Host a local server with a live console</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://raw.githubusercontent.com/luohoa97/insanotic/main/launcher/data/screenshots/mods.png</image>
+      <caption>Manage client mods and server plugins</caption>
+    </screenshot>
+  </screenshots>
+  <url type="homepage">https://github.com/luohoa97/insanotic</url>
+  <url type="bugtracker">https://github.com/luohoa97/insanotic/issues</url>
+  <categories>
+    <category>Game</category>
+    <category>ActionGame</category>
+  </categories>
+  <content_rating type="oars-1.1">
+    <content_attribute id="violence-cartoon">none</content_attribute>
+    <content_attribute id="violence-fantasy">moderate</content_attribute>
+    <content_attribute id="violence-realistic">mild</content_attribute>
+    <content_attribute id="violence-bloodshed">mild</content_attribute>
+    <content_attribute id="social-chat">intense</content_attribute>
+  </content_rating>
+  <requires>
+    <display_length compare="ge">360</display_length>
+  </requires>
+  <supports>
+    <control>pointing</control>
+    <control>keyboard</control>
+    <control>touch</control>
+  </supports>
+  <releases>
+    <release version="0.1.0" date="2026-11-11">
+      <description>
+        <p>First release of the launcher: play, host, mods and plugins, quick toggles.</p>
+      </description>
+    </release>
+  </releases>
+</component>
