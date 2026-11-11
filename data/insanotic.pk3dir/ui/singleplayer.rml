@@ -1,0 +1,52 @@
+<rml>
+<head>
+	<title>Singleplayer</title>
+	<link type="text/template" href="templates/dialog.rml"/>
+	<link type="text/rcss" href="lists.rcss"/>
+</head>
+<body template="dialog" data-model="campaign">
+	<!-- Singleplayer of the QuakeC menu: instant action and the campaign.
+	     The levels come from the campaign file (data model "campaign",
+	     darkplaces/ui_rml_models.cpp); a level is a banner with its map's
+	     picture. The match itself is started by the menu code, through
+	     "menu_cmd instantaction" and "menu_cmd campaign". -->
+	<div class="dialog-bar">
+		<div class="dialog-title">Singleplayer</div>
+		<div class="dialog-close" data-close>&#215;</div>
+	</div>
+	<div class="dialog-body">
+		<div class="hero" id="instant" data-event-click="instant()" style="decorator: image(/maps/xoylent cover center center);">
+			<div class="shade"></div>
+			<div class="text">Instant action!<div class="sub">A random map with bots</div></div>
+		</div>
+		<div class="camp-head">
+			<div class="button small" data-class-disabled="!has_prev" data-event-click="prev()">&lt;&lt;</div>
+			<div class="title">{{ title }}</div>
+			<div class="button small" data-class-disabled="!has_next" data-event-click="next()">&gt;&gt;</div>
+		</div>
+		<div class="list">
+			<div class="level" data-for="l : levels" data-class-locked="l.locked" data-class-selected="it_index == selected"
+				data-style-decorator="'image(' + l.image + ' cover center center)'" data-event-click="select(it_index)">
+				<div class="shade"></div>
+				<div class="text">
+					<div class="num">LEVEL {{ l.number }} &#183; {{ l.mode }}</div>
+					<div class="name">{{ l.title }}</div>
+					<div class="desc" data-rml="l.desc"></div>
+				</div>
+				<div class="badge" data-class-done="l.done" data-if="!l.locked">{{ l.done ? 'DONE' : 'NEXT' }}</div>
+			</div>
+		</div>
+		<div class="bar-row" style="margin-top: 8dp; margin-bottom: 0dp;">
+			<div class="caption" style="padding-top: 12dp; margin-right: 12dp; font-size: 15dp;">Campaign difficulty</div>
+			<label class="check" style="min-height: 40dp;"><input type="radio" class="radio" name="skill" value="-2" data-cvar="g_campaign_skill"/> Easy</label>
+			<label class="check"><input type="radio" class="radio" name="skill" value="0" data-cvar="g_campaign_skill"/> Medium</label>
+			<label class="check"><input type="radio" class="radio" name="skill" value="2" data-cvar="g_campaign_skill"/> Hard</label>
+		</div>
+	</div>
+	<div class="dialog-buttons">
+		<div class="button only-short" data-event-click="instant()">Instant action</div>
+		<div class="button" data-close>Back</div>
+		<div class="button primary" data-event-click="play_selected()">Play campaign!</div>
+	</div>
+</body>
+</rml>

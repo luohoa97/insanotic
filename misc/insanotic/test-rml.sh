@@ -125,7 +125,9 @@ log=$(timeout 240 "$ENGINE" -xonotic -game tests -basedir "$PWD" -userdir "$USER
 	+defer 39 "cl_allow_server_pages 0" \
 	+defer 39.5 "rml_show_server ui/evil/page.rml" \
 	+defer 41 rml_list \
-	+defer 42 quit 2>&1)
+	+defer 41.5 "cl_allow_server_pages 1" \
+	+defer 42 "rml_show_server ui/evil/model.rml" \
+	+defer 44 quit 2>&1)
 expect "a plugin opens a page" "server:ui/example_page/page.rml (shown)" "$log"
 expect "the plugin hears the answer" "sent a note" "$log"
 expect "a hostile page loads" "server:ui/evil/page.rml (shown)" "$log"
@@ -133,6 +135,7 @@ reject "a page cannot run a local command" "^EVIL_LOCAL_COMMAND" "$log"
 expect "it is told so" "asked for a local command; refused" "$log"
 expect "a page can send a command to the server" "RmlUi: to the server: echo SERVER_CMD_OK" "$log"
 expect "an answer holds no cvar value" 'rml_reply "ui/evil/page.rml" "fine" "secret" ""' "$log"
+expect "a page cannot use the game's lists" "the page asks for data of the game" "$log"
 n=$(printf '%s\n' "$log" | grep -c "server:ui/evil/page.rml (shown)")
 if [ "$n" -eq 1 ]; then
 	echo "ok   the band closes the page, and cl_allow_server_pages 0 refuses it"
@@ -140,6 +143,24 @@ else
 	echo "FAIL the band closes the page, and cl_allow_server_pages 0 refuses it (page listed $n times)"
 	fail=1
 fi
+
+# The lists of the game: the server browser (its rows come from the network,
+# so only the page itself is checked) and the Singleplayer page, whose
+# Instant action banner asks the menu code for a match.
+echo "== lists"
+log=$(timeout 120 "$ENGINE" -xonotic -basedir "$PWD" -userdir "$USERDIR" \
+	+developer 1 +_cl_name RmlTest +vid_fullscreen 0 +vid_width 1280 +vid_height 720 +vid_touchscreen 0 \
+	+defer 12 "rml_show servers" \
+	+defer 14 rml_list \
+	+defer 15 "rml_hide servers" \
+	+defer 16 "rml_show singleplayer" \
+	+defer 18 rml_list \
+	+defer 19 "rml_click 640 130" \
+	+defer 21 quit 2>&1)
+reject "no RmlUi warnings or errors" "^RmlUi: .*\(Could not\|No font\|not found\|did not\|Invalid\|Unknown\|Failed\|Error\|Syntax\)" "$log"
+expect "the server browser opens" "servers (shown)" "$log"
+expect "the Singleplayer page opens" "singleplayer (shown)" "$log"
+expect "Instant action asks the menu" "RmlUi: command menu_cmd instantaction" "$log"
 
 # A finger is no pointer: no hover at all, and pressing is only for where it
 # went down. tests/ui/touchtest.rml has one button; the finger goes down on

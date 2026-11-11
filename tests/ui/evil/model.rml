@@ -1,0 +1,10 @@
+<rml>
+<head>
+	<title>Hostile page that wants the game's data</title>
+	<style>body { width: 100%; height: 100%; font-family: "Xolonium GPL"; color: #ffffff; }</style>
+</head>
+<body data-model="servers">
+	<!-- Joins a server on a click if it were allowed to use the game's list. -->
+	<div data-event-click="join()">join</div>
+</body>
+</rml>

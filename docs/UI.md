@@ -141,6 +141,29 @@ control on one line, and stacks them on a phone held upright.
 **Tooltips** — there are none: a finger has no hover. Put the explanation in
 a `.hint` line instead.
 
+## Lists from the engine (data models)
+
+Some lists are rows the engine knows. They are bound with RmlUi's data
+models, still without scripting: the body says `data-model="..."`, a row is
+repeated with `data-for`, and `data-event-click="name(args)"` calls a
+function of the model. Only documents of the game can use them: a page from
+a server that names a data model is refused. They are made in
+`darkplaces/ui_rml_models.cpp`.
+
+| Model | Variables | Events |
+|---|---|---|
+| `servers` | `rows` (`address`, `name`, `map`, `type`, `players`, `ping`), `filter`, `address`, `selected`, `status`, `sort`, `show_empty`, `show_full`, `show_laggy` | `select(address)`, `join()`, `refresh()`, `sort(column)`, `toggled()`, `filter_changed()` |
+| `campaign` | `levels` (`number`, `title`, `desc`, `map`, `mode`, `image`, `locked`, `done`, `current`), `title`, `has_prev`, `has_next`, `progress`, `selected` | `select(index)`, `play(index)`, `play_selected()`, `instant()`, `next()`, `prev()` |
+
+`ui/servers.rml` (the server browser, reading the list the network code
+fills; opening it asks the master servers) and `ui/singleplayer.rml`
+(instant action and the campaign, started through `menu_cmd instantaction`
+and `menu_cmd campaign <name> <level>` of the menu code) are the examples.
+`ui/lists.rcss` makes a dialog fill the window with a scrolling list in it.
+A `data-for` row is an ordinary element: it gets the drag scrolling, and
+`data-class-selected="..."` and `data-style-decorator="..."` style it from
+the data.
+
 ## What the engine's renderer cannot do
 
 Gradient decorators (`linear-gradient`, `radial-gradient`) do not work;

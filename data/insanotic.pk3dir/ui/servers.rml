@@ -1,0 +1,49 @@
+<rml>
+<head>
+	<title>Servers</title>
+	<link type="text/template" href="templates/dialog.rml"/>
+	<link type="text/rcss" href="lists.rcss"/>
+</head>
+<body template="dialog" data-model="servers">
+	<!-- The server browser (Multiplayer > Servers of the QuakeC menu). The
+	     rows come from the server list the engine keeps (data model
+	     "servers", darkplaces/ui_rml_models.cpp); the list scrolls by
+	     dragging. Tap a server to pick it, Join to connect. -->
+	<div class="dialog-bar">
+		<div class="dialog-title">Multiplayer</div>
+		<div class="dialog-hint">{{ status }}</div>
+		<div class="dialog-close" data-close>&#215;</div>
+	</div>
+	<div class="dialog-body">
+		<div class="bar-row">
+			<div class="label">Filter</div><div class="grow"><input type="text" class="text" data-value="filter" data-event-change="filter_changed()"/></div>
+			<label class="check"><input type="checkbox" class="checkbox" data-checked="show_empty" data-event-change="toggled()"/> Empty</label>
+			<label class="check"><input type="checkbox" class="checkbox" data-checked="show_full" data-event-change="toggled()"/> Full</label>
+			<label class="check"><input type="checkbox" class="checkbox" data-checked="show_laggy" data-event-change="toggled()"/> Laggy</label>
+			<div class="button small" data-event-click="refresh()">Refresh</div>
+		</div>
+		<div class="srv srv-head">
+			<div class="c-ping" data-class-sorted="sort == 'ping'" data-event-click="sort('ping')">Ping</div>
+			<div class="c-name" data-class-sorted="sort == 'name'" data-event-click="sort('name')">Hostname</div>
+			<div class="c-map" data-class-sorted="sort == 'map'" data-event-click="sort('map')">Map</div>
+			<div class="c-type" data-class-sorted="sort == 'type'" data-event-click="sort('type')">Type</div>
+			<div class="c-players" data-class-sorted="sort == 'players'" data-event-click="sort('players')">Players</div>
+		</div>
+		<div class="list">
+			<div class="item srv" data-for="s : rows" data-class-selected="s.address == selected" data-event-click="select(s.address)">
+				<div class="c-ping">{{ s.ping }}</div>
+				<div class="c-name">{{ s.name }}</div>
+				<div class="c-map">{{ s.map }}</div>
+				<div class="c-type">{{ s.type }}</div>
+				<div class="c-players">{{ s.players }}</div>
+			</div>
+		</div>
+	</div>
+	<div class="dialog-buttons">
+		<div class="label">Address</div><div class="grow addr"><input type="text" class="text" data-value="address"/></div>
+		<div class="button" data-cmd="menu_cmd directmenu Multiplayer" data-close>More...</div>
+		<div class="button" data-close>Back</div>
+		<div class="button primary" data-event-click="join()">Join!</div>
+	</div>
+</body>
+</rml>

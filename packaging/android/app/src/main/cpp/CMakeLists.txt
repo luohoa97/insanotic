@@ -243,7 +243,7 @@ file(GLOB RMLUI_SOURCES CONFIGURE_DEPENDS
 	"${DP}/rmlui/Source/Core/Elements/*.cpp"
 	"${DP}/rmlui/Source/Core/FontEngineDefault/*.cpp"
 	"${DP}/rmlui/Source/Core/Layout/*.cpp")
-list(APPEND SRC "${DP}/ui_rml.cpp" ${RMLUI_SOURCES})
+list(APPEND SRC "${DP}/ui_rml.cpp" "${DP}/ui_rml_models.cpp" ${RMLUI_SOURCES})
 foreach(f ${SRC})
 	if(NOT EXISTS "${f}")
 		message(FATAL_ERROR "engine source missing: ${f}")
