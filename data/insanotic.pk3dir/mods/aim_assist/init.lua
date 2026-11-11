@@ -1,36 +1,36 @@
 -- SPDX-License-Identifier: GPL-3.0-or-later
--- touch_assist: aim assistance for touch players.
+-- aim_assist: aim assistance and auto-fire, for touch and for mouse.
 --
 -- Runs only where it is allowed: local games (you host, e.g. against bots)
 -- and servers that set sv_allow_assist 1. On any other server it does
 -- nothing, whatever the settings below say.
 --
--- touch_assist_mode: 0 off, 1 only while playing with the touchscreen,
--- 2 also with mouse and keyboard.
+-- aim_assist_mode: 0 off, 1 only while playing with the touchscreen,
+-- 2 with any input (default).
 --
 -- What it does, each frame:
---  * finds the nearest visible enemy within touch_assist_cone degrees of
+--  * finds the nearest visible enemy within aim_assist_cone degrees of
 --    the crosshair
---  * magnetism: turns the view toward it at touch_assist_pull (fraction of
+--  * magnetism: turns the view toward it at aim_assist_pull (fraction of
 --    the remaining error per second), gently, never snapping
 --  * auto-fire: holds fire while the crosshair ray passes through the
---    enemy's body scaled by touch_assist_hitbox_scale, after
---    touch_assist_autofire_delay seconds
+--    enemy's body scaled by aim_assist_hitbox_scale, after
+--    aim_assist_autofire_delay seconds
 --
 -- Finding players and teams follows the approach of Xonotic Touch's
 -- touch_aim.c (see xon.players in docs/MODDING.md).
 
 local function cvar(name, default, desc)
-	xon.cvar_register(name, default, "touch_assist: " .. desc)
+	xon.cvar_register(name, default, "aim_assist: " .. desc)
 end
-cvar("touch_assist_mode", 1, "0 = off, 1 = with touch controls only, 2 = always (still only where the server allows it)")
-cvar("touch_assist_cone", 8, "magnetism cone half-angle in degrees")
-cvar("touch_assist_range", 3000, "maximum target distance")
-cvar("touch_assist_pull", 4, "magnetism strength: share of the aim error removed per second")
-cvar("touch_assist_hitbox_scale", 1.25, "enemy body scale for the auto-fire test")
-cvar("touch_assist_autofire", 1, "1 = fire while an enemy is under the crosshair")
-cvar("touch_assist_autofire_delay", 0.08, "seconds the enemy must stay under the crosshair before firing")
-cvar("touch_assist_autofire_release", 0.12, "seconds firing continues after the crosshair leaves the enemy")
+cvar("aim_assist_mode", 2, "0 = off, 1 = touchscreen only, 2 = any input (always only where the server allows it)")
+cvar("aim_assist_cone", 8, "magnetism cone half-angle in degrees")
+cvar("aim_assist_range", 3000, "maximum target distance")
+cvar("aim_assist_pull", 4, "magnetism strength: share of the aim error removed per second")
+cvar("aim_assist_hitbox_scale", 1.25, "enemy body scale for the auto-fire test")
+cvar("aim_assist_autofire", 1, "1 = fire while an enemy is under the crosshair")
+cvar("aim_assist_autofire_delay", 0.08, "seconds the enemy must stay under the crosshair before firing")
+cvar("aim_assist_autofire_release", 0.12, "seconds firing continues after the crosshair leaves the enemy")
 
 local V = xon.vec
 
@@ -58,7 +58,7 @@ end
 
 local function enabled()
 	if not xon.assist_allowed() then return false end
-	local mode = xon.cvar("touch_assist_mode")
+	local mode = xon.cvar("aim_assist_mode")
 	if mode == 2 then return true end
 	if mode == 1 then return xon.input_mode() == "touch" end
 	return false
@@ -75,8 +75,8 @@ local function find_target(eye, fwd)
 	-- unknown teamplay counts as a team game: never aim at your own colour
 	local teamplay = xon.teamplay()
 	if teamplay == nil then teamplay = true end
-	local cos_cone = math.cos(math.rad(xon.cvar("touch_assist_cone")))
-	local range = xon.cvar("touch_assist_range")
+	local cos_cone = math.cos(math.rad(xon.cvar("aim_assist_cone")))
+	local range = xon.cvar("aim_assist_range")
 	local best_c, center, half
 	for _, p in ipairs(players) do
 		if not p.is_me and p.alive and not (teamplay and my_color and p.team_color == my_color) then
@@ -106,12 +106,12 @@ xon.on("Input", function(ev)
 	if center then
 		-- magnetism, frame-rate independent
 		local want = xon.vectoangles(center - eye)
-		local k = 1 - math.exp(-xon.cvar("touch_assist_pull") * ev.frametime)
+		local k = 1 - math.exp(-xon.cvar("aim_assist_pull") * ev.frametime)
 		local a = ev.angles
 		ev.angles = V(a.x + angle_diff(a.x, want.x) * k, a.y + angle_diff(a.y, want.y) * k, a.z)
 		-- auto-fire against the enlarged body
-		if xon.cvar("touch_assist_autofire") ~= 0
-		   and ray_hits_box(eye, xon.forward(ev.angles), center, half * xon.cvar("touch_assist_hitbox_scale")) then
+		if xon.cvar("aim_assist_autofire") ~= 0
+		   and ray_hits_box(eye, xon.forward(ev.angles), center, half * xon.cvar("aim_assist_hitbox_scale")) then
 			on_since = on_since or now
 			last_on = now
 		else
@@ -120,15 +120,15 @@ xon.on("Input", function(ev)
 	else
 		on_since = nil
 	end
-	local firing = (on_since and now - on_since >= xon.cvar("touch_assist_autofire_delay"))
-		or (now - last_on < xon.cvar("touch_assist_autofire_release") and last_on > 0)
+	local firing = (on_since and now - on_since >= xon.cvar("aim_assist_autofire_delay"))
+		or (now - last_on < xon.cvar("aim_assist_autofire_release") and last_on > 0)
 	if firing then
 		ev.buttons = ev.buttons | xon.BUTTON_ATTACK
 	end
 end)
 
 xon.on("Connect", function()
-	if xon.cvar("touch_assist_mode") ~= 0 then
+	if xon.cvar("aim_assist_mode") ~= 0 then
 		xon.print(xon.assist_allowed() and "aim assist available on this server"
 			or "aim assist off: this server does not allow it (sv_allow_assist)")
 	end
