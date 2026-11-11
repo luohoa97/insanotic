@@ -12,6 +12,11 @@
 	<string name="setup_progress">%1$s of %2$s</string>
 	<string name="setup_speed">%1$s/s</string>
 	<string name="setup_file">%1$s (file %2$d of %3$d)</string>
+	<string name="setup_background">Downloading continues in the background. A notification shows the progress.</string>
+	<string name="setup_verify">Checking %1$s…</string>
+	<string name="setup_ready_title">Insanotic is ready</string>
+	<string name="setup_ready_text">The game data is installed. Tap to play.</string>
+	<string name="notification_channel">Game data download</string>
 	<string name="setup_cancel">Cancel</string>
 	<string name="setup_install">Installing Insanotic files…</string>
 	<string name="setup_done">Starting…</string>

@@ -1,12 +1,17 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 package org.insanotic.android
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.text.format.Formatter
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -79,6 +84,9 @@ class SetupActivity : ComponentActivity() {
 private fun SetupScreen(state: Setup) {
 	val ctx = LocalContext.current
 	var withMusic by rememberSaveable { mutableStateOf(false) }
+	val notifications = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
+		SetupModel.start(ctx, withMusic)
+	}
 	Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
 		Column(
 			modifier = Modifier
@@ -100,9 +108,19 @@ private fun SetupScreen(state: Setup) {
 					color = MaterialTheme.colorScheme.primary,
 				)
 				when (state) {
-					Setup.Choose -> Choose(withMusic, { withMusic = it }) { SetupModel.start(ctx, withMusic) }
-					Setup.Installing -> Waiting(R.string.setup_install)
-					Setup.Done -> Waiting(R.string.setup_done)
+					Setup.Choose -> Choose(withMusic, { withMusic = it }) {
+						// the notification permission only decides whether the progress
+						// notification is shown; the download starts either way
+						if (Build.VERSION.SDK_INT >= 33 &&
+							ctx.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+						)
+							notifications.launch(Manifest.permission.POST_NOTIFICATIONS)
+						else
+							SetupModel.start(ctx, withMusic)
+					}
+					is Setup.Verifying -> Waiting(stringResource(R.string.setup_verify, state.file))
+					Setup.Installing -> Waiting(stringResource(R.string.setup_install))
+					Setup.Done -> Waiting(stringResource(R.string.setup_done))
 					is Setup.Downloading -> Downloading(ctx, state)
 					is Setup.OutOfSpace -> Problem(
 						stringResource(
@@ -149,8 +167,8 @@ private fun Choose(withMusic: Boolean, onMusic: (Boolean) -> Unit, onStart: () -
 }
 
 @Composable
-private fun Waiting(text: Int) {
-	Text(stringResource(text), style = MaterialTheme.typography.bodyLarge)
+private fun Waiting(text: String) {
+	Text(text, style = MaterialTheme.typography.bodyLarge)
 	LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
 }
 
@@ -183,7 +201,13 @@ private fun Downloading(ctx: Context, s: Setup.Downloading) {
 			color = MaterialTheme.colorScheme.onSurfaceVariant,
 		)
 	Spacer(Modifier.height(8.dp))
-	OutlinedButton(onClick = { SetupModel.cancel() }) { Text(stringResource(R.string.setup_cancel)) }
+	Text(
+		stringResource(R.string.setup_background),
+		style = MaterialTheme.typography.bodySmall,
+		color = MaterialTheme.colorScheme.onSurfaceVariant,
+		textAlign = TextAlign.Center,
+	)
+	OutlinedButton(onClick = { SetupModel.cancel(ctx) }) { Text(stringResource(R.string.setup_cancel)) }
 }
 
 @Composable

@@ -4,6 +4,7 @@ package org.insanotic.android
 import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
+import java.util.concurrent.ConcurrentHashMap
 import java.util.zip.ZipException
 
 /** One file in a zip's central directory. */
@@ -13,9 +14,29 @@ class ZipItem(val name: String, val method: Int, val crc: Long, val csize: Long,
 
 /** Reads parts of a zip over HTTP with Range requests; nothing is ever stored as a whole. */
 object RemoteZip {
-	/** Opens url with a Range header, following redirects by hand so the header survives. */
+	/** url -> where it redirected to, so parallel requests skip the redirect hop. */
+	private val resolved = ConcurrentHashMap<String, String>()
+
+	/** Opens url with a Range header (the caller checks the status). */
 	fun open(url: String, range: String): HttpURLConnection {
-		var u = url
+		val cached = resolved[url]
+		if (cached != null) {
+			try {
+				val c = follow(cached, range)
+				if (c.responseCode in 200..299)
+					return c
+				c.disconnect()
+			} catch (e: IOException) {
+				// the mirror went away: ask the original address again
+			}
+			resolved.remove(url)
+		}
+		return follow(url, range, remember = url)
+	}
+
+	/** Follows redirects by hand so the Range header survives them. */
+	private fun follow(start: String, range: String, remember: String? = null): HttpURLConnection {
+		var u = start
 		repeat(6) {
 			val c = URL(u).openConnection() as HttpURLConnection
 			c.instanceFollowRedirects = false
@@ -30,6 +51,8 @@ object RemoteZip {
 				c.disconnect()
 				u = URL(URL(u), loc ?: throw IOException("redirect without Location")).toString()
 			} else {
+				if (remember != null && u != remember && code in 200..299)
+					resolved[remember] = u
 				return c
 			}
 		}
