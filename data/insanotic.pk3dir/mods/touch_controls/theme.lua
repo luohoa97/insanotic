@@ -4,9 +4,10 @@
 -- hud_panel_bg_color and hud_panel_bg_alpha like the HUD's own panels; weapon
 -- buttons show the skin's weapon icons; text uses the HUD font.
 --
--- The engine can only draw a whole image, not a part of one, so the border
--- image is scaled to the panel instead of being cut into a 9-slice. Its
--- corner cuts then grow with the panel, which looks fine at button sizes.
+-- The border image is cut into a 9-slice the way the HUD does it (draw_BorderPicture
+-- in qcsrc/lib/draw.qh): the four corner quarters keep their size, the edges and
+-- the middle stretch. The border width is hud_panel_bg_border * 4, scaled
+-- with the controls.
 local theme = {}
 
 local FALLBACK_BG = {0, 0.14, 0.25}  -- hud_luma.cfg
@@ -31,13 +32,29 @@ local function parse_rgb(s, default)
 	return {tonumber(r), tonumber(g), tonumber(b)}
 end
 
--- reads the HUD cvars; call once per frame before drawing
-function theme.refresh()
+-- Xonotic's team colours by colormap index (colormapPaletteColor)
+local TEAM_RGB = {
+	[4] = {1, 0, 0}, [13] = {0, 0.333333, 1}, [12] = {1, 1, 0}, [9] = {1, 0, 1},
+}
+
+-- reads the HUD cvars; call once per frame before drawing. scale is the
+-- size of the controls relative to the HUD.
+function theme.refresh(scale)
+	hud.scale = scale or 1
+	hud.border = (xon.cvar("hud_panel_bg_border") or 2) * 4 * hud.scale
 	local skin = xon.cvar_string("hud_skin")
 	hud.skin = (skin and skin ~= "") and skin or "luma"
 	hud.bg = parse_rgb(xon.cvar_string("hud_panel_bg_color"), FALLBACK_BG)
 	hud.bg_alpha = xon.cvar("hud_panel_bg_alpha") or 1
 	hud.fg_alpha = xon.cvar("hud_panel_fg_alpha") or 1
+	-- team games: the panel takes the team colour, like the HUD's panels
+	local k = xon.cvar("hud_panel_bg_color_team") or 0
+	local tp = xon.teamplay()
+	if k > 0 and tp and tp ~= 0 then
+		local _, colour = xon.me()
+		local c = colour and TEAM_RGB[colour]
+		if c then hud.bg = {c[1] * k, c[2] * k, c[3] * k} end
+	end
 end
 
 -- draws a HUD skin image, falling back to the default skin
@@ -53,6 +70,29 @@ end
 local WHITE = {1, 1, 1}
 local ACCENT = {0.55, 0.85, 1}
 
+-- the border image as a 9-slice
+local function border_pic(name, x, y, w, h, r, g, b, a)
+	local path = "gfx/hud/" .. hud.skin .. "/" .. name
+	local d = math.min(hud.border, w / 2, h / 2)
+	local function part(px, py, pw, ph, s0, t0, s1, t1)
+		xon.draw_subpic(path, px, py, pw, ph, s0, t0, s1, t1, r, g, b, a)
+	end
+	if not xon.draw_subpic(path, x, y, 1, 1, 0, 0, 0.25, 0.25, r, g, b, 0) then
+		path = "gfx/hud/default/" .. name
+	end
+	local x2, y2 = x + w - d, y + h - d
+	local mw, mh = w - 2 * d, h - 2 * d
+	part(x, y, d, d, 0, 0, 0.25, 0.25)
+	part(x + d, y, mw, d, 0.25, 0, 0.75, 0.25)
+	part(x2, y, d, d, 0.75, 0, 1, 0.25)
+	part(x, y + d, d, mh, 0, 0.25, 0.25, 0.75)
+	part(x + d, y + d, mw, mh, 0.25, 0.25, 0.75, 0.75)
+	part(x2, y + d, d, mh, 0.75, 0.25, 1, 0.75)
+	part(x, y2, d, d, 0, 0.75, 0.25, 1)
+	part(x + d, y2, mw, d, 0.25, 0.75, 0.75, 1)
+	part(x2, y2, d, d, 0.75, 0.75, 1, 1)
+end
+
 -- a HUD panel background; "lit" lights it up (finger on it). The HUD's own
 -- panels sit on a calm background; these float over the game and have to be
 -- found with a thumb, so the panel is drawn twice for body and a rim of
@@ -64,8 +104,8 @@ function theme.panel(x, y, w, h, lit, opacity)
 		r, g, b = mix(hud.bg, ACCENT, 0.75)
 		a = math.max(a, 0.9 * opacity)
 	end
-	skin_pic("border_default", x, y, w, h, r, g, b, a)
-	skin_pic("border_default", x, y, w, h, r, g, b, a * 0.6)
+	border_pic("border_default", x, y, w, h, r, g, b, a)
+	border_pic("border_default", x, y, w, h, r, g, b, a * 0.6)
 	skin_pic("weapon_current_bg", x, y, w, h, 1, 1, 1, (lit and 0.9 or 0.3) * opacity)
 end
 

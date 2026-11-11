@@ -163,7 +163,8 @@ end)
 
 -- Where the player stands, for the movement helpers: nil when unknown.
 -- Returns "ground" or "air".
-local function footing()
+local function footing(onground)
+	if onground ~= nil then return onground and "ground" or "air" end
 	local me
 	for _, p in ipairs(xon.players()) do
 		if p.is_me then me = p break end
@@ -222,7 +223,7 @@ xon.on("Input", function(ev)
 	-- movement help: needs to know the footing only when it is switched on
 	local hop = held.jump and xon.cvar("touch_controls_autohop") ~= 0
 	local strafe = math.abs(sx) > 0.35 and turn_left > 0 and xon.cvar("touch_controls_airstrafe") ~= 0 and xon.assist_allowed()
-	local where = (hop or strafe) and footing() or nil
+	local where = (hop or strafe) and footing(ev.onground) or nil
 	-- bunny hop: Xonotic only jumps on a fresh press, so on the ground the
 	-- button is released for one frame between presses. In the air it stays
 	-- held (the jetpack and swimming use it).
@@ -241,7 +242,7 @@ end)
 xon.on("HUD", function(ev)
 	if not (active() and ev.in_game) then return end
 	update_layout(ev.width, ev.height)
-	theme.refresh()
+	theme.refresh(layout.scale)
 	local o = math.max(0.2, math.min(1, xon.cvar("touch_controls_opacity")))
 	if stick then
 		theme.stick(stick.bx, stick.by, stick.kx, stick.ky, layout.stick_r, true, o)
