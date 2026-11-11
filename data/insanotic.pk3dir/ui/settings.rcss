@@ -1,0 +1,97 @@
+/* The Settings page: the tab strip scrolls sideways on a phone, each tab is
+   a list that scrolls, and the key binder is a table of keys that can be
+   tapped. Used together with lists.rcss and components.rcss. */
+
+#content tabset {
+	flex: 1 1 0;
+	min-height: 0;
+	display: flex;
+	flex-direction: column;
+}
+#content tabset tabs {
+	flex: none;
+	white-space: nowrap;
+	overflow-x: auto;
+}
+#content tabset tabs scrollbarhorizontal {
+	height: 3dp;
+	margin-top: 0;
+}
+#content tabset panels {
+	flex: 1 1 0;
+	min-height: 0;
+	position: relative;
+	padding-top: 0;
+}
+#content tabset panel {
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 0;
+	bottom: 0;
+	overflow-y: auto;
+	padding: 10dp 8dp 10dp 2dp;
+}
+
+.hint {
+	margin-bottom: 8dp;
+}
+
+/* key bindings */
+.capture {
+	padding: 10dp 12dp 8dp 12dp;
+	margin-bottom: 8dp;
+	background-color: #2b78c9;
+	font-size: 15dp;
+}
+.bind {
+	display: flex;
+	flex-direction: row;
+	min-height: 48dp;
+	border-bottom: 1dp #ffffff14;
+}
+.bind .what {
+	flex: 1 1 0;
+	min-width: 0;
+	padding-top: 14dp;
+	overflow: hidden;
+	white-space: nowrap;
+}
+.bind .key {
+	flex: none;
+	width: 120dp;
+	height: 36dp;
+	margin: 6dp 0 0 8dp;
+	padding-top: 8dp;
+	text-align: center;
+	font-size: 14dp;
+	border: 1dp #ffffff40;
+	background-color: #080d18;
+	cursor: pointer;
+	tab-index: auto;
+	nav: auto;
+	overflow: hidden;
+	white-space: nowrap;
+}
+.bind .key:hover, .bind .key:focus-visible {
+	border-color: #4da6ff;
+}
+.bind .key.active {
+	background-color: #2b78c9;
+	border-color: #4da6ff;
+}
+.bind .key.x {
+	width: 44dp;
+	font-size: 20dp;
+	padding-top: 4dp;
+}
+
+@media (max-height: 500dp) {
+	.bind .key { width: 150dp; }
+}
+@media (orientation: portrait) {
+	.row .control { padding-top: 8dp; }
+	.bind .key { width: 70dp; margin-left: 4dp; font-size: 12dp; }
+	.bind .key.x { width: 40dp; }
+	#content tabset tab { padding-left: 14dp; padding-right: 14dp; }
+}

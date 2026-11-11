@@ -50,20 +50,26 @@ reject() { # reject <description> <pattern> <log>
 }
 
 # The menu needs a good ten seconds to come up; the commands are spaced from
-# there. The close button of the Settings dialog is at the top right of it.
+# there. The Settings card opens the RML page; its "More settings..." button
+# (bottom, 810,659) hands over to the QuakeC dialog, whose close button is at
+# the top right of it.
 log=$(timeout 120 "$ENGINE" -xonotic -basedir "$PWD" -userdir "$USERDIR" \
 	+developer 1 +_cl_name RmlTest +vid_fullscreen 0 +vid_width 1280 +vid_height 720 +vid_touchscreen 0 \
 	+defer 12 rml_list \
 	+defer 13 "rml_click 1000 400" \
-	+defer 15 rml_list \
-	+defer 16 "rml_click 1058 119" \
-	+defer 18 rml_list \
-	+defer 19 quit 2>&1)
+	+defer 14.5 rml_list \
+	+defer 15 "rml_click 810 659" \
+	+defer 17 rml_list \
+	+defer 18 "rml_click 1058 119" \
+	+defer 20 rml_list \
+	+defer 21 quit 2>&1)
 
 expect "RmlUi starts" "Loaded font face" "$log"
 reject "no RmlUi warnings or errors" "^RmlUi: .*\(Could not\|No font\|not found\|did not\|Invalid\|Unknown\)" "$log"
 expect "main menu document is showing" "mainmenu (shown)" "$log"
-expect "click runs the button's command" "RmlUi: command menu_cmd directmenu settings" "$log"
+expect "click runs the button's command" "RmlUi: command rml_show settings" "$log"
+expect "the Settings page opens" "settings (shown)" "$log"
+expect "More settings runs the QuakeC dialog's command" "RmlUi: command menu_cmd directmenu settings" "$log"
 expect "dialog replaces the document" "mainmenu (hidden)" "$log"
 n=$(printf '%s\n' "$log" | grep -c "mainmenu (shown)")
 if [ "$n" -ge 2 ]; then
@@ -161,6 +167,27 @@ reject "no RmlUi warnings or errors" "^RmlUi: .*\(Could not\|No font\|not found\
 expect "the server browser opens" "servers (shown)" "$log"
 expect "the Singleplayer page opens" "singleplayer (shown)" "$log"
 expect "Instant action asks the menu" "RmlUi: command menu_cmd instantaction" "$log"
+
+# The Settings page: it loads, a tapped key binding takes the next key that is
+# pressed (F7 here, unbound again at the end), and Escape only cancels. The
+# positions are for 1332x600 on a touch screen: the Input tab, whose first row
+# is "Move forwards" with its first key at (876, 338).
+echo "== settings"
+log=$(timeout 120 "$ENGINE" -xonotic -basedir "$PWD" -userdir "$USERDIR" \
+	+developer 1 +_cl_name RmlTest +vid_fullscreen 0 +vid_width 1332 +vid_height 600 +vid_touchscreen 1 \
+	+defer 12 "rml_show settings" \
+	+defer 13 "rml_click 600 124" \
+	+defer 16 "rml_click 876 338" \
+	+defer 17 "rml_key F7" \
+	+defer 18 "echo AFTER; bind F7" \
+	+defer 19 "rml_click 876 338" \
+	+defer 20 "rml_key ESCAPE" \
+	+defer 21 "echo CANCELLED; rml_list" \
+	+defer 22 "unbind F7" \
+	+defer 23 quit 2>&1)
+reject "no RmlUi warnings or errors" "^RmlUi: .*\(Could not\|No font\|not found\|did not\|Invalid\|Unknown\|Failed\|Error\|Syntax\)" "$log"
+expect "a tapped key binding takes the next key" '"F7" = "+forward"' "$log"
+expect "Escape cancels the capture and leaves the page open" "settings (shown)" "$(printf '%s\n' "$log" | sed -n '/^CANCELLED/,$p')"
 
 # A finger is no pointer: no hover at all, and pressing is only for where it
 # went down. tests/ui/touchtest.rml has one button; the finger goes down on

@@ -18,7 +18,17 @@ There is no scripting. A document is wired up with attributes:
 | `data-cvar="name"` | any other element | Shows the cvar's value as the element's text. |
 | `data-reply="action"` | any element | Only in pages from a server, see [MODDING.md](MODDING.md#pages-from-a-server). |
 
-Read-only and private cvars are never written. The two files that give
+Read-only and private cvars are never written. A control can say how its value
+relates to the cvar's:
+
+- `data-on="2" data-off="0"` on a checkbox: it writes these instead of 1 and
+  0, and is checked while the cvar is not the off value (for an inverted
+  option use `data-on="0" data-off="1"`);
+- `data-map="db"` on a slider: a volume in decibels (`min="-40" max="0"`),
+  where the cvar is a factor and the lowest value is silence.
+
+A dropdown whose options come from a data model (`<option data-for=...>`)
+finds its value as soon as the options exist. The two files that give
 documents their look:
 
 - `ui/common.rcss` — what RmlUi does not assume (it has no built-in
@@ -153,16 +163,30 @@ a server that names a data model is refused. They are made in
 | Model | Variables | Events |
 |---|---|---|
 | `servers` | `rows` (`address`, `name`, `map`, `type`, `players`, `ping`), `filter`, `address`, `selected`, `status`, `sort`, `show_empty`, `show_full`, `show_laggy` | `select(address)`, `join()`, `refresh()`, `sort(column)`, `toggled()`, `filter_changed()` |
+| `settings` | `resolutions`, `resolution`, `skins`, `binds` (`label`, `command`, `key1`, `key2`, `header`, `bindable`, `capturing1`, `capturing2`), `capture_text` | `resolution_changed()`, `bind(row, slot)`, `unbind(row)` |
 | `campaign` | `levels` (`number`, `title`, `desc`, `map`, `mode`, `image`, `locked`, `done`, `current`), `title`, `has_prev`, `has_next`, `progress`, `selected` | `select(index)`, `play(index)`, `play_selected()`, `instant()`, `next()`, `prev()` |
 
 `ui/servers.rml` (the server browser, reading the list the network code
-fills; opening it asks the master servers) and `ui/singleplayer.rml`
+fills; opening it asks the master servers; a tap on a row opens a panel with
+the map picture, the players and Join, and a button to add the server to the
+favorites, which stay on top of the list) and `ui/singleplayer.rml`
 (instant action and the campaign, started through `menu_cmd instantaction`
 and `menu_cmd campaign <name> <level>` of the menu code) are the examples.
 `ui/lists.rcss` makes a dialog fill the window with a scrolling list in it.
 A `data-for` row is an ordinary element: it gets the drag scrolling, and
 `data-class-selected="..."` and `data-style-decorator="..."` style it from
 the data.
+
+## The Settings page
+
+`ui/settings.rml` is the Settings dialog of the QuakeC menu in RML: tabs for
+Video, Effects, Audio, Game, Input (with the key binder), User and Misc. It
+has the options people change most, one line a control, bound to cvars with
+`data-cvar`; "More settings..." opens the QuakeC dialog for the rest (HUD
+layout, language, ...). Binding a key: tap one of the two key buttons of an
+action, then press the new key or mouse button (Escape cancels); the engine
+hands that press to the page instead of anywhere else
+(`UIE_CaptureKeys` in `ui_rml_engine.c`).
 
 ## What the engine's renderer cannot do
 

@@ -1,0 +1,212 @@
+<rml>
+<head>
+	<title>Settings</title>
+	<link type="text/template" href="templates/dialog.rml"/>
+	<link type="text/rcss" href="lists.rcss"/>
+	<link type="text/rcss" href="settings.rcss"/>
+</head>
+<body template="dialog" data-model="settings">
+	<!-- The Settings dialog of the QuakeC menu, in RML: the options people
+	     change most, one tab for each of its sections. Every control with a
+	     data-cvar shows that cvar and writes it when changed (data-on and
+	     data-off for checkboxes whose values are not 1 and 0, data-map="db"
+	     for volumes). The screen sizes, the key bindings and the menu skins
+	     come from the data model "settings" (darkplaces/ui_rml_models.cpp).
+	     What is not here (HUD layout, language, ...) is in "More settings",
+	     the QuakeC dialog. This file is long and regular: one line a control. -->
+	<div class="dialog-bar">
+		<div class="dialog-title">Settings</div>
+		<div class="dialog-close" data-close>&#215;</div>
+	</div>
+	<div class="dialog-body">
+		<tabset>
+			<tab>Video</tab>
+			<panel>
+				<div class="section">Screen</div>
+				<div class="row"><div class="caption">Resolution</div><div class="control"><select data-value="resolution" data-event-change="resolution_changed()"><option data-for="r : resolutions" data-attr-value="r.value">{{ r.label }}</option></select></div></div>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="vid_fullscreen"/> Full screen</label>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="vid_vsync"/> Vertical synchronization</label>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="r_viewfbo" data-on="2" data-off="0"/> High-quality frame buffer</label>
+				<div class="row"><div class="caption">Render scale</div><div class="control"><input type="range" class="range" min="0.5" max="2" step="0.25" data-cvar="r_viewscale"/></div></div>
+				<div class="row"><div class="caption">Antialiasing</div><div class="control"><select data-cvar="vid_samples"><option value="1">Off</option><option value="2">2x</option><option value="4">4x</option><option value="8">8x</option></select></div></div>
+				<div class="row"><div class="caption">Anisotropic filtering</div><div class="control"><select data-cvar="gl_texture_anisotropy"><option value="1">Off</option><option value="2">2x</option><option value="4">4x</option><option value="8">8x</option><option value="16">16x</option></select></div></div>
+				<div class="section">Colors</div>
+				<div class="row"><div class="caption">Brightness</div><div class="control"><input type="range" class="range" min="0" max="0.5" step="0.02" data-cvar="v_brightness"/></div></div>
+				<div class="row"><div class="caption">Contrast</div><div class="control"><input type="range" class="range" min="1" max="3" step="0.05" data-cvar="v_contrast"/></div></div>
+				<div class="row"><div class="caption">Gamma</div><div class="control"><input type="range" class="range" min="0.5" max="2" step="0.05" data-cvar="v_gamma"/></div></div>
+				<div class="row"><div class="caption">Contrast boost</div><div class="control"><input type="range" class="range" min="1" max="5" step="0.1" data-cvar="v_contrastboost"/></div></div>
+				<div class="row"><div class="caption">Saturation</div><div class="control"><input type="range" class="range" min="0.5" max="2" step="0.05" data-cvar="r_glsl_saturation"/></div></div>
+				<div class="row"><div class="caption">Ambient light</div><div class="control"><input type="range" class="range" min="0" max="20" step="0.25" data-cvar="r_ambient"/></div></div>
+				<div class="row"><div class="caption">Scene brightness</div><div class="control"><input type="range" class="range" min="0.5" max="2" step="0.05" data-cvar="r_hdr_scenebrightness"/></div></div>
+				<div class="section">Other</div>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="gl_finish"/> Wait for the GPU to finish each frame</label>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="v_flipped"/> Flip the view horizontally</label>
+				<div class="row"><div class="control" style="margin-left: 0;"><div class="button primary" data-cmd="vid_restart">Apply video settings</div></div></div>
+			</panel>
+			<tab>Effects</tab>
+			<panel>
+				<div class="section">Textures and surfaces</div>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="r_sky" data-on="1" data-off="0"/> Show sky</label>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="mod_q3bsp_nolightmaps" data-on="0" data-off="1"/> Use lightmaps</label>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="r_glsl_deluxemapping"/> Deluxe mapping</label>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="r_shadow_gloss"/> Gloss</label>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="r_glsl_offsetmapping"/> Offset mapping</label>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="r_glsl_offsetmapping_reliefmapping"/> Relief mapping</label>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="r_water"/> Water reflections</label>
+				<div class="section">Decals</div>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="cl_decals"/> Decals</label>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="cl_decals_models"/> Decals on models</label>
+				<div class="row"><div class="caption">Decal distance</div><div class="control"><input type="range" class="range" min="200" max="500" step="20" data-cvar="r_drawdecals_drawdistance"/></div></div>
+				<div class="row"><div class="caption">Decal fade time</div><div class="control"><input type="range" class="range" min="1" max="20" step="1" data-cvar="cl_decals_fadetime"/></div></div>
+				<div class="section">Lights</div>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="r_shadow_realtime_dlight"/> Realtime dynamic lights</label>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="r_shadow_realtime_dlight_shadows"/> Dynamic light shadows</label>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="r_shadow_realtime_world"/> Realtime world lights</label>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="r_shadow_realtime_world_shadows"/> World light shadows</label>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="r_shadow_usenormalmap"/> Use normal maps</label>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="r_shadow_shadowmapping"/> Soft shadows</label>
+				<div class="row"><div class="caption">Coronas</div><div class="control"><input type="range" class="range" min="0" max="1.5" step="0.1" data-cvar="r_coronas"/></div></div>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="r_coronas_occlusionquery"/> Fade coronas by visibility</label>
+				<div class="section">Post processing</div>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="r_bloom"/> Bloom</label>
+				<div class="row"><div class="caption">Motion blur</div><div class="control"><input type="range" class="range" min="0" max="1" step="0.1" data-cvar="r_motionblur"/></div></div>
+				<div class="section">Particles</div>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="cl_particles"/> Particles</label>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="cl_spawn_point_particles"/> Spawnpoint effects</label>
+				<div class="row"><div class="caption">Particle quality</div><div class="control"><input type="range" class="range" min="0" max="3" step="0.25" data-cvar="cl_particles_quality"/></div></div>
+				<div class="row"><div class="caption">Particle distance</div><div class="control"><input type="range" class="range" min="200" max="3000" step="200" data-cvar="r_drawparticles_drawdistance"/></div></div>
+			</panel>
+			<tab>Audio</tab>
+			<panel>
+				<div class="section">Volume</div>
+				<div class="row"><div class="caption">Master</div><div class="control"><input type="range" class="range" min="-40" max="0" step="0.4" data-cvar="mastervolume" data-map="db"/></div></div>
+				<div class="row"><div class="caption">Music</div><div class="control"><input type="range" class="range" min="-40" max="0" step="0.4" data-cvar="bgmvolume" data-map="db"/></div></div>
+				<div class="row"><div class="caption">Ambient</div><div class="control"><input type="range" class="range" min="-40" max="0" step="0.4" data-cvar="snd_staticvolume" data-map="db"/></div></div>
+				<div class="row"><div class="caption">Info</div><div class="control"><input type="range" class="range" min="-40" max="0" step="0.4" data-cvar="snd_channel0volume" data-map="db"/></div></div>
+				<div class="row"><div class="caption">Items</div><div class="control"><input type="range" class="range" min="-40" max="0" step="0.4" data-cvar="snd_channel3volume" data-map="db"/></div></div>
+				<div class="row"><div class="caption">Pain</div><div class="control"><input type="range" class="range" min="-40" max="0" step="0.4" data-cvar="snd_channel6volume" data-map="db"/></div></div>
+				<div class="row"><div class="caption">Player</div><div class="control"><input type="range" class="range" min="-40" max="0" step="0.4" data-cvar="snd_channel7volume" data-map="db"/></div></div>
+				<div class="row"><div class="caption">Shots</div><div class="control"><input type="range" class="range" min="-40" max="0" step="0.4" data-cvar="snd_channel4volume" data-map="db"/></div></div>
+				<div class="row"><div class="caption">Voice</div><div class="control"><input type="range" class="range" min="-40" max="0" step="0.4" data-cvar="snd_channel2volume" data-map="db"/></div></div>
+				<div class="row"><div class="caption">Weapons</div><div class="control"><input type="range" class="range" min="-40" max="0" step="0.4" data-cvar="snd_channel1volume" data-map="db"/></div></div>
+				<div class="section">Output</div>
+				<div class="row"><div class="caption">Sample rate</div><div class="control"><select data-cvar="snd_speed"><option value="8000">8 kHz</option><option value="11025">11.025 kHz</option><option value="16000">16 kHz</option><option value="22050">22.05 kHz</option><option value="24000">24 kHz</option><option value="32000">32 kHz</option><option value="44100">44.1 kHz</option><option value="48000">48 kHz</option></select></div></div>
+				<div class="row"><div class="caption">Channels</div><div class="control"><select data-cvar="snd_channels"><option value="1">Mono</option><option value="2">Stereo</option><option value="3">2.1</option><option value="4">4</option><option value="5">5</option><option value="6">5.1</option><option value="7">6.1</option><option value="8">7.1</option></select></div></div>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="snd_mutewhenidle"/> Mute sounds when not active</label>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="snd_swapstereo"/> Swap stereo output channels</label>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="snd_spatialization_control"/> Headphone friendly mode</label>
+				<div class="section">Feedback</div>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="cl_hitsound"/> Hit indication sound</label>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="con_chatsound"/> Chat message sound</label>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="menu_sounds"/> Menu sounds</label>
+			</panel>
+			<tab>Game</tab>
+			<panel>
+				<div class="section">View</div>
+				<label class="check"><input type="radio" class="radio" name="persp" value="0" data-cvar="chase_active"/> 1st person perspective</label>
+				<label class="check"><input type="radio" class="radio" name="persp" value="1" data-cvar="chase_active"/> 3rd person perspective</label>
+				<div class="row"><div class="caption">Back distance</div><div class="control"><input type="range" class="range" min="10" max="100" step="1" data-cvar="chase_back"/></div></div>
+				<div class="row"><div class="caption">Up distance</div><div class="control"><input type="range" class="range" min="10" max="50" step="1" data-cvar="chase_up"/></div></div>
+				<div class="row"><div class="caption">Field of view</div><div class="control"><input type="range" class="range" min="60" max="130" step="5" data-cvar="fov"/></div></div>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="cl_eventchase_death" data-on="2" data-off="0"/> Slide to third person upon death</label>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="cl_bobfall" data-on="0.05" data-off="0"/> Smooth the view when landing</label>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="cl_smoothviewheight" data-on="0.05" data-off="0"/> Smooth the view while crouching</label>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="v_idlescale" data-on="1" data-off="0"/> View waving while idle</label>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="cl_bob" data-on="0.01" data-off="0"/> View bobbing while walking</label>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="cl_clippedspectating"/> Allow passing through walls while spectating</label>
+				<div class="section">Zoom</div>
+				<div class="row"><div class="caption">Zoom factor</div><div class="control"><input type="range" class="range" min="2" max="30" step="0.5" data-cvar="cl_zoomfactor"/></div></div>
+				<div class="row"><div class="caption">Zoom sensitivity</div><div class="control"><input type="range" class="range" min="0" max="1" step="0.1" data-cvar="cl_zoomsensitivity"/></div></div>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="cl_velocityzoom_enabled"/> Velocity zoom</label>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="cl_reticle"/> Reticle overlay while zooming</label>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="cl_unpress_zoom_on_death"/> Release zoom when you die or respawn</label>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="cl_unpress_zoom_on_weapon_switch"/> Release zoom when you switch weapons</label>
+				<div class="section">Weapons</div>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="cl_autoswitch"/> Auto switch weapons on pickup</label>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="cl_weaponpriority_useforcycling"/> Use priority list for weapon cycling</label>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="cl_weaponimpulsemode"/> Cycle through only usable weapons</label>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="cl_unpress_attack_on_weapon_switch"/> Release attack buttons when you switch weapons</label>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="r_drawviewmodel"/> Draw the 1st person weapon model</label>
+				<label class="check"><input type="radio" class="radio" name="gun" value="4" data-cvar="cl_gunalign"/> Gun left</label>
+				<label class="check"><input type="radio" class="radio" name="gun" value="1" data-cvar="cl_gunalign"/> Gun center</label>
+				<label class="check"><input type="radio" class="radio" name="gun" value="3" data-cvar="cl_gunalign"/> Gun right</label>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="cl_followmodel"/> Gun model swaying</label>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="cl_bobmodel"/> Gun model bobbing</label>
+				<div class="section">Crosshair</div>
+				<label class="check"><input type="radio" class="radio" name="xh" value="0" data-cvar="crosshair_enabled"/> No crosshair</label>
+				<label class="check"><input type="radio" class="radio" name="xh" value="1" data-cvar="crosshair_enabled"/> Per weapon</label>
+				<label class="check"><input type="radio" class="radio" name="xh" value="2" data-cvar="crosshair_enabled"/> Custom</label>
+				<div class="row"><div class="caption">Size</div><div class="control"><input type="range" class="range" min="0.1" max="1" step="0.01" data-cvar="crosshair_size"/></div></div>
+				<div class="row"><div class="caption">Alpha</div><div class="control"><input type="range" class="range" min="0" max="1" step="0.1" data-cvar="crosshair_alpha"/></div></div>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="crosshair_ring"/> Rings for weapon status</label>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="crosshair_dot"/> Center dot</label>
+				<div class="row"><div class="caption">Dot size</div><div class="control"><input type="range" class="range" min="0.2" max="2" step="0.1" data-cvar="crosshair_dot_size"/></div></div>
+				<div class="row"><div class="caption">Dot alpha</div><div class="control"><input type="range" class="range" min="0.1" max="1" step="0.1" data-cvar="crosshair_dot_alpha"/></div></div>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="crosshair_effect_scalefade"/> Smooth effects of crosshairs</label>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="crosshair_hittest"/> Hit tests for the crosshair</label>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="crosshair_hitindication" data-on="0.5" data-off="0"/> Animate crosshair when hitting an enemy</label>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="crosshair_pickup" data-on="0.25" data-off="0"/> Animate crosshair when picking up an item</label>
+			</panel>
+			<tab>Input</tab>
+			<panel>
+				<div class="section">Key bindings</div>
+				<div class="hint">Tap a key to change it, then press the new key. Esc cancels.</div>
+				<div class="capture" data-if="capture_text != ''">{{ capture_text }}</div>
+				<div class="binds">
+					<div data-for="b : binds">
+						<div class="section" data-if="b.header">{{ b.label }}</div>
+						<div class="bind" data-if="b.bindable">
+							<div class="what">{{ b.label }}</div>
+							<div class="key" data-class-active="b.capturing1" data-event-click="bind(it_index, 0)">{{ b.capturing1 ? '...' : b.key1 }}</div>
+							<div class="key" data-class-active="b.capturing2" data-event-click="bind(it_index, 1)">{{ b.capturing2 ? '...' : b.key2 }}</div>
+							<div class="key x" data-event-click="unbind(it_index)">&#215;</div>
+						</div>
+					</div>
+				</div>
+				<div class="section">Mouse</div>
+				<div class="row"><div class="caption">Sensitivity</div><div class="control"><input type="range" class="range" min="1" max="32" step="0.2" data-cvar="sensitivity"/></div></div>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="m_filter"/> Smooth aiming</label>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="m_pitch" data-on="1.022" data-off="0"/> Invert aiming</label>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="m_accelerate"/> Mouse acceleration</label>
+				<div class="section">Other</div>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="con_closeontoggleconsole"/> Pressing "enter console" also closes it</label>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="cl_movement_track_canjump"/> Automatically repeat jumping if holding jump</label>
+				<div class="row"><div class="caption">Jetpack on jump</div><div class="control"><select data-cvar="cl_jetpack_jump"><option value="0">Disabled</option><option value="1">Air only</option><option value="2">All</option></select></div></div>
+			</panel>
+			<tab>User</tab>
+			<panel>
+				<div class="section">Menu skin</div>
+				<div class="row"><div class="caption">Skin</div><div class="control"><select data-cvar="menu_skin"><option data-for="k : skins" data-attr-value="k.value">{{ k.label }}</option></select></div></div>
+				<div class="row"><div class="control" style="margin-left: 0;"><div class="button" data-cmd="menu_restart">Apply skin</div></div></div>
+				<div class="section">Content</div>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="cl_gentle"/> Disable gore effects and harsh language</label>
+				<div class="section">Language</div>
+				<div class="hint">The text language is set in the full settings (More settings...).</div>
+			</panel>
+			<tab>Misc</tab>
+			<panel>
+				<div class="section">Network</div>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="shownetgraph"/> Show netgraph</label>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="cl_netrepeatinput"/> Packet loss compensation</label>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="cl_movement_errorcompensation"/> Movement prediction error compensation</label>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="crypto_aeslevel" data-on="2" data-off="1"/> Use encryption (AES) when available</label>
+				<div class="row"><div class="caption">Local latency</div><div class="control"><input type="range" class="range" min="0" max="1000" step="25" data-cvar="cl_netlocalping"/></div></div>
+				<div class="section">Downloads</div>
+				<div class="row"><div class="caption">Simultaneous downloads</div><div class="control"><input type="range" class="range" min="1" max="5" step="1" data-cvar="cl_curl_maxdownloads"/></div></div>
+				<div class="section">Performance</div>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="showfps"/> Show frames per second</label>
+				<div class="row"><div class="caption">Maximum frame rate</div><div class="control"><select data-cvar="cl_maxfps"><option value="0">Unlimited</option><option value="30">30</option><option value="60">60</option><option value="75">75</option><option value="100">100</option><option value="120">120</option><option value="144">144</option><option value="200">200</option><option value="250">250</option></select></div></div>
+				<div class="row"><div class="caption">Idle frame rate</div><div class="control"><select data-cvar="cl_maxidlefps"><option value="10">10</option><option value="20">20</option><option value="30">30</option><option value="60">60</option></select></div></div>
+				<div class="section">Other</div>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="showtime"/> Show the current date and time</label>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="developer"/> Developer mode</label>
+				<div class="row"><div class="control" style="margin-left: 0;"><div class="button" data-cmd="menu_restart">Apply (restart the menu)</div></div></div>
+			</panel>
+		</tabset>
+	</div>
+	<div class="dialog-buttons">
+		<div class="button" data-cmd="menu_cmd directmenu settings" data-close>More settings...</div>
+		<div class="button primary" data-close>Done</div>
+	</div>
+</body>
+</rml>
