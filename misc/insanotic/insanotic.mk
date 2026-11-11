@@ -52,8 +52,13 @@ insanotic-client:
 
 # official 0.8.6 map pack from an installed Xonotic when there is one (maps
 # with textures), otherwise just the compiled map from the autobuild server
+# (link-release-data.sh only links missing packs' targets; repack-stored.sh
+# then makes local uncompressed copies once, for fast loading)
 insanotic-map:
-	sh misc/insanotic/link-release-data.sh 2>/dev/null || sh misc/insanotic/fetch-map.sh $(INSANOTIC_MAP)
+	if [ ! -f data/xonotic-20230620-data.pk3 ] || [ -L data/xonotic-20230620-data.pk3 ]; then \
+		sh misc/insanotic/link-release-data.sh 2>/dev/null && sh misc/insanotic/repack-stored.sh \
+		|| sh misc/insanotic/fetch-map.sh $(INSANOTIC_MAP); \
+	fi
 
 insanotic-hooks:
 	sh misc/insanotic/gen-lua-hooks.sh
