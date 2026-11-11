@@ -45,9 +45,9 @@ set(BUILD_SHARED_LIBS OFF)
 # dlopen it on Android (jpeg.c). libpng is the one library the engine does
 # dlopen on every platform, so it is built as a shared libpng.so that the
 # APK ships next to libmain.so (see the "pngdl" target below).
-# libcurl is not built: without it the engine cannot download maps from
-# servers, but local play, LAN and servers whose maps are in the data packs
-# work. See the Android section of the top level README.md.
+# libcurl is not built: libcurl.c answers the engine's curl calls with Java's
+# HttpURLConnection (HttpFetch.kt) over JNI, which does HTTPS with the system's
+# certificate authorities, so map and pk3 downloads from servers work.
 # ---------------------------------------------------------------------------
 include(FetchContent)
 set(FETCHCONTENT_BASE_DIR "${INSANOTIC_DEPS_DIR}")

@@ -5,3 +5,5 @@
 # neither rename nor remove anything in them.
 -keep class org.libsdl.app.** { *; }
 -keep class org.insanotic.android.GameActivity { *; }
+# the engine's HTTP(S) downloads (libcurl.c) call this class through JNI
+-keep class org.insanotic.android.HttpFetch { *; }
