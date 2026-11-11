@@ -141,6 +141,7 @@ jobs:
           PAGES_URL: https://luohoa97.github.io/insanotic
         run: |
           set -eu
+          mkdir -p site
           ostree init --mode=archive-z2 --repo=site/repo
           flatpak build-import-bundle site/repo insanotic-*.flatpak
           sign=""
