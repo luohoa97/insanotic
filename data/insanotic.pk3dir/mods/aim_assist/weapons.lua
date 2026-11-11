@@ -33,13 +33,24 @@ local defs = {
 	seeker     = { kind = "projectile", speed = {"g_balance_seeker_missile_speed", 1000},  splash = 80,  range = {200, 1000, 2000}, dmg = {"g_balance_seeker_missile_damage", 25},   refire = {"g_balance_seeker_missile_refire", 0.5} },
 	fireball   = { kind = "projectile", speed = {"g_balance_fireball_primary_speed", 1200}, splash = 200, range = {500, 1000, 2000}, dmg = {"g_balance_fireball_primary_damage", 200}, refire = {"g_balance_fireball_primary_refire", 2} },
 	arc        = { kind = "beam",       spread = 0,                                        splash = 0,   range = {0, 800, 1000},    dmg = {"g_balance_arc_beam_damage", 115},        refire = {"", 1} },
+	-- Overkill (mutator and game mode) weapons
+	okshotgun    = { kind = "hitscan",    spread = 0.1,                                        splash = 0,   range = {0, 400, 1000},    dmg = {"g_balance_okshotgun_primary_damage", 17},    refire = {"g_balance_okshotgun_primary_refire", 0.75}, pellets = {"g_balance_okshotgun_primary_bullets", 10} },
+	okmachinegun = { kind = "hitscan",    spread = 0.02,                                       splash = 0,   range = {200, 1500, 3000}, dmg = {"g_balance_okmachinegun_primary_damage", 25}, refire = {"g_balance_okmachinegun_primary_refire", 0.1} },
+	oknex        = { kind = "hitscan",    spread = 0,                                          splash = 0,   range = {400, 4000, 8000}, dmg = {"g_balance_oknex_primary_damage", 100},       refire = {"g_balance_oknex_primary_refire", 1} },
+	okhmg        = { kind = "hitscan",    spread = 0.03,                                       splash = 0,   range = {200, 2000, 4000}, dmg = {"g_balance_okhmg_primary_damage", 30},        refire = {"g_balance_okhmg_primary_refire", 0.05} },
+	-- the RPC speeds up in flight (speedaccel); its start speed leads a little short
+	okrpc        = { kind = "projectile", speed = {"g_balance_okrpc_primary_speed", 2500},     splash = 300, range = {300, 1500, 4000}, dmg = {"g_balance_okrpc_primary_damage", 150},       refire = {"g_balance_okrpc_primary_refire", 1} },
 	-- tools, not for shooting players on their own
 	porto = { kind = "none" }, hook = { kind = "none" }, tuba = { kind = "none" },
 }
 
 -- profile for a weapon by its netname, with current balance values; nil
 -- for weapons this mod does not know (a mod's weapon: fired as hitscan)
+-- older names some servers still send
+local aliases = { hmg = "okhmg", rpc = "okrpc" }
+
 function W.get(name)
+	name = aliases[name] or name
 	local d = defs[name]
 	if not d then return nil end
 	local p = { name = name, kind = d.kind, splash = d.splash or 0, range = d.range or {0, 1000, 3000},
