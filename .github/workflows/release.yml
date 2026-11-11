@@ -1,7 +1,15 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
-# Builds every package of Insanotic and, for a version tag (v*), publishes
-# them as the GitHub release of that tag:
+# Builds every package of Insanotic and publishes it:
+#   * every push to main (and once a day, to pick up engine and game data
+#     changes, which live in their own repositories) replaces the "nightly"
+#     pre-release, whose files keep fixed names so the Android app can update
+#     itself from it, and updates the Flatpak repository on GitHub Pages:
+#       flatpak remote-add --if-not-exists insanotic \
+#           https://luohoa97.github.io/insanotic/insanotic.flatpakrepo
+#       flatpak install insanotic io.github.luohoa97.Insanotic
+#   * a version tag (v*) makes the GitHub release of that tag.
+# The packages:
 #   insanotic-<version>-linux-x86_64.tar.gz   engine, game code, mods; start
 #                                             with ./insanotic.sh
 #   insanotic-<version>.flatpak               launcher + game (Flatpak bundle)
@@ -10,8 +18,12 @@
 # links them from an installed Xonotic, the Flatpak launcher and the Android
 # app set them up on first run.
 #
-# Run it by hand (Actions > Release > Run workflow) to build the packages
-# as workflow artifacts without publishing a release.
+# Signing, from repository secrets: ANDROID_KEYSTORE_BASE64,
+# ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD (the
+# APK; without them it is debug signed and cannot update an installed copy)
+# and FLATPAK_GPG_PRIVATE_KEY (the Flatpak repository; its public key is
+# packaging/flatpak/insanotic-repo.gpg). GitHub Pages must be set to deploy
+# from GitHub Actions (Settings > Pages).
 #
 # The engine (insanotic-darkplaces) and the game data (insanotic-data) come
 # from their own repositories, branch main.
@@ -19,12 +31,20 @@ name: Release
 
 on:
   push:
+    branches:
+      - main
     tags:
       - 'v*'
+  schedule:
+    - cron: '0 18 * * *'
   workflow_dispatch:
 
 permissions:
   contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   ENGINE_REPO: https://github.com/luohoa97/insanotic-darkplaces.git
@@ -42,7 +62,7 @@ jobs:
         run: |
           case "$GITHUB_REF" in
             refs/tags/v*) echo "version=${GITHUB_REF#refs/tags/v}" >> "$GITHUB_OUTPUT" ;;
-            *) echo "version=dev-${GITHUB_SHA::8}" >> "$GITHUB_OUTPUT" ;;
+            *) echo "version=nightly-$(date -u +%Y%m%d)-${GITHUB_SHA::8}" >> "$GITHUB_OUTPUT" ;;
           esac
 
   linux:
@@ -112,6 +132,65 @@ jobs:
           name: flatpak
           path: insanotic-*.flatpak
 
+      # The Flatpak repository published on GitHub Pages: the bundle
+      # imported into a fresh OSTree repository, signed when the key is set,
+      # with a .flatpakrepo file to add it and a .flatpakref to install
+      - name: Build the Flatpak repository
+        env:
+          GPG_KEY: ${{ secrets.FLATPAK_GPG_PRIVATE_KEY }}
+          PAGES_URL: https://luohoa97.github.io/insanotic
+        run: |
+          set -eu
+          ostree init --mode=archive-z2 --repo=site/repo
+          flatpak build-import-bundle site/repo insanotic-*.flatpak
+          sign=""
+          gpgline=""
+          if [ -n "$GPG_KEY" ]; then
+            export GNUPGHOME="$RUNNER_TEMP/gnupg"
+            mkdir -p "$GNUPGHOME"
+            chmod 700 "$GNUPGHOME"
+            printf '%s\n' "$GPG_KEY" | gpg --batch --import
+            keyid=$(gpg --list-secret-keys --with-colons | awk -F: '/^sec/ { print $5; exit }')
+            sign="--gpg-sign=$keyid"
+            gpgline="GPGKey=$(base64 -w0 packaging/flatpak/insanotic-repo.gpg)"
+          fi
+          flatpak build-update-repo $sign --generate-static-deltas --prune site/repo
+          {
+            echo "[Flatpak Repo]"
+            echo "Title=Insanotic"
+            echo "Url=$PAGES_URL/repo/"
+            echo "Homepage=https://github.com/luohoa97/insanotic"
+            echo "Comment=Insanotic builds from the main branch"
+            echo "RuntimeRepo=https://dl.flathub.org/repo/flathub.flatpakrepo"
+            [ -n "$gpgline" ] && echo "$gpgline"
+            true
+          } > site/insanotic.flatpakrepo
+          {
+            echo "[Flatpak Ref]"
+            echo "Name=io.github.luohoa97.Insanotic"
+            echo "Branch=master"
+            echo "Title=Insanotic"
+            echo "Url=$PAGES_URL/repo/"
+            echo "RuntimeRepo=https://dl.flathub.org/repo/flathub.flatpakrepo"
+            echo "IsRuntime=false"
+            [ -n "$gpgline" ] && echo "$gpgline"
+            true
+          } > site/insanotic.flatpakref
+          {
+            echo "<!doctype html><meta charset=utf-8><title>Insanotic</title>"
+            echo "<h1>Insanotic</h1>"
+            echo "<p>Flatpak: <code>flatpak remote-add --if-not-exists insanotic $PAGES_URL/insanotic.flatpakrepo</code>"
+            echo "then <code>flatpak install insanotic io.github.luohoa97.Insanotic</code>"
+            echo "(or open <a href=insanotic.flatpakref>insanotic.flatpakref</a>).</p>"
+            echo "<p>Android and Linux builds: <a href=https://github.com/luohoa97/insanotic/releases/tag/nightly>nightly release</a>.</p>"
+          } > site/index.html
+          touch site/.nojekyll
+
+      - uses: actions/upload-pages-artifact@v3
+        if: github.ref == 'refs/heads/main' || github.event_name == 'schedule'
+        with:
+          path: site
+
   android:
     needs: version
     runs-on: ubuntu-latest
@@ -157,13 +236,10 @@ jobs:
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
-          # Android wants an integer that grows with every release: 1.2.3
-          # becomes 10203; builds that are not a tag use the run number.
-          case "$VERSION" in
-            [0-9]*.[0-9]*.[0-9]*)
-              code=$(echo "$VERSION" | awk -F. '{ print $1 * 10000 + $2 * 100 + $3 }') ;;
-            *) code=$RUN_NUMBER ;;
-          esac
+          # Android wants an integer that grows with every build, tags and
+          # nightlies alike (the app updates itself by comparing it): the run
+          # number of this workflow, above the codes of local builds
+          code=$((1000 + RUN_NUMBER))
           # Signing: with the ANDROID_KEYSTORE_BASE64 secret (and the
           # password/alias secrets) the APK is signed with that key. Without
           # them it is signed with the debug key: it installs fine, but can
@@ -178,11 +254,68 @@ jobs:
           mkdir -p dist
           cp packaging/android/app/build/outputs/apk/release/app-release.apk \
             "dist/insanotic-$VERSION-android.apk"
+          printf '{"versionCode":%d,"versionName":"%s"}\n' "$code" "$VERSION" > dist/version.json
 
       - uses: actions/upload-artifact@v4
         with:
           name: android
-          path: dist/*.apk
+          path: |
+            dist/*.apk
+            dist/version.json
+
+  # the rolling "nightly" pre-release: same file names every time, so links
+  # (and the Android app's updater) always get the newest build
+  nightly:
+    if: github.ref == 'refs/heads/main' || github.event_name == 'schedule'
+    needs: [linux, flatpak, android]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Give the files fixed names
+        run: |
+          cd dist
+          mv insanotic-*-android.apk insanotic-android.apk
+          mv insanotic-*-linux-x86_64.tar.gz insanotic-linux-x86_64.tar.gz
+          mv insanotic-*.flatpak insanotic.flatpak
+          ls -la
+
+      - name: Move the nightly tag to this commit
+        run: |
+          git tag -f nightly
+          git push -f origin nightly
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: nightly
+          name: Nightly
+          prerelease: true
+          make_latest: false
+          body: |
+            Latest build of the main branch (${{ github.sha }}), replaced on every change.
+            Android: install insanotic-android.apk; the app then updates itself from here.
+            Flatpak: `flatpak remote-add --if-not-exists insanotic https://luohoa97.github.io/insanotic/insanotic.flatpakrepo` then `flatpak install insanotic io.github.luohoa97.Insanotic`.
+            Linux: unpack insanotic-linux-x86_64.tar.gz and run ./insanotic.sh.
+          files: dist/*
+
+  pages:
+    if: github.ref == 'refs/heads/main' || github.event_name == 'schedule'
+    needs: flatpak
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v4
 
   release:
     if: startsWith(github.ref, 'refs/tags/v')

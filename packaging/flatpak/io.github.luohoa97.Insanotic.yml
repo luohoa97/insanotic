@@ -70,8 +70,10 @@ modules:
     build-commands:
       # the watermark must stay the release's, so stock 0.8.6 clients accept csprogs.dat
       - make -C qcsrc qc QCC=/app/bin/gmqcc QCCFLAGS_WATERMARK=xonotic-v0.8.6
+      # only what Insanotic builds or changes (game code and configs): the
+      # Xonotic release packs the launcher sets up on first run have the rest
       - mkdir -p /app/share/insanotic/data/xonotic-data.pk3dir
-      - tar --exclude=./qcsrc --exclude=./.tmp --exclude=./.git -cf - . | tar -xf - -C /app/share/insanotic/data/xonotic-data.pk3dir
+      - cp *.dat *.cfg /app/share/insanotic/data/xonotic-data.pk3dir/
     sources:
       - type: git
         url: https://github.com/luohoa97/insanotic-data.git

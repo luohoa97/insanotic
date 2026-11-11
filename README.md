@@ -116,6 +116,21 @@ libraries are downloaded and built from source on the first build. Set
 `ANDROID_KEYSTORE`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS` and
 `ANDROID_KEY_PASSWORD` to sign with your own key.
 
+## Nightly builds
+
+Every change to the main branch is built and published:
+
+- Android and Linux: the [nightly release](https://github.com/luohoa97/insanotic/releases/tag/nightly)
+  (`insanotic-android.apk`, `insanotic-linux-x86_64.tar.gz`, `insanotic.flatpak`).
+- Flatpak repository on GitHub Pages:
+
+  ```sh
+  flatpak remote-add --if-not-exists insanotic https://luohoa97.github.io/insanotic/insanotic.flatpakrepo
+  flatpak install insanotic io.github.luohoa97.Insanotic
+  ```
+
+  `flatpak update` then picks up new builds.
+
 ## Releases
 
 Pushing a `v*` tag runs the `Release` workflow, which builds a Linux tarball
