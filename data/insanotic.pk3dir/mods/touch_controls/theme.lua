@@ -133,10 +133,14 @@ function theme.weapon(cx, cy, w, h, weapon, lit, opacity)
 		return
 	end
 	local icon = ICONS[weapon.name] or ("weapon" .. weapon.name)
+	-- some weapons report a stat that is not an ammo count (a float's
+	-- bits read as an integer): show no number for those
+	local ammo = weapon.ammo
+	if ammo and (ammo < 0 or ammo > 99999) then ammo = nil end
 	local ih = h * 0.8
-	skin_pic(icon, cx - ih / 2, cy - ih / 2 - h * (weapon.ammo and 0.1 or 0), ih, ih, 1, 1, 1, a)
-	if weapon.ammo then
-		centred_text(tostring(weapon.ammo), cx, cy + h * 0.32, h * 0.26, a)
+	skin_pic(icon, cx - ih / 2, cy - ih / 2 - h * (ammo and 0.1 or 0), ih, ih, 1, 1, 1, a)
+	if ammo then
+		centred_text(tostring(ammo), cx, cy + h * 0.32, h * 0.26, a)
 	end
 end
 

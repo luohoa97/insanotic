@@ -30,6 +30,7 @@ cvar("touch_controls_size", 1, "scale of all controls")
 cvar("touch_controls_opacity", 1, "opacity of all controls (0.2 - 1)")
 cvar("touch_controls_look_sensitivity", 0.25, "degrees of turn per screen unit dragged")
 cvar("touch_controls_stick_radius", 70, "joystick radius in screen units (before touch_controls_size)")
+cvar("touch_controls_weaponbar", 1, "1 = a bar of big weapon buttons along the bottom (tap to select)")
 cvar("touch_controls_stick_follow", 0, "1 = dragging past the rim pulls the joystick base along; 0 = the base stays where the thumb landed")
 cvar("touch_controls_stick_deadzone", 0.08, "fraction of the stick radius that does nothing")
 cvar("touch_controls_stick_full", 0.85, "fraction of the stick radius that already means full speed")
@@ -68,6 +69,32 @@ local function update_layout(w, h)
 		{ id = "chat",   label = "CHAT", x = 134 * s, y = 36 * s, w = 76 * s, h = 40 * s, tap = "messagemode" },
 		{ id = "score",  label = "TAB",  x = 218 * s, y = 36 * s, w = 76 * s, h = 40 * s, press = "+showscores", release = "-showscores" },
 	}
+	-- weapon bar along the bottom, between the joystick and the action
+	-- buttons: every owned weapon, one tap selects it. It replaces
+	-- Xonotic's weapon panel (too small to tap; off in the touch layout).
+	if xon.cvar("touch_controls_weaponbar") ~= 0 then
+		local owned = {}
+		for _, wp in ipairs(xon.weapons()) do
+			if wp.owned then owned[#owned + 1] = wp end
+		end
+		local x0, x1 = w * 0.30, w - 300 * s
+		local gap = 6 * s
+		-- cells stay finger-sized (at least 58 units wide): when they do not
+		-- fit in one row, more rows stack upwards
+		local per_row = math.max(1, math.floor((x1 - x0 + gap) / (58 * s + gap)))
+		local cols = math.min(#owned, per_row)
+		local cw = math.min(76 * s, (x1 - x0 - gap * (cols - 1)) / math.max(1, cols))
+		local ch = math.min(64 * s, cw * 0.85)
+		for i, wp in ipairs(owned) do
+			local row, col = (i - 1) // per_row, (i - 1) % per_row
+			local in_row = math.min(per_row, #owned - row * per_row)
+			local left = (x0 + x1) / 2 - (in_row * cw + (in_row - 1) * gap) / 2 + cw / 2
+			layout.buttons[#layout.buttons + 1] = {
+				id = "slot_" .. wp.name, slot = wp, tap = "impulse " .. wp.impulse,
+				x = left + col * (cw + gap), y = h - ch / 2 - 10 * s - row * (ch + gap), w = cw, h = ch,
+			}
+		end
+	end
 end
 
 -- finger state, by touch id
@@ -271,7 +298,9 @@ xon.on("HUD", function(ev)
 		if w.held then current = w break end
 	end
 	for _, b in ipairs(layout.buttons) do
-		if b.weapon then
+		if b.slot then
+			theme.weapon(b.x, b.y, b.w, b.h, b.slot, held[b.id] or b.slot.held or b.slot.switching_to, o)
+		elseif b.weapon then
 			theme.weapon(b.x, b.y, b.w, b.h, current, held[b.id], o)
 		else
 			theme.button(b.x, b.y, b.w, b.h, b.label, held[b.id], o)
