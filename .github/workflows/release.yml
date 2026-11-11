@@ -281,6 +281,7 @@ jobs:
       - name: Give the files fixed names
         run: |
           cd dist
+          rm -f artifact.tar # the Pages site, not a download
           mv insanotic-*-android.apk insanotic-android.apk
           mv insanotic-*-linux-x86_64.tar.gz insanotic-linux-x86_64.tar.gz
           mv insanotic-*.flatpak insanotic.flatpak
@@ -327,6 +328,8 @@ jobs:
         with:
           path: dist
           merge-multiple: true
+
+      - run: rm -f dist/artifact.tar # the Pages site, not a download
 
       - uses: softprops/action-gh-release@v2
         with:
