@@ -154,6 +154,10 @@ git tag v0.1.0 && git push github v0.1.0
 Insanotic is made by Neil Luo, on top of Xonotic by Team Xonotic and
 DarkPlaces by Forest "LordHavoc" Hale and contributors.
 
+The menu music is a darker mix (a semitone lower, softer highs, light reverb)
+of Xonotic's "Rising of the Phoenix", made for Insanotic
+(`data/insanotic.pk3dir/sound/cdtracks/rising-of-the-phoenix.ogg`).
+
 ## License
 
 Xonotic is and will always be free and open source. It is available under the [copyleft](https://www.gnu.org/copyleft/)-style [GPLv3+](https://www.gnu.org/licenses/gpl-3.0.html) license (see the [COPYING](COPYING) file for details).
