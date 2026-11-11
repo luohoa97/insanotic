@@ -5,9 +5,10 @@
 #   insanotic-<version>-linux-x86_64.tar.gz   engine, game code, mods; start
 #                                             with ./insanotic.sh
 #   insanotic-<version>.flatpak               launcher + game (Flatpak bundle)
+#   insanotic-<version>-android.apk           Android app (arm64-v8a, x86_64)
 # The Xonotic 0.8.6 data packs (1-2 GB) are in none of them: the tarball
-# links them from an installed Xonotic, the Flatpak launcher sets them up on
-# first run.
+# links them from an installed Xonotic, the Flatpak launcher and the Android
+# app set them up on first run.
 #
 # Run it by hand (Actions > Release > Run workflow) to build the packages
 # as workflow artifacts without publishing a release.
@@ -111,9 +112,81 @@ jobs:
           name: flatpak
           path: insanotic-*.flatpak
 
+  android:
+    needs: version
+    runs-on: ubuntu-latest
+    env:
+      # keep in step with packaging/android/app/build.gradle
+      NDK_VERSION: 28.2.13676358
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: >-
+            platforms;android-35
+            build-tools;36.0.0
+            ndk;${{ env.NDK_VERSION }}
+            cmake;3.22.1
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends build-essential
+
+      - name: Fetch engine, game data and QC compiler
+        run: |
+          git clone --depth 1 "$ENGINE_REPO" darkplaces
+          git clone --depth 1 "$DATA_REPO" data/xonotic-data.pk3dir
+          git clone --depth 1 --branch "$GMQCC_TAG" "$GMQCC_REPO" gmqcc
+
+      - name: Compile the QuakeC
+        run: make insanotic-qc
+
+      - name: Build the APK
+        env:
+          VERSION: ${{ needs.version.outputs.version }}
+          RUN_NUMBER: ${{ github.run_number }}
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          # Android wants an integer that grows with every release: 1.2.3
+          # becomes 10203; builds that are not a tag use the run number.
+          case "$VERSION" in
+            [0-9]*.[0-9]*.[0-9]*)
+              code=$(echo "$VERSION" | awk -F. '{ print $1 * 10000 + $2 * 100 + $3 }') ;;
+            *) code=$RUN_NUMBER ;;
+          esac
+          # Signing: with the ANDROID_KEYSTORE_BASE64 secret (and the
+          # password/alias secrets) the APK is signed with that key. Without
+          # them it is signed with the debug key: it installs fine, but can
+          # not be updated over a build signed with another key.
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.keystore"
+            export ANDROID_KEYSTORE="$RUNNER_TEMP/release.keystore"
+          fi
+          packaging/android/gradlew -p packaging/android assembleRelease \
+            -Pversion_name="$VERSION" -Pversion_code="$code" \
+            -Pndk_version="$NDK_VERSION"
+          mkdir -p dist
+          cp packaging/android/app/build/outputs/apk/release/app-release.apk \
+            "dist/insanotic-$VERSION-android.apk"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android
+          path: dist/*.apk
+
   release:
     if: startsWith(github.ref, 'refs/tags/v')
-    needs: [linux, flatpak]
+    needs: [linux, flatpak, android]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v4
