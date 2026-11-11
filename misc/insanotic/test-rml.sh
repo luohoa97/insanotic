@@ -102,13 +102,14 @@ log=$(timeout 120 "$ENGINE" -xonotic -basedir "$PWD" -userdir "$USERDIR" \
 reject "no RmlUi warnings or errors" "^RmlUi: .*\(Could not\|No font\|not found\|did not\|Invalid\|Unknown\|Failed\)" "$log"
 expect "the slider wrote the cvar" '"fov" is "[78][0-9]\.' "$log"
 
-# Pages from a server need a running game: a listen server with the example
+# Pages from a server need a running game (cl_allow_server_pages is set
+# first: the last run of this test turns it off, and it is saved): a listen server with the example
 # plugin. The example page has a Send button, answered by the plugin; the
 # hostile page has one button for a local command, one for the server and one
 # for an answer, and a field bound to a cvar that must stay unread.
 echo "== pages from a server"
-log=$(timeout 180 "$ENGINE" -xonotic -game tests -basedir "$PWD" -userdir "$USERDIR" \
-	+developer 1 +g_lua 1 +_cl_name RmlTest +vid_fullscreen 0 +vid_width 1280 +vid_height 720 +vid_touchscreen 0 \
+log=$(timeout 240 "$ENGINE" -xonotic -game tests -basedir "$PWD" -userdir "$USERDIR" \
+	+developer 1 +g_lua 1 +cl_allow_server_pages 1 +_cl_name RmlTest +vid_fullscreen 0 +vid_width 1280 +vid_height 720 +vid_touchscreen 0 \
 	+defer 8 "map stormkeep" \
 	+defer 26 "cmd page" \
 	+defer 28 rml_list \
@@ -137,6 +138,40 @@ if [ "$n" -eq 1 ]; then
 	echo "ok   the band closes the page, and cl_allow_server_pages 0 refuses it"
 else
 	echo "FAIL the band closes the page, and cl_allow_server_pages 0 refuses it (page listed $n times)"
+	fail=1
+fi
+
+# A finger is no pointer: no hover at all, and pressing is only for where it
+# went down. tests/ui/touchtest.rml has one button; the finger goes down on
+# empty space and drags over it, then goes down on it and drags off.
+echo "== touch feedback"
+log=$(timeout 120 "$ENGINE" -xonotic -game tests -basedir "$PWD" -userdir "$USERDIR" \
+	+developer 1 +_cl_name RmlTest +vid_fullscreen 0 +vid_width 1280 +vid_height 720 +vid_touchscreen 1 \
+	+defer 12 "rml_show touchtest" \
+	+defer 13 "rml_touch down 100 100" \
+	+defer 13.4 "rml_touch move 640 360" \
+	+defer 13.8 "echo A; rml_state btn" \
+	+defer 14.2 "rml_touch up" \
+	+defer 14.6 "echo B; rml_state btn" \
+	+defer 15 "rml_touch down 640 360" \
+	+defer 15.4 "echo C; rml_state btn" \
+	+defer 15.8 "rml_touch move 100 100" \
+	+defer 16.2 "echo D; rml_state btn" \
+	+defer 16.6 "rml_touch up" \
+	+defer 17 "echo E; rml_state btn" \
+	+defer 17.4 "rml_touch down 640 360" \
+	+defer 17.8 "rml_touch up" \
+	+defer 18.5 quit 2>&1)
+reject "no RmlUi warnings or errors" "^RmlUi: .*\(Could not\|No font\|not found\|did not\|Invalid\|Unknown\|Failed\)" "$log"
+expect "dragging in from empty space does not hover or press the button" "btn hover=0 active=0" "$(printf '%s\n' "$log" | sed -n '/^A *$/,/^B *$/p')"
+expect "nothing stays lit after the finger lifts" "btn hover=0 active=0" "$(printf '%s\n' "$log" | sed -n '/^B *$/,/^C *$/p')"
+expect "the button is pressed while the finger is on it, without hover" "btn hover=0 active=1" "$(printf '%s\n' "$log" | sed -n '/^C *$/,/^D *$/p')"
+expect "dragging off it lets go" "btn hover=0 active=0" "$(printf '%s\n' "$log" | sed -n '/^D *$/,/^E *$/p')"
+n=$(printf '%s\n' "$log" | grep -c "^TOUCH_CLICKED")
+if [ "$n" -eq 1 ]; then
+	echo "ok   only the tap clicked the button"
+else
+	echo "FAIL only the tap clicked the button (clicked $n times)"
 	fail=1
 fi
 
