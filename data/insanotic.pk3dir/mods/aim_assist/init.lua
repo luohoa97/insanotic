@@ -56,12 +56,13 @@ cvar("aim_assist_autofire_range", 2000, "maximum target distance for auto-fire")
 cvar("aim_assist_autofire_delay", 0, "seconds the enemy must stay under the crosshair before firing")
 cvar("aim_assist_autofire_release", 0.12, "seconds firing continues after the crosshair leaves the enemy")
 cvar("aim_assist_lock", 1, "1 = while auto-fire shoots, aim exactly at the lead point")
-cvar("aim_assist_autofire_cone", 4, "with aim_assist_lock: fire as soon as the lead point is within this many degrees of the crosshair")
+cvar("aim_assist_autofire_cone", 8, "with aim_assist_lock: fire as soon as the lead point is within this many degrees of the crosshair")
 cvar("aim_assist_lead", 1, "1 = lead moving enemies with projectile weapons")
 cvar("aim_assist_lead_extra", 0.05, "seconds added to the lead for network delay")
 cvar("aim_assist_feet", 1, "1 = splash weapons aim at a standing enemy's feet")
 cvar("aim_assist_rifle_head", 1, "1 = the Rifle aims for the head")
 cvar("aim_assist_steer", 1, "1 = steer Devastator rockets onto the enemy and detonate them next to it")
+cvar("aim_assist_debug", 0, "1 = print once a second what aim assist sees and why it does or does not fire")
 cvar("aim_assist_autoswitch", 1, "1 = switch to the best weapon for the fight")
 cvar("aim_assist_switch_delay", 1.5, "seconds between automatic weapon switches")
 cvar("aim_assist_switch_manual", 4, "seconds auto-switch waits after you choose a weapon yourself")
@@ -106,7 +107,7 @@ end
 local friends = {}
 local function visible_enemies(eye)
 	local players = xon.players()
-	local _, my_color = xon.me()
+	local _, my_color, my_team = xon.me()
 	for _, p in ipairs(players) do
 		if p.is_me and not p.alive then return {} end
 	end
@@ -115,7 +116,14 @@ local function visible_enemies(eye)
 	local out = {}
 	friends = {}
 	for _, p in ipairs(players) do
-		local mate = teamplay and my_color ~= nil and p.team_color == my_color
+		-- teams as the game itself reports them (entcs); the scoreboard
+		-- colour only when the server's CSQC does not say
+		local mate
+		if p.team ~= nil and my_team ~= nil then
+			mate = teamplay and p.team == my_team
+		else
+			mate = teamplay and my_color ~= nil and p.team_color == my_color
+		end
 		if mate and not p.is_me and p.alive then friends[#friends + 1] = p end
 		if not p.is_me and p.alive and not mate then
 			local center = p.origin + (p.mins + p.maxs) * 0.5
@@ -158,15 +166,6 @@ local function teammate_in_line(eye, dir, dist)
 	return false
 end
 
--- is the way to the aim point open? splash weapons may land on the floor or
--- wall right next to it
-local function path_clear(eye, point, w)
-	local tr = xon.traceline(eye, point)
-	if tr.fraction >= 0.99 then return true end
-	local slack = (w and w.splash > 0) and w.splash * 0.5 or 8
-	return (tr.endpos - point):len() <= slack
-end
-
 -- self damage: does a blast at `impact` reach you? (only matters when the
 -- game hurts players with their own splash, g_balance_selfdamagepercent)
 local SELF_MARGIN = 32 -- your own body
@@ -184,41 +183,156 @@ local function impact_point(eye, point)
 	return tr.fraction < 1 and tr.endpos or point
 end
 
+local last_debug = 0
+local function debug(now, fmt, ...)
+	if xon.cvar("aim_assist_debug") ~= 0 and now - last_debug >= 1 then
+		last_debug = now
+		xon.print(string.format(fmt, ...))
+	end
+end
+
 local state = {
 	on_since = nil, last_on = -1,
 	steer = nil,            -- { target, fired_at, dir, stop_at }
 	last_held = nil, our_switch_at = -100, manual_at = -100, last_switch = -100,
+	target = nil,           -- player number we are on
+	wounds = {},            -- player number -> damage we dealt since they spawned
+	dealt = nil,            -- last damage_dealt total
 }
 
+-- credit damage we deal to the enemy we are shooting; forget it when they die
+local function track_wounds(enemies_all)
+	local st = xon.stats()
+	if st.damage_dealt then
+		if state.dealt and st.damage_dealt > state.dealt and state.target then
+			state.wounds[state.target] = (state.wounds[state.target] or 0) + (st.damage_dealt - state.dealt)
+		end
+		state.dealt = st.damage_dealt
+	end
+	for _, p in ipairs(enemies_all) do
+		if not p.alive then state.wounds[p.num] = nil end
+	end
+end
+
+-- where the shot leaves the gun: a little right of and below the eye
+local MUZZLE_RIGHT, MUZZLE_DOWN = 6, 8
+local function axes(angles)
+	local f = xon.forward(angles)
+	local r = f:cross(V(0, 0, 1)):normalize()
+	if r:len() < 0.5 then r = V(0, -1, 0) end
+	local u = r:cross(f):normalize()
+	return f, r, u
+end
+
+-- can a shot aimed from the eye at point reach it? The projectile leaves the
+-- muzzle and has some width, so for projectiles the line from the muzzle
+-- and two lines offset by the projectile's size must be clear too.
+-- Splash weapons may land just short (on the floor or the wall by the
+-- target), direct-hit weapons must not.
+local function shot_clear(eye, point, w, strict)
+	local slack = (w and w.splash > 0) and w.splash * 0.5 or 8
+	local function clear(from, to)
+		local tr = xon.traceline(from, to)
+		return tr.fraction >= 0.995 or (tr.endpos - to):len() <= slack
+	end
+	if not clear(eye, point) then return false end
+	if not w or w.kind == "hitscan" or w.kind == "beam" or w.gravity > 0 then return true end
+	local _, r, u = axes(xon.vectoangles(point - eye))
+	local muzzle = eye + r * MUZZLE_RIGHT - u * MUZZLE_DOWN
+	if not clear(muzzle, point) then return false end
+	if not strict then return true end
+	local size = 4
+	return clear(muzzle + u * size, point + u * size) and clear(muzzle - u * size, point - u * size)
+		and clear(muzzle + r * size, point + r * size) and clear(muzzle - r * size, point - r * size)
+end
+
+-- candidate points on the body, best first: the Rifle prefers the head,
+-- splash weapons a standing enemy's feet, everything else the centre; then
+-- the other parts, then the same shifted sideways (around a corner)
+local function candidates(p, w, prefer_feet, prefer_head)
+	local cz = (p.mins.z + p.maxs.z) * 0.5
+	local center = V(0, 0, cz)
+	local chest = V(0, 0, cz + (p.maxs.z - cz) * 0.5)
+	local head = V(0, 0, p.maxs.z - 8)
+	local feet = V(0, 0, p.mins.z + 6)
+	local order
+	if prefer_head then order = {head, chest, center, feet}
+	elseif prefer_feet then order = {feet, center, chest, head}
+	else order = {center, chest, head, feet} end
+	local out = {}
+	for _, o in ipairs(order) do out[#out + 1] = o end
+	local side = (p.maxs.x - p.mins.x) * 0.3
+	for _, o in ipairs({center, chest, feet}) do
+		out[#out + 1] = o + V(side, 0, 0); out[#out + 1] = o - V(side, 0, 0)
+		out[#out + 1] = o + V(0, side, 0); out[#out + 1] = o - V(0, side, 0)
+	end
+	return out
+end
+
+-- the enemy to go for (closest to the crosshair, by its centre), then the
+-- best point on it a shot can actually reach
 local function pick_target(eye, fwd, enemies, w)
 	local cone = xon.cvar("aim_assist_cone")
 	local range = xon.cvar("aim_assist_range")
-	local opts = { feet = xon.cvar("aim_assist_feet") ~= 0 }
-	local extra = xon.cvar("aim_assist_lead_extra")
-	local best
+	local extra = xon.cvar("aim_assist_lead") ~= 0 and xon.cvar("aim_assist_lead_extra") or 0
+	local lead = xon.cvar("aim_assist_lead") ~= 0
+	-- who first: lower score wins. Turning less matters most, then the
+	-- distance, wounds we already dealt, enemies facing us up close, and
+	-- staying on the current target so the view does not flick around
+	local ranked = {}
 	for _, e in ipairs(enemies) do
 		if e.dist <= range then
-			local point, pos
-			-- the part to aim at: the Rifle goes for the head, splash weapons
-			-- for the feet (in predict.lua), everything else the most central
-			-- visible part
-			local o = { feet = opts.feet and e.seen.feet ~= nil, offset = e.offset }
-			if w and w.name == "rifle" and e.seen.head and xon.cvar("aim_assist_rifle_head") ~= 0 then
-				o.offset = e.seen.head
-				o.feet = false
-			end
-			if xon.cvar("aim_assist_lead") ~= 0 then
-				point, _, pos = P.aim(eye, e.p, w, extra, o)
-			else
-				point, pos = e.p.origin + o.offset, e.p.origin
-			end
+			local point = lead and P.aim(eye, e.p, w, extra, {}) or e.center
 			local off = angle_between((point - eye):normalize(), fwd)
-			if off <= cone and (not best or off < best.off) then
-				best = { e = e, point = point, pos = pos, off = off }
+			if off <= cone then
+				local score = off / math.max(1, cone) + 0.4 * e.dist / math.max(1, range)
+				local hurt = state.wounds[e.p.num] or 0
+				score = score - math.min(0.5, hurt / 200)
+				if e.p.angles and e.dist < 1500 then
+					local facing = xon.forward(V(0, e.p.angles.y, 0))
+					local to_me = (eye - e.center):normalize()
+					if facing * to_me > 0.9 then score = score - 0.3 end
+				end
+				if state.target == e.p.num then score = score - 0.35 end
+				ranked[#ranked + 1] = { e = e, off = off, score = score }
 			end
 		end
 	end
-	return best
+	table.sort(ranked, function(a, b) return a.score < b.score end)
+	for _, r in ipairs(ranked) do
+		local e = r.e
+		local grounded = P.grounded(e.p)
+		local prefer_feet = w and w.splash > 0 and w.kind ~= "hitscan" and grounded and xon.cvar("aim_assist_feet") ~= 0
+		local prefer_head = w and w.name == "rifle" and xon.cvar("aim_assist_rifle_head") ~= 0
+		local first, tries = nil, {}
+		for _, off in ipairs(candidates(e.p, w, prefer_feet, prefer_head)) do
+			local point, _, pos
+			if lead then
+				point, _, pos = P.aim(eye, e.p, w, extra, { offset = off })
+			else
+				point, pos = e.p.origin + off, e.p.origin
+			end
+			local t = { e = e, point = point, pos = pos, off = angle_between((point - eye):normalize(), fwd) }
+			first = first or t
+			tries[#tries + 1] = t
+			if shot_clear(eye, point, w, true) then
+				t.clear = true
+				return t
+			end
+		end
+		-- no point with room for the projectile's width: take one the centre
+		-- of the shot still reaches rather than hesitating
+		for _, t in ipairs(tries) do
+			if shot_clear(eye, t.point, w, false) then
+				t.clear = true
+				return t
+			end
+		end
+		-- nothing reachable on the nearest enemy: still pull toward it, but
+		-- do not shoot; a farther enemy with a clear shot wins over it
+		if not ranked.fallback then ranked.fallback = first end
+	end
+	return ranked.fallback
 end
 
 -- the rocket we fired most recently: the one closest to where it should be
@@ -299,6 +413,7 @@ xon.on("Input", function(ev)
 	local held = xon.held_weapon()
 	local w = held and W.get(held)
 	local enemies = visible_enemies(eye)
+	track_wounds(xon.players())
 
 	if w and w.kind == "guided" and xon.cvar("aim_assist_steer") ~= 0 and steer_devastator(ev, eye, w, now) then
 		return
@@ -308,6 +423,7 @@ xon.on("Input", function(ev)
 
 	if w and w.kind == "none" then state.on_since = nil return end
 	local t = pick_target(eye, xon.forward(ev.angles), enemies, w)
+	state.target = t and t.e.p.num or nil
 	local firing = false
 	if t then
 		local want = xon.vectoangles(t.point - eye)
@@ -323,7 +439,7 @@ xon.on("Input", function(ev)
 		local center = t.pos + (t.e.p.mins + t.e.p.maxs) * 0.5
 		local reachable = (not w or w.range[3] >= t.e.dist) and t.e.dist <= xon.cvar("aim_assist_autofire_range")
 		local shot_dir = xon.forward(xon.cvar("aim_assist_lock") ~= 0 and want or ev.angles)
-		local safe = path_clear(eye, t.point, w) and not teammate_in_line(eye, shot_dir, t.e.dist)
+		local safe = t.clear and not teammate_in_line(eye, shot_dir, t.e.dist)
 			and not blast_hits_me(eye, impact_point(eye, t.point), w)
 		-- with the lock, the shot snaps onto the lead point this very frame, so
 		-- there is no need to wait for the pull to bring the crosshair over
@@ -357,6 +473,12 @@ xon.on("Input", function(ev)
 		if tr.fraction < 0.25 or teammate_in_line(eye, fwd, 2000) or blast_hits_me(eye, tr.endpos, w) then
 			lingering = false
 		end
+	end
+	if xon.cvar("aim_assist_debug") ~= 0 then
+		local players, _, my_color = xon.players(), xon.me()
+		debug(now, "teamplay=%s my_color=%s players=%d enemies=%d target=%s clear=%s off=%.1f firing=%s",
+			tostring(xon.teamplay()), tostring(select(2, xon.me())), #players, #enemies,
+			t and t.e.p.name or "-", t and tostring(t.clear) or "-", t and t.off or -1, tostring(firing))
 	end
 	if firing or lingering then
 		ev.buttons = ev.buttons | xon.BUTTON_ATTACK

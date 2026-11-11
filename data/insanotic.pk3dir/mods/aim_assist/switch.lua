@@ -7,7 +7,8 @@
 --   x hit chance (spread at that distance, projectile flight time against
 --   how fast the enemy moves sideways, airborne targets, splash on the floor)
 --   x safety (never a weapon whose blast would reach you when self damage
---   is on; less likely ones near that, more so on low health).
+--   is on; less likely ones near that, more so on low health)
+--   x Xonotic's bot weapon priority for that distance band.
 -- The held weapon gets a bonus so it does not flip-flop, a switch only
 -- happens when the best is clearly better, and never shortly after the
 -- player picked a weapon by hand.
@@ -48,6 +49,28 @@ local function safety(w, target, health)
 	return 1
 end
 
+-- Xonotic's own bot weapon priorities for close / mid / far range
+-- (bot_ai_custom_weapon_priority_*): the order a good player would reach for
+-- weapons at that distance. Used as a multiplier between 1.4 (first choice)
+-- and 0.8 (last).
+local function band_priority(name, dist)
+	local d = {}
+	for n in (xon.cvar_string("bot_ai_custom_weapon_priority_distances") or "300 850"):gmatch("%S+") do
+		d[#d + 1] = tonumber(n)
+	end
+	local close, far = math.min(d[1] or 300, d[2] or 850), math.max(d[1] or 300, d[2] or 850)
+	local band = dist < close and "close" or (dist > far and "far" or "mid")
+	local list = xon.cvar_string("bot_ai_custom_weapon_priority_" .. band)
+	if not list then return 1 end
+	local n, rank = 0, nil
+	for wname in list:gmatch("%S+") do
+		n = n + 1
+		if wname == name then rank = n end
+	end
+	if not rank or n < 2 then return 1 end
+	return 1.4 - 0.6 * (rank - 1) / (n - 1)
+end
+
 -- returns the weapon entry (from xon.weapons) to switch to, or nil
 -- target: { dist, impact (distance to where a shot goes off), lateral
 -- (sideways speed), air, selfdamage }
@@ -58,7 +81,7 @@ function S.choose(weapons, target, health, hold_bonus)
 		local usable = wp.owned and w and w.kind ~= "none" and w.dps and (wp.ammo == nil or wp.ammo > 0)
 		if usable then
 			local score = w.dps * reach(w, target.dist) * hit_chance(w, target.dist, target.lateral, target.air)
-				* safety(w, target, health)
+				* safety(w, target, health) * band_priority(wp.name, target.dist)
 			if wp.held then
 				held, held_score = wp, score * hold_bonus
 				score = held_score
