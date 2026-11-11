@@ -80,6 +80,9 @@ impl Config {
 }
 
 pub fn default_game_dir() -> PathBuf {
+    if crate::assets::bundle_dir().is_some() {
+        return crate::assets::overlay_dir();
+    }
     if let Ok(dir) = std::env::var("INSANOTIC_DIR") {
         if !dir.is_empty() {
             return PathBuf::from(dir);

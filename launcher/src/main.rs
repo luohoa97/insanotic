@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 //! Insanotic launcher: play, host a local server and manage Lua mods.
 
+mod assets;
 mod config;
 mod scan;
 mod window;
@@ -25,6 +26,11 @@ fn main() -> glib::ExitCode {
         if let Some(win) = app.active_window() {
             win.present();
             return;
+        }
+        if let Some(bundle) = assets::bundle_dir() {
+            if let Err(e) = assets::prepare_overlay(&bundle, &assets::overlay_dir()) {
+                eprintln!("cannot prepare the game directory: {e}");
+            }
         }
         let win = window::build(app);
         win.present();

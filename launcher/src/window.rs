@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 //! The launcher window: Play, Host, Mods and Settings pages.
 
+use crate::assets;
 use crate::config::Config;
 use crate::scan::{self, Kind};
 use crate::APP_ID;
 use adw::prelude::*;
 use gtk::{gio, glib};
-use std::cell::RefCell;
+use std::cell::{Cell, RefCell};
 use std::ffi::OsString;
 use std::rc::Rc;
 
@@ -31,6 +32,9 @@ pub fn build(app: &adw::Application) -> adw::ApplicationWindow {
     let toasts = adw::ToastOverlay::new();
     let banner = adw::Banner::new("");
     banner.set_button_label(Some("Open Settings"));
+
+    let assets_banner = adw::Banner::new("The Xonotic game assets (maps, textures, sounds) are missing.");
+    assets_banner.set_button_label(Some("Set Up…"));
 
     let stack = adw::ViewStack::new();
     let play = build_play(&state, &toasts, &stack);
@@ -65,6 +69,7 @@ pub fn build(app: &adw::Application) -> adw::ApplicationWindow {
     let view = adw::ToolbarView::new();
     view.add_top_bar(&header);
     view.add_top_bar(&banner);
+    view.add_top_bar(&assets_banner);
     view.add_bottom_bar(&bar);
     toasts.set_child(Some(&stack));
     view.set_content(Some(&toasts));
@@ -114,6 +119,31 @@ pub fn build(app: &adw::Application) -> adw::ApplicationWindow {
         banner.connect_button_clicked(move |_| stack.set_visible_child_name("settings"));
     }
 
+    // game assets: offer to link or download them when missing
+    {
+        let busy = Rc::new(Cell::new(false));
+        let st = state.clone();
+        let ab = assets_banner.clone();
+        let b = busy.clone();
+        let check = Rc::new(move || {
+            let game = st.cfg.borrow().game_dir();
+            ab.set_revealed(b.get() || !assets::assets_present(&game));
+        });
+        check();
+        let c = check.clone();
+        win.connect_is_active_notify(move |w| {
+            if w.is_active() {
+                c();
+            }
+        });
+        state.game_changed.borrow_mut().push(Box::new({
+            let check = check.clone();
+            move || check()
+        }));
+        let (st, t, b) = (state.clone(), toasts.clone(), busy);
+        assets_banner.connect_button_clicked(move |banner| setup_assets(&st, &t, banner, b.clone()));
+    }
+
     // stop our server when the window closes
     {
         let state = state.clone();
@@ -129,6 +159,85 @@ pub fn build(app: &adw::Application) -> adw::ApplicationWindow {
 }
 
 // ---------------------------------------------------------------- helpers
+
+fn run_game_changed(state: &Shared) {
+    for f in state.game_changed.borrow().iter() {
+        f();
+    }
+}
+
+fn mb(bytes: u64) -> u64 {
+    bytes / 1_000_000
+}
+
+/// Offers to link the assets of an installed Xonotic, or to download them.
+fn setup_assets(state: &Shared, toasts: &adw::ToastOverlay, banner: &adw::Banner, busy: Rc<Cell<bool>>) {
+    let found = assets::find_installed();
+    let dialog = adw::AlertDialog::new(
+        Some("Game Assets Needed"),
+        Some("Insanotic uses the maps, textures and sounds of Xonotic 0.8.6. Link an installed copy, or download the official release (1.2 GB)."),
+    );
+    dialog.add_responses(&[("cancel", "_Cancel"), ("link", "_Use Installed Xonotic"), ("download", "_Download")]);
+    dialog.set_response_enabled("link", found.is_some());
+    dialog.set_response_appearance("download", adw::ResponseAppearance::Suggested);
+    dialog.set_default_response(Some("download"));
+    dialog.set_close_response("cancel");
+    let (state, toasts, banner2) = (state.clone(), toasts.clone(), banner.clone());
+    dialog.connect_response(None, move |_, id| {
+        let game = state.cfg.borrow().game_dir();
+        match id {
+            "link" => {
+                let Some(src) = found.clone() else { return };
+                match assets::link_installed(&src, &game) {
+                    Ok(()) => {
+                        toast(&toasts, "Game assets linked");
+                        run_game_changed(&state);
+                    }
+                    Err(e) => toast(&toasts, &format!("Could not link the assets: {e}")),
+                }
+            }
+            "download" => {
+                busy.set(true);
+                let progress = std::sync::Arc::new(assets::Progress::default());
+                banner2.set_button_label(None);
+                banner2.set_title("Starting the download…");
+                let (p, b, bn) = (progress.clone(), busy.clone(), banner2.clone());
+                glib::timeout_add_local(std::time::Duration::from_millis(500), move || {
+                    if !b.get() {
+                        return glib::ControlFlow::Break;
+                    }
+                    use std::sync::atomic::Ordering::Relaxed;
+                    let total = p.total.load(Relaxed);
+                    if p.stage.load(Relaxed) == 0 {
+                        bn.set_title(&format!(
+                            "Downloading Xonotic game assets: {} of {} MB",
+                            mb(assets::partial_size()),
+                            mb(total)
+                        ));
+                    } else {
+                        bn.set_title(&format!("Unpacking game assets: {} of {} MB", mb(p.done.load(Relaxed)), mb(total)));
+                    }
+                    glib::ControlFlow::Continue
+                });
+                let (state, toasts, banner3, busy) = (state.clone(), toasts.clone(), banner2.clone(), busy.clone());
+                glib::spawn_future_local(async move {
+                    let result = gio::spawn_blocking(move || assets::download(&game, progress)).await;
+                    busy.set(false);
+                    banner3.set_title("The Xonotic game assets (maps, textures, sounds) are missing.");
+                    banner3.set_button_label(Some("Set Up…"));
+                    match result {
+                        Ok(Ok(())) => toast(&toasts, "Game assets ready"),
+                        Ok(Err(e)) => toast(&toasts, &e),
+                        Err(_) => toast(&toasts, "The download stopped unexpectedly."),
+                    }
+                    run_game_changed(&state);
+                });
+            }
+            _ => {}
+        }
+    });
+    dialog.present(Some(banner));
+}
 
 fn toast(toasts: &adw::ToastOverlay, msg: &str) {
     toasts.add_toast(adw::Toast::new(msg));
