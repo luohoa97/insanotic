@@ -8,7 +8,16 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.zip.ZipException
 
 /** One file in a zip's central directory. */
-class ZipItem(val name: String, val method: Int, val crc: Long, val csize: Long, val usize: Long, val offset: Long) {
+class ZipItem(
+	val name: String,
+	val method: Int,
+	val crc: Long,
+	val csize: Long,
+	val usize: Long,
+	val offset: Long,
+	/** a file of its own at this address (a repacked pack), not a part of the release zip */
+	val url: String? = null,
+) {
 	val fileName: String get() = name.substringAfterLast('/')
 }
 
@@ -57,6 +66,18 @@ object RemoteZip {
 			}
 		}
 		throw IOException("too many redirects")
+	}
+
+	/** A small text file, whole. */
+	fun fetchText(url: String): String {
+		val c = open(url, "bytes=0-")
+		try {
+			if (c.responseCode != 206 && c.responseCode != 200)
+				throw IOException("HTTP ${c.responseCode} for $url")
+			return c.inputStream.use { it.readBytes() }.toString(Charsets.UTF_8)
+		} finally {
+			c.disconnect()
+		}
 	}
 
 	fun fetchRange(url: String, from: Long, to: Long): ByteArray {
@@ -126,6 +147,8 @@ object RemoteZip {
 	 * its own extra field, so its length can differ from the directory's.
 	 */
 	fun dataStart(url: String, e: ZipItem): Long {
+		if (e.url != null)
+			return 0
 		val lh = fetchRange(url, e.offset, e.offset + 29)
 		if (le32(lh, 0) != 0x04034b50L)
 			throw ZipException("bad local header for ${e.name}")

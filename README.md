@@ -123,6 +123,33 @@ libraries are downloaded and built from source on the first build. Set
 `ANDROID_KEYSTORE`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS` and
 `ANDROID_KEY_PASSWORD` to sign with your own key.
 
+## Repacked game data
+
+The official 0.8.6 packs are big and slow for a phone, so Insanotic can use
+repacked copies, published as assets of a GitHub release (`assets-0.8.6-r1`;
+not stored in git). `misc/insanotic/repack-assets.sh` makes them, and the
+"Repack assets" workflow runs it and uploads the result with a table of sizes
+before and after in its job summary.
+
+- Entries are compressed with zstd (zip method 93) instead of deflate, which
+  the engine decodes several times faster; files that are compressed already
+  (jpg, Ogg, ...) stay stored.
+- Ogg Vorbis sound becomes Ogg Opus (`.opus`). The engine plays `.opus` next
+  to `.ogg` (libopusfile, loaded at run time on desktop, built in on Android),
+  and a request for `foo.ogg` or `foo.wav` finds `foo.opus`.
+- The `android` set also turns S3TC textures (`dds/foo.dds`) into ASTC in a
+  KTX 1 file with all mip levels (`dds/foo.ktx`): 6x6 blocks for color, 4x4
+  for normal maps and 2D graphics (`ASTC_COLOR` and `ASTC_DETAIL` change
+  that). The engine uploads them as they are when the GPU has
+  `GL_KHR_texture_compression_astc_ldr`, and otherwise reads the `.dds`
+  (`r_texture_astc_load 0` turns ASTC off).
+
+The Android app asks the GPU for ASTC, and when it is there and the release
+is reachable downloads the `android-*` packs (listed in `manifest-android.txt`
+of the release); otherwise it takes the official packs from dl.xonotic.org as
+before. A pack that is already in the data directory is never replaced or
+deleted. Run `misc/insanotic/test-repack.sh` to test the repacker.
+
 ## Nightly builds
 
 Every change to the main branch is built and published:
@@ -176,6 +203,11 @@ Copyright 2008-2014 CodePoint Ltd, Shift Technology Ltd, and contributors;
 2019-2026 The RmlUi Team, and contributors), vendored in `darkplaces/rmlui/`
 with its license. Its text is set in the Xolonium font by Severin Meyer
 (GPL with the font exception, `data/insanotic.pk3dir/ui/fonts/README.txt`).
+
+The repacking pipeline uses [ASTC Encoder](https://github.com/ARM-software/astc-encoder)
+(Apache-2.0, Arm Limited), FFmpeg and libopus (Xiph.Org) at build time only, and
+the engine decodes zstd with the Zstandard library (BSD, Meta; `darkplaces/zstd/`)
+and Opus with libopus and opusfile (BSD, Xiph.Org).
 
 The menu music is a darker mix (a semitone lower, softer highs, light reverb)
 of Xonotic's "Rising of the Phoenix", made for Insanotic

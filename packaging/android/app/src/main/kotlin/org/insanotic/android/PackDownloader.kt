@@ -58,12 +58,14 @@ class PackDownloader(
 	private val withMusic: Boolean,
 	private val listener: DownloadListener,
 	private val url: String = GameData.RELEASE_URL,
+	private val assetsUrl: String = GameData.ASSETS_URL,
+	private val useRepacked: Boolean = true,
 ) {
 	private val done = AtomicLong()
 
 	/** Throws [NoSpace] when the packs will not fit; cancel the calling coroutine to stop. */
 	suspend fun run() = withContext(Dispatchers.IO) {
-		val all = withRetries { RemoteZip.readCentralDirectory(url) }
+		val all = repacked() ?: withRetries { RemoteZip.readCentralDirectory(url) }
 		val todo = ArrayList<ZipItem>()
 		var diskNeeded = 0L
 		var toFetch = 0L
@@ -107,9 +109,36 @@ class PackDownloader(
 		}
 	}
 
+	private fun urlOf(e: ZipItem): String = e.url ?: url
+
+	/**
+	 * The Android pack set from the Insanotic release (zstd entries, Opus
+	 * sound, ASTC textures: a smaller download, and less to decode and hold
+	 * in memory), when the device can use it and the release is reachable;
+	 * null means the official packs. The manifest has one line per pack:
+	 * asset name, size, CRC32 in hex, and the name to install it under.
+	 */
+	private suspend fun repacked(): List<ZipItem>? {
+		if (!useRepacked || !AstcSupport.available())
+			return null
+		return try {
+			RemoteZip.fetchText("$assetsUrl/manifest-android.txt").lineSequence()
+				.map { it.trim().split(' ') }
+				.filter { it.size == 4 }
+				.map { (asset, size, crc, name) ->
+					ZipItem("data/$name", 0, crc.toLong(16), size.toLong(), size.toLong(), 0, "$assetsUrl/$asset")
+				}.toList().ifEmpty { null }
+		} catch (e: IOException) {
+			null // not published (yet) or no connection to GitHub: the official packs
+		}
+	}
+
 	private fun partFile(e: ZipItem) = File(dataDir, e.fileName + ".part")
 	private fun stateFile(e: ZipItem) = File(dataDir, e.fileName + ".part.state")
-	private fun finished(e: ZipItem): Boolean = File(dataDir, e.fileName).let { it.isFile && it.length() == e.usize }
+	// a repacked pack is not the size of the official one, and a pack the player
+	// already has (the official one, say) is never replaced
+	private fun finished(e: ZipItem): Boolean =
+		File(dataDir, e.fileName).let { it.isFile && (e.url != null || it.length() == e.usize) }
 
 	private fun resumableBytes(e: ZipItem): Long =
 		if (e.method == 0) ChunkState.load(stateFile(e), partFile(e), e.csize).total() else 0L
@@ -142,7 +171,7 @@ class PackDownloader(
 	private suspend fun fetchStored(e: ZipItem) {
 		val part = partFile(e)
 		val state = ChunkState.load(stateFile(e), part, e.csize)
-		val start = RemoteZip.dataStart(url, e)
+		val start = RemoteZip.dataStart(urlOf(e), e)
 		val todo = AtomicInteger(0)
 		RandomAccessFile(part, "rw").use { file ->
 			val channel = file.channel
@@ -185,7 +214,7 @@ class PackDownloader(
 			coroutineContext.ensureActive()
 			val from = chunkStart + state.pos(i)
 			try {
-				val c = RemoteZip.open(url, "bytes=${start + from}-${start + chunkStart + size - 1}")
+				val c = RemoteZip.open(urlOf(e), "bytes=${start + from}-${start + chunkStart + size - 1}")
 				try {
 					coroutineScope {
 						// reads block, so cancelling means closing the connection
@@ -254,9 +283,9 @@ class PackDownloader(
 	private suspend fun fetchDeflated(e: ZipItem) {
 		val part = partFile(e)
 		part.delete()
-		val start = RemoteZip.dataStart(url, e)
+		val start = RemoteZip.dataStart(urlOf(e), e)
 		val crc = CRC32()
-		val c = RemoteZip.open(url, "bytes=$start-${start + e.csize - 1}")
+		val c = RemoteZip.open(urlOf(e), "bytes=$start-${start + e.csize - 1}")
 		try {
 			if (c.responseCode != 206)
 				throw IOException("HTTP ${c.responseCode} for ${e.fileName}")
