@@ -22,6 +22,8 @@ import java.security.MessageDigest
 
 plugins {
 	id 'com.android.application'
+	id 'org.jetbrains.kotlin.android'
+	id 'org.jetbrains.kotlin.plugin.compose'
 }
 
 def prop = { String name, String fallback -> project.findProperty(name) ?: fallback }
@@ -112,6 +114,11 @@ android {
 		versionCode prop('version_code', '1').toInteger()
 		versionName appVersion
 
+		// also drops the other ABIs' copies of AndroidX's native libraries
+		ndk {
+			abiFilters(*abiList)
+		}
+
 		externalNativeBuild {
 			cmake {
 				abiFilters(*abiList)
@@ -163,7 +170,11 @@ android {
 
 	buildTypes {
 		release {
-			minifyEnabled false
+			// R8 shrinks the Kotlin/Compose code; proguard-rules.pro keeps what
+			// SDL's native code calls by name
+			minifyEnabled true
+			shrinkResources true
+			proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
 			signingConfig System.getenv('ANDROID_KEYSTORE') ? signingConfigs.release : signingConfigs.debug
 		}
 	}
@@ -172,6 +183,12 @@ android {
 		sourceCompatibility JavaVersion.VERSION_17
 		targetCompatibility JavaVersion.VERSION_17
 	}
+	kotlinOptions {
+		jvmTarget = '17'
+	}
+	buildFeatures {
+		compose true
+	}
 
 	lint {
 		abortOnError false
@@ -179,10 +196,20 @@ android {
 	}
 }
 
+dependencies {
+	implementation platform('androidx.compose:compose-bom:2024.10.01')
+	implementation 'androidx.compose.material3:material3'
+	implementation 'androidx.compose.ui:ui'
+	implementation 'androidx.compose.foundation:foundation'
+	implementation 'androidx.activity:activity-compose:1.9.3'
+	implementation 'androidx.lifecycle:lifecycle-runtime-compose:2.8.7'
+	implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0'
+}
+
 // Everything that reads the unpacked SDL sources needs them fetched first.
 tasks.configureEach { t ->
 	if (t.name.startsWith('configureCMake') || t.name.startsWith('generateJsonModel')
-			|| t instanceof JavaCompile || t.name.toLowerCase().contains('lint'))
+			|| t instanceof JavaCompile || (t.name.startsWith('compile') && t.name.endsWith('Kotlin')) || t.name.toLowerCase().contains('lint'))
 		t.dependsOn fetchSdl
 	if (t.name.toLowerCase().contains('lint') || (t.name.startsWith('merge') && t.name.endsWith('Assets')))
 		t.dependsOn packGameData

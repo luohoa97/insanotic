@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<resources>
+	<!-- shown for an instant before Compose draws; the real theme is in Theme.kt -->
+	<style name="Theme.Insanotic" parent="android:Theme.Material.Light.NoActionBar">
+		<item name="android:windowBackground">#FFFBFCFE</item>
+	</style>
+</resources>

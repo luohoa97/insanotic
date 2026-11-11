@@ -58,13 +58,18 @@ FetchContent_Declare(ogg
 	URL_HASH SHA256=0eb4b4b9420a0f51db142ba3f9c64b333f826532dc0f48c6410ae51f4799b664)
 FetchContent_Declare(vorbis
 	URL https://downloads.xiph.org/releases/vorbis/libvorbis-1.3.7.tar.gz
+		https://github.com/xiph/vorbis/releases/download/v1.3.7/libvorbis-1.3.7.tar.gz
 	URL_HASH SHA256=0e982409a9c3fc82ee06e08205b1355e5c6aa4c36bca58146ef399621b0ce5ab)
 FetchContent_Declare(freetype
 	URL https://download.savannah.gnu.org/releases/freetype/freetype-2.13.2.tar.xz
+		https://download-mirror.savannah.gnu.org/releases/freetype/freetype-2.13.2.tar.xz
 	URL_HASH SHA256=12991c4e55c506dd7f9b765933e62fd2be2e06d421505d7950a132e4f1bb484d)
 FetchContent_Declare(png
 	URL https://download.sourceforge.net/libpng/libpng-1.6.43.tar.xz
 	URL_HASH SHA256=6a5ca0652392a2d7c9db2ae5b40210843c0bbc081cbd410825ab00cc59f14a6c)
+
+# The hosts of some tarballs drop connections now and then, so those carry a
+# second URL (same file, same hash).
 
 # --- SDL2 (shared: SDLActivity loads libSDL2.so) ---
 set(SDL_SHARED ON CACHE BOOL "" FORCE)
