@@ -145,32 +145,61 @@ body {
 	to { top: 0dp; }
 }
 
-/* Phones: fewer dp, so the buttons are tall and every target is far above
-   48 dp. The picture buttons grow to fill the space, and Credits and Quit
-   become wide bars. */
-body.touch #big {
-	top: 24%;
-	height: 46%;
-	left: 5%;
-	right: 5%;
+/* Phones held sideways: the window is only about 450 dp high (see
+   rml_scale), so the same numbers give bigger things. The picture buttons
+   grow to fill the space, and Credits and Quit become wide bars. */
+@media (max-height: 500dp) {
+	#big {
+		top: 24%;
+		height: 46%;
+		left: 5%;
+		right: 5%;
+	}
+	.title {
+		font-size: 26dp;
+	}
+	.sub {
+		font-size: 13dp;
+	}
+	#small {
+		top: 74%;
+		height: 14%;
+	}
+	.chip {
+		width: 30%;
+		min-height: 56dp;
+	}
+	.label {
+		font-size: 22dp;
+	}
+	#version {
+		font-size: 12dp;
+	}
 }
-body.touch .title {
-	font-size: 26dp;
-}
-body.touch .sub {
-	font-size: 13dp;
-}
-body.touch #small {
-	top: 74%;
-	height: 14%;
-}
-body.touch .chip {
-	width: 30%;
-	min-height: 56dp;
-}
-body.touch .label {
-	font-size: 22dp;
-}
-body.touch #version {
-	font-size: 12dp;
+
+/* Phones held upright (and any window taller than wide): the three picture
+   buttons are stacked, each far taller than a finger needs. */
+@media (orientation: portrait) {
+	#big {
+		top: 12%;
+		height: 56%;
+		left: 5%;
+		right: 5%;
+		flex-direction: column;
+	}
+	.card {
+		margin-right: 0;
+		margin-bottom: 3%;
+	}
+	.card:last-child {
+		margin-bottom: 0;
+	}
+	#small {
+		top: 72%;
+		height: 12%;
+	}
+	.chip {
+		width: 42%;
+		min-height: 56dp;
+	}
 }
