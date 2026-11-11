@@ -1,9 +1,12 @@
 #!/bin/sh
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
-# Links the official Xonotic 0.8.6 map and music packs from an existing
-# installation into data/, so maps have their textures and the exact
-# release .bsp files. Nothing is copied.
+# Links the official Xonotic 0.8.6 map, music and data packs from an
+# existing installation into data/: maps get their textures and the exact
+# release .bsp files, and the release data pack brings precompressed DDS
+# textures, which halves map load time compared to the source images in
+# xonotic-data.pk3dir (that folder still wins for game code and anything
+# Insanotic changes, as it loads after the pack). Nothing is copied.
 #
 #   misc/insanotic/link-release-data.sh [xonotic-data-dir]
 #
@@ -32,7 +35,7 @@ if [ -z "$found" ]; then
 	exit 1
 fi
 
-for pack in maps music; do
+for pack in maps music data; do
 	src="$found/xonotic-$VERSION-$pack.pk3"
 	if [ -f "$src" ]; then
 		ln -sf "$src" "$DEST/xonotic-$VERSION-$pack.pk3"
