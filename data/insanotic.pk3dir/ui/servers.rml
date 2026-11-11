@@ -29,21 +29,25 @@
 			<div class="c-type" data-class-sorted="sort == 'type'" data-event-click="sort('type')">Type</div>
 			<div class="c-players" data-class-sorted="sort == 'players'" data-event-click="sort('players')">Players</div>
 		</div>
-		<div class="list">
-			<div class="item srv" data-for="s : rows" data-class-selected="s.address == selected" data-event-click="select(s.address)">
-				<div class="c-ping">{{ s.ping }}</div>
-				<div class="c-name">{{ s.name }}</div>
-				<div class="c-map">{{ s.map }}</div>
-				<div class="c-type">{{ s.type }}</div>
-				<div class="c-players">{{ s.players }}</div>
+		<div class="list" id="serverlist">
+			<div class="item srv" data-for="s : rows" data-class-selected="s.address == selected" data-class-nopic="s.image == ''"
+				data-style-decorator="s.image != '' ? 'image(' + s.image + ' cover center center)' : 'none'" data-event-click="select(s.address)">
+				<div class="shade"></div>
+				<div class="cells">
+					<div class="c-ping">{{ s.ping }}</div>
+					<div class="c-name">{{ s.name }}</div>
+					<div class="c-map">{{ s.map }}</div>
+					<div class="c-type">{{ s.type }}</div>
+					<div class="c-players">{{ s.players }}</div>
+				</div>
 			</div>
 		</div>
 	</div>
 	<div class="info-veil" id="infoveil" data-if="info_open">
 		<div class="info">
-			<div class="pic" data-style-decorator="'image(' + info_image + ' cover center center)'">
-				<div class="shade"></div>
-				<div class="t">{{ info_name }}</div>
+			<div class="t">{{ info_name }}</div>
+			<div class="pic" data-class-nopic="info_image == ''" data-style-decorator="info_image != '' ? 'image(' + info_image + ' contain center center)' : 'none'">
+				<div class="nopic" data-if="info_image == ''">{{ info_map }}</div>
 			</div>
 			<div class="facts">
 				<b>{{ info_mode }}</b> on <b>{{ info_map }}</b> &#183; ping <b>{{ info_ping }}</b><br/>

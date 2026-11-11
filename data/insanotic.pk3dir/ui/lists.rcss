@@ -81,25 +81,66 @@
 /* ---- server list --------------------------------------------------- */
 
 .srv, .list .item.srv {
-	display: flex;
-	flex-direction: row;
+	display: block;
 	padding-left: 6dp;
 	padding-right: 6dp;
 	min-height: 24dp;
 }
+.srv-head, .list .srv-head {
+	display: flex;
+	flex-direction: row;
+}
+.srv .cells {
+	position: relative;
+	display: flex;
+	flex-direction: row;
+}
+/* The row shows the map's picture, heavily darkened: a shade that is dark on
+   the left (where the text is) and lighter on the right lies over it, and
+   the selected row is brighter. A map the client has no picture of (a custom
+   map it never downloaded) gets a plain dark row, a little bluer than the
+   list, and its name stays in the Map column. */
+.srv {
+	position: relative;
+	background-color: #0b1222;
+}
+.srv .shade {
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 0;
+	bottom: 0;
+	decorator: horizontal-gradient(#000000c8 #00000066);
+}
+.srv.selected .shade {
+	decorator: horizontal-gradient(#00000080 #00000008);
+}
+.srv.nopic .shade {
+	decorator: none;
+}
+.srv.nopic .c-map {
+	color: #7f8fa6;
+}
+.srv.nopic.selected {
+	background-color: #1a2a4a;
+}
+.srv-head {
+	background-color: transparent;
+}
+
 /* a cell clips its text to its own width: the margin is outside what
    overflow hides, so a long name stops short of the next column */
-.srv > div {
+.srv .cells > div {
 	flex: none;
 	overflow: hidden;
 	white-space: nowrap;
 	margin-right: 10dp;
 }
-.srv .c-ping { width: 56dp; }
-.srv .c-name { flex: 1 1 0; min-width: 0; }
-.srv .c-map { width: 150dp; }
-.srv .c-type { width: 70dp; }
-.srv .c-players { width: 70dp; text-align: right; }
+.srv .cells .c-ping { width: 56dp; }
+.srv .cells .c-name { flex: 1 1 0; min-width: 0; }
+.srv .cells .c-map { width: 150dp; }
+.srv .cells .c-type { width: 70dp; }
+.srv .cells .c-players { width: 70dp; text-align: right; }
 .srv-head {
 	flex: none;
 	margin-bottom: 4dp;
@@ -281,10 +322,10 @@
 		padding: 4dp 10dp 12dp 10dp;
 		text-align: center;
 	}
-	.srv .c-map, .srv .c-type, .srv-head .c-map, .srv-head .c-type {
+	.srv .cells .c-map, .srv .cells .c-type, .srv-head .c-map, .srv-head .c-type {
 		display: none;
 	}
-	.srv .c-ping, .srv-head .c-ping {
+	.srv .cells .c-ping, .srv-head .c-ping {
 		width: 44dp;
 	}
 	.bar-row {
@@ -351,22 +392,23 @@
 .info .pic {
 	flex: none;
 	position: relative;
-	height: 120dp;
+	height: 190dp;
 	background-color: #080d18;
 }
-.info .pic .shade {
+.info .pic .nopic {
 	position: absolute;
 	left: 0;
 	right: 0;
-	top: 0;
-	bottom: 0;
-	decorator: vertical-gradient(#00000000 #000000d0);
+	top: 40%;
+	text-align: center;
+	font-size: 26dp;
+	color: #4a5a72;
 }
-.info .pic .t {
-	position: absolute;
-	left: 14dp;
-	right: 14dp;
-	bottom: 8dp;
+.info .t {
+	flex: none;
+	padding: 12dp 14dp 8dp 14dp;
+	background-color: #121c33;
+	border-bottom: 1dp #4da6ff;
 	font-size: 19dp;
 	font-weight: bold;
 	white-space: nowrap;
@@ -416,7 +458,7 @@
 		bottom: 2%;
 	}
 	.info .pic {
-		height: 70dp;
+		height: 100dp;
 	}
 	.info .facts {
 		padding-top: 6dp;
