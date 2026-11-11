@@ -1,0 +1,19 @@
+<template name="dialog" content="content">
+<head>
+	<link type="text/rcss" href="/ui/common.rcss"/>
+	<link type="text/rcss" href="/ui/components.rcss"/>
+	<style>
+		body { width: 100%; height: 100%; font-size: 16dp; }
+	</style>
+</head>
+<body>
+	<!-- A dark veil over everything and the dialog window in the middle. A page
+	     that uses this template writes the inside of the window: a
+	     .dialog-bar with a .dialog-title and a .dialog-close, a .dialog-body,
+	     and .dialog-buttons. The veil is also a close target outside the window
+	     only if the page says so (add data-close to the page's own backdrop). -->
+	<div class="backdrop">
+		<div class="dialog" id="content"></div>
+	</div>
+</body>
+</template>

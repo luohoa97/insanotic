@@ -1,0 +1,545 @@
+/* The Insanotic widget set for RmlUi documents: flat dark panels, a blue
+   accent, the look of the QuakeC menu. Link it after common.rcss, or use
+   the "dialog" template (templates/dialog.rml), which links both. How to
+   use each component is in docs/UI.md.
+
+   Sizes are in dp, and every control that can be touched is at least 48 dp
+   high, so the same markup works with a finger. */
+
+/* ---- the colors, in one place for anyone who wants to change them -------
+   panel      #0d1424    raised surface
+   field      #080d18    wells: text fields, tracks
+   line       #ffffff40  thin borders
+   accent     #4da6ff    focus, hover, selected
+   accent-dim #2b78c9    filled buttons and checked boxes
+   muted      #ccd9e6    secondary text
+   danger     #b03030                                                       */
+
+/* ---- dialog ---------------------------------------------------------- */
+
+.backdrop {
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 0;
+	bottom: 0;
+	background-color: #000000a6;
+}
+
+.dialog {
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	width: 560dp;
+	margin-left: -280dp;
+	margin-top: -180dp;
+	background-color: #0d1424;
+	border: 1dp #ffffff40;
+	animation: dialog-in 0.18s cubic-out;
+}
+.dialog.wide {
+	width: 760dp;
+	margin-left: -380dp;
+	margin-top: -230dp;
+}
+
+.dialog-bar {
+	height: 52dp;
+	background-color: #121c33;
+	border-bottom: 1dp #4da6ff;
+}
+.dialog-title {
+	position: absolute;
+	left: 18dp;
+	right: 64dp;
+	top: 14dp;
+	font-size: 21dp;
+	font-weight: bold;
+	white-space: nowrap;
+	overflow: hidden;
+}
+/* big enough for a finger, and the same place on every dialog */
+.dialog-close {
+	position: absolute;
+	right: 0;
+	top: 0;
+	width: 56dp;
+	height: 52dp;
+	text-align: center;
+	padding-top: 11dp;
+	font-size: 26dp;
+	cursor: pointer;
+	tab-index: auto;
+	nav: auto;
+	background-color: #ffffff00;
+	transition: background-color 0.12s;
+}
+.dialog-close:hover, .dialog-close:active, .dialog-close:focus-visible {
+	background-color: #b03030;
+}
+
+.dialog-body {
+	padding: 18dp;
+	font-size: 17dp;
+}
+.dialog-body.scroll {
+	max-height: 380dp;
+	overflow-y: auto;
+}
+
+.dialog-buttons {
+	padding: 6dp 18dp 18dp 18dp;
+	text-align: right;
+}
+
+@keyframes dialog-in {
+	from { opacity: 0; }
+	to { opacity: 1; }
+}
+
+/* ---- buttons ---------------------------------------------------------- */
+
+.button {
+	display: inline-block;
+	min-width: 110dp;
+	padding: 14dp 22dp 12dp 22dp;
+	margin-left: 10dp;
+	border: 1dp #ffffff40;
+	background-color: #121c33;
+	font-size: 18dp;
+	text-align: center;
+	cursor: pointer;
+	tab-index: auto;
+	nav: auto;
+	transition: background-color 0.12s, border-color 0.12s;
+}
+.button:first-child {
+	margin-left: 0;
+}
+.button:hover, .button:focus-visible {
+	border-color: #4da6ff;
+	background-color: #1a2a4a;
+}
+.button:active {
+	background-color: #2b78c9;
+}
+.button.primary {
+	background-color: #2b78c9;
+	border-color: #4da6ff;
+}
+.button.primary:hover, .button.primary:focus-visible {
+	background-color: #3a8be0;
+}
+.button.primary:active {
+	background-color: #4da6ff;
+}
+.button.danger {
+	background-color: #7a2020;
+	border-color: #d05050;
+}
+.button.danger:hover, .button.danger:focus-visible {
+	background-color: #b03030;
+}
+.button.block {
+	display: block;
+	margin-left: 0;
+	margin-bottom: 10dp;
+}
+/* small buttons for a mouse; a touch screen gets the full height back */
+.button.small {
+	min-width: 0;
+	padding: 7dp 14dp 5dp 14dp;
+	font-size: 14dp;
+}
+.button.disabled {
+	opacity: 0.4;
+}
+
+/* ---- form rows -------------------------------------------------------- */
+
+/* one line of a form: a label on the left, the control on the right */
+.row {
+	display: block;
+	min-height: 48dp;
+	margin-bottom: 6dp;
+	position: relative;
+}
+.row .caption {
+	position: absolute;
+	left: 0;
+	top: 12dp;
+	width: 42%;
+	white-space: nowrap;
+	overflow: hidden;
+}
+.row .control {
+	margin-left: 44%;
+}
+.hint {
+	font-size: 13dp;
+	color: #ccd9e6;
+}
+.section {
+	font-size: 14dp;
+	color: #4da6ff;
+	margin: 12dp 0 6dp 0;
+}
+
+label {
+	display: block;
+	cursor: pointer;
+}
+
+/* ---- checkbox, switch, radio ------------------------------------------- */
+
+/* a label that wraps a box and its text is one big target: the whole row */
+label.check {
+	display: block;
+	position: relative;
+	min-height: 48dp;
+	padding: 12dp 0 0 42dp;
+	tab-index: auto;
+}
+label.check input {
+	position: absolute;
+	left: 0;
+	top: 11dp;
+}
+label.check:hover {
+	color: #4da6ff;
+}
+
+input.checkbox, input.radio {
+	display: inline-block;
+	width: 26dp;
+	height: 26dp;
+	border: 2dp #ffffff80;
+	background-color: #080d18;
+	tab-index: auto;
+}
+input.radio {
+	border-radius: 13dp;
+}
+input.checkbox:hover, input.radio:hover, input.checkbox:focus-visible, input.radio:focus-visible {
+	border-color: #4da6ff;
+}
+/* checked: a white square (or dot) inside a blue frame. (Thick borders are
+   used because the engine's renderer has no gradient shaders.) */
+input.checkbox:checked {
+	border: 6dp #2b78c9;
+	width: 14dp;
+	height: 14dp;
+	background-color: #ffffff;
+}
+input.radio:checked {
+	border: 7dp #4da6ff;
+	width: 12dp;
+	height: 12dp;
+	background-color: #ffffff;
+}
+
+/* the toggle switch: a checkbox with class "switch". The thick border on
+   one side is the knob; it moves to the other side when checked. */
+input.checkbox.switch {
+	width: 20dp;
+	height: 24dp;
+	border: 2dp #ffffff40;
+	border-left: 26dp #ffffffcc;
+	border-radius: 14dp;
+	background-color: #080d18;
+}
+input.checkbox.switch:checked {
+	width: 20dp;
+	height: 24dp;
+	background-color: #2b78c9;
+	border: 2dp #4da6ff;
+	border-right: 26dp #ffffff;
+	border-radius: 14dp;
+}
+label.check.sw {
+	padding-left: 70dp;
+}
+
+/* ---- slider ----------------------------------------------------------- */
+
+/* The whole 48 dp strip answers to a finger: the thin line is in the middle
+   of a transparent border, and a border is part of what a touch hits. So
+   touching anywhere on it puts the knob there, and dragging moves it,
+   however far the finger drifts up or down. */
+input.range {
+	display: block;
+	width: 100%;
+	height: 48dp;
+}
+input.range slidertrack {
+	height: 8dp;
+	border-top: 20dp #0000;
+	border-bottom: 20dp #0000;
+	decorator: vertical-gradient(#ffffff33 #ffffff33);
+}
+input.range sliderprogress {
+	height: 8dp;
+	decorator: vertical-gradient(#4da6ff #4da6ff);
+}
+input.range sliderbar {
+	width: 28dp;
+	height: 28dp;
+	margin-top: -10dp;
+	border-radius: 14dp;
+	background-color: #ffffff;
+}
+input.range sliderbar:hover, input.range sliderbar:active {
+	background-color: #4da6ff;
+}
+input.range sliderarrowdec, input.range sliderarrowinc {
+	display: none;
+}
+
+/* ---- text fields ------------------------------------------------------- */
+
+input.text, input.password, input.number, textarea {
+	display: block;
+	width: 100%;
+	box-sizing: border-box;
+	height: 48dp;
+	padding: 13dp 12dp 0 12dp;
+	border: 1dp #ffffff40;
+	background-color: #080d18;
+	color: #ffffff;
+	font-size: 17dp;
+	caret-color: #4da6ff;
+	overflow: hidden;
+	tab-index: auto;
+	cursor: text;
+}
+textarea {
+	height: 140dp;
+}
+input.text:focus, input.password:focus, input.number:focus, textarea:focus {
+	border-color: #4da6ff;
+}
+input.text selection, input.password selection, input.number selection, textarea selection {
+	background-color: #2b78c9;
+	color: #ffffff;
+}
+
+/* ---- select (dropdown) -------------------------------------------------- */
+
+select {
+	display: block;
+	position: relative;
+	width: 100%;
+	height: 48dp;
+	border: 1dp #ffffff40;
+	background-color: #080d18;
+	tab-index: auto;
+	cursor: pointer;
+}
+select:hover, select:focus {
+	border-color: #4da6ff;
+}
+select selectvalue {
+	display: block;
+	padding: 13dp 48dp 0 12dp;
+	height: 35dp;
+}
+select selectarrow {
+	position: absolute;
+	right: 14dp;
+	top: 20dp;
+	width: 0;
+	height: 0;
+	border-left: 7dp #0000;
+	border-right: 7dp #0000;
+	border-top: 9dp #ccd9e6;
+}
+select selectbox {
+	position: absolute;
+	left: -1dp;
+	right: -1dp;
+	top: 47dp;
+	max-height: 288dp;
+	background-color: #0d1424;
+	border: 1dp #4da6ff;
+	overflow-y: auto;
+}
+select option {
+	display: block;
+	min-height: 24dp;
+	padding: 12dp 12dp 12dp 12dp;
+	cursor: pointer;
+}
+select option:hover {
+	background-color: #4da6ff40;
+}
+select option:checked {
+	background-color: #2b78c9;
+}
+
+/* ---- tabs -------------------------------------------------------------- */
+
+tabset tabs {
+	display: block;
+	border-bottom: 1dp #ffffff40;
+}
+tabset tab {
+	display: inline-block;
+	min-height: 24dp;
+	padding: 13dp 20dp 11dp 20dp;
+	font-size: 17dp;
+	color: #ccd9e6;
+	cursor: pointer;
+	tab-index: auto;
+	nav: auto;
+	border-bottom: 3dp #0000;
+}
+tabset tab:hover {
+	color: #ffffff;
+}
+tabset tab:selected {
+	color: #ffffff;
+	border-bottom-color: #4da6ff;
+}
+tabset panels {
+	display: block;
+	padding-top: 12dp;
+}
+
+/* ---- list and table ---------------------------------------------------- */
+
+/* A list scrolls by dragging it (with a fling and a rubber band at the
+   ends), and by the wheel. Give it a height. */
+.list {
+	overflow-y: auto;
+	border: 1dp #ffffff26;
+	background-color: #080d18;
+}
+.list .item {
+	display: block;
+	min-height: 24dp;
+	padding: 12dp 14dp 12dp 14dp;
+	border-bottom: 1dp #ffffff14;
+	cursor: pointer;
+	tab-index: auto;
+	nav: auto;
+}
+.list .item:hover, .list .item:focus-visible {
+	background-color: #4da6ff33;
+}
+.list .item:active, .list .item.selected {
+	background-color: #2b78c9;
+}
+
+table.table {
+	display: table;
+	width: 100%;
+}
+table.table tr {
+	display: table-row;
+}
+table.table th, table.table td {
+	display: table-cell;
+	padding: 12dp 14dp 10dp 14dp;
+	border-bottom: 1dp #ffffff14;
+}
+table.table th {
+	color: #4da6ff;
+	font-size: 14dp;
+	text-align: left;
+	background-color: #121c33;
+}
+table.table tr:hover td {
+	background-color: #4da6ff22;
+}
+
+.scroll {
+	overflow-y: auto;
+}
+
+/* ---- progress bar ------------------------------------------------------ */
+
+progress.bar {
+	display: block;
+	width: 100%;
+	height: 14dp;
+	background-color: #080d18;
+	border: 1dp #ffffff40;
+}
+progress.bar fill {
+	background-color: #4da6ff;
+}
+
+/* ---- image card: a picture with its name on it ------------------------- */
+
+.card {
+	position: relative;
+	display: block;
+	height: 150dp;
+	border: 1dp #ffffff40;
+	background-color: #0d1424;
+	cursor: pointer;
+	tab-index: auto;
+	nav: auto;
+}
+.card:hover, .card:focus-visible {
+	border-color: #4da6ff;
+}
+.card .caption {
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	padding: 24dp 12dp 10dp 12dp;
+	font-size: 20dp;
+	font-weight: bold;
+	decorator: vertical-gradient(#00000000 #000000b3);
+}
+
+/* ---- phones: bigger touch targets, dialogs that fill the screen ---------- */
+
+/* (RmlUi's media queries have no "or", so what both kinds of phone need is
+   written out twice) */
+@media (max-height: 500dp) {
+	.button.small {
+		padding: 14dp 20dp 12dp 20dp;
+		font-size: 17dp;
+	}
+	.dialog, .dialog.wide {
+		left: 3%;
+		right: 3%;
+		top: 4%;
+		width: auto;
+		margin-left: 0;
+		margin-top: 0;
+	}
+	.dialog-body.scroll {
+		max-height: 220dp;
+	}
+}
+@media (orientation: portrait) {
+	.button.small {
+		padding: 14dp 20dp 12dp 20dp;
+		font-size: 17dp;
+	}
+	.dialog, .dialog.wide {
+		left: 3%;
+		right: 3%;
+		width: auto;
+		margin-left: 0;
+		margin-top: -200dp;
+	}
+	.dialog-body.scroll {
+		max-height: 220dp;
+	}
+	.row .caption {
+		position: static;
+		width: auto;
+		margin-bottom: 2dp;
+	}
+	.row .control {
+		margin-left: 0;
+	}
+	.row {
+		margin-bottom: 14dp;
+	}
+}
