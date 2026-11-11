@@ -14,7 +14,7 @@ object GameData {
 	const val RELEASE_URL = "https://dl.xonotic.org/xonotic-0.8.6.zip"
 
 	/** the repacked packs (misc/insanotic/repack-assets.sh, workflow "Repack assets") */
-	const val ASSETS_URL = "https://github.com/luohoa97/insanotic/releases/download/assets-0.8.6-r1"
+	const val ASSETS_URL = "https://github.com/luohoa97/insanotic/releases/download/assets-0.8.6-r2"
 
 	/** the pk3 inside the APK assets; named to sort after every official pack so it wins */
 	const val OWN_PK3 = "zzz-insanotic-android.pk3"

@@ -126,10 +126,12 @@ libraries are downloaded and built from source on the first build. Set
 ## Repacked game data
 
 The official 0.8.6 packs are big and slow for a phone, so Insanotic can use
-repacked copies, published as assets of a GitHub release (`assets-0.8.6-r1`;
+repacked copies, published as assets of a GitHub release (`assets-0.8.6-r2`;
 not stored in git). `misc/insanotic/repack-assets.sh` makes them, and the
 "Repack assets" workflow runs it and uploads the result with a table of sizes
-before and after in its job summary.
+before and after in its job summary. Sizes of the published android set: data
+400 MB (official 318), maps 581 MB (626), music 71 MB (111); desktop set: data
+285 MB, maps 595 MB.
 
 - Entries are compressed with zstd (zip method 93) instead of deflate, which
   the engine decodes several times faster; files that are compressed already
@@ -138,9 +140,10 @@ before and after in its job summary.
   to `.ogg` (libopusfile, loaded at run time on desktop, built in on Android),
   and a request for `foo.ogg` or `foo.wav` finds `foo.opus`.
 - The `android` set also turns S3TC textures (`dds/foo.dds`) into ASTC in a
-  KTX 1 file with all mip levels (`dds/foo.ktx`): 6x6 blocks for color, 4x4
-  for normal maps and 2D graphics (`ASTC_COLOR` and `ASTC_DETAIL` change
-  that). The engine uploads them as they are when the GPU has
+  KTX 1 file with all mip levels (`dds/foo.ktx`): 8x8 blocks for color, 6x6
+  for normal maps and 2D graphics in the published set (`ASTC_COLOR` and
+  `ASTC_DETAIL` change that; the script's own defaults, 6x6 and 4x4, make a
+  better looking set that is half as big again as the official packs). The engine uploads them as they are when the GPU has
   `GL_KHR_texture_compression_astc_ldr`, and otherwise reads the `.dds`
   (`r_texture_astc_load 0` turns ASTC off).
 
