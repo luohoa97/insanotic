@@ -9,6 +9,22 @@ import org.libsdl.app.SDLActivity
  * build) loads libSDL2.so and libmain.so and calls SDL_main in the latter.
  */
 class GameActivity : SDLActivity() {
+	override fun onPause() {
+		super.onPause()
+		// the game may stay in the background for a while: keep it alive
+		if (!isFinishing) PausedService.start(this)
+	}
+
+	override fun onResume() {
+		super.onResume()
+		PausedService.stop(this)
+	}
+
+	override fun onDestroy() {
+		PausedService.stop(this)
+		super.onDestroy()
+	}
+
 	override fun getArguments(): Array<String> {
 		val base = GameData.baseDir(this)
 		val user = GameData.userDir(this)

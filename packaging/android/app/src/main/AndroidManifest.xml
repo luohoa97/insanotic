@@ -14,6 +14,7 @@
 	<!-- the download keeps running with the app in the background -->
 	<uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 	<uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+	<uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
 	<uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 	<uses-permission android:name="android.permission.WAKE_LOCK" />
 	<!-- self-update: installing a newer APK of this app -->
@@ -45,6 +46,16 @@
 			android:name=".DownloadService"
 			android:exported="false"
 			android:foregroundServiceType="dataSync" />
+
+		<!-- keeps a paused game from being killed in the background -->
+		<service
+			android:name=".PausedService"
+			android:exported="false"
+			android:foregroundServiceType="specialUse">
+			<property
+				android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+				android:value="Keeps a paused game running so the player returns to their match" />
+		</service>
 
 		<!-- the engine: SDL's activity loads libSDL2.so and libmain.so -->
 		<activity

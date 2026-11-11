@@ -2,6 +2,9 @@
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 <resources>
 	<string name="app_name">Insanotic</string>
+	<string name="paused_channel">Paused game</string>
+	<string name="paused_title">Insanotic is paused</string>
+	<string name="paused_text">Tap to go back to your game.</string>
 	<string name="setup_title">Insanotic</string>
 	<string name="setup_first_run">The free Xonotic 0.8.6 game data (about 1 GB) is downloaded once, the first time you start. Wi-Fi is recommended.</string>
 	<string name="setup_music">Also download music (111 MB)</string>
