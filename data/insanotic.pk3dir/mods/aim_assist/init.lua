@@ -56,6 +56,7 @@ cvar("aim_assist_autofire_range", 2000, "maximum target distance for auto-fire")
 cvar("aim_assist_autofire_delay", 0, "seconds the enemy must stay under the crosshair before firing")
 cvar("aim_assist_autofire_release", 0.12, "seconds firing continues after the crosshair leaves the enemy")
 cvar("aim_assist_lock", 1, "1 = while auto-fire shoots, aim exactly at the lead point")
+cvar("aim_assist_autofire_cone", 4, "with aim_assist_lock: fire as soon as the lead point is within this many degrees of the crosshair")
 cvar("aim_assist_lead", 1, "1 = lead moving enemies with projectile weapons")
 cvar("aim_assist_lead_extra", 0.05, "seconds added to the lead for network delay")
 cvar("aim_assist_feet", 1, "1 = splash weapons aim at a standing enemy's feet")
@@ -324,13 +325,17 @@ xon.on("Input", function(ev)
 		local shot_dir = xon.forward(xon.cvar("aim_assist_lock") ~= 0 and want or ev.angles)
 		local safe = path_clear(eye, t.point, w) and not teammate_in_line(eye, shot_dir, t.e.dist)
 			and not blast_hits_me(eye, impact_point(eye, t.point), w)
-		if reachable and safe and xon.cvar("aim_assist_autofire") ~= 0
-		   and (ray_hits_box(eye, xon.forward(ev.angles), center, half) or t.off < 1) then
+		-- with the lock, the shot snaps onto the lead point this very frame, so
+		-- there is no need to wait for the pull to bring the crosshair over
+		local lock = xon.cvar("aim_assist_lock") ~= 0
+		local aimed = ray_hits_box(eye, xon.forward(ev.angles), center, half) or t.off < 1
+			or (lock and t.off <= xon.cvar("aim_assist_autofire_cone"))
+		if reachable and safe and xon.cvar("aim_assist_autofire") ~= 0 and aimed then
 			state.on_since = state.on_since or now
 			state.last_on = now
 			if now - state.on_since >= xon.cvar("aim_assist_autofire_delay") then
 				firing = true
-				if xon.cvar("aim_assist_lock") ~= 0 then
+				if lock then
 					ev.angles = V(want.x, want.y, ev.angles.z)
 				end
 				if w and w.kind == "guided" and xon.cvar("aim_assist_steer") ~= 0 then
