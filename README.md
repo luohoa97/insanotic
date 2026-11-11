@@ -77,12 +77,47 @@ flatpak-builder --user --install --force-clean --jobs=2 \
 After changing `launcher/Cargo.lock`, regenerate `cargo-sources.json` with
 `packaging/flatpak/gen-cargo-sources.sh`.
 
+### Android
+
+Insanotic runs on Android 5.0 or newer (arm64-v8a and x86_64; OpenGL ES 2.0).
+Touch controls come from the `touch_controls` mod. It has not been tested on
+many devices yet, so expect rough edges.
+
+To install, download `insanotic-<version>-android.apk` from the
+[Releases](https://github.com/luohoa97/insanotic/releases) page on the phone,
+open it and allow installing from this source when Android asks (the APK is
+not from the Play Store, and release builds are signed with a debug key unless
+the maintainers configured a keystore, so Android may warn). Or install it
+from a computer with `adb install insanotic-<version>-android.apk`.
+
+The APK holds only Insanotic's own files. The first time you start the app it
+downloads the official Xonotic 0.8.6 release (about 1 GB) and unpacks the data
+packs, so keep roughly 3 GB free and use Wi-Fi. The download resumes if it is
+interrupted.
+
+To build the APK yourself you need a JDK 17, the Android SDK with platform 35,
+build-tools 36.0.0, NDK 28.2.13676358 and CMake 3.22.1, and the compiled QC
+(`make insanotic-qc` after `misc/insanotic/checkout.sh`). Then, from the
+repository root:
+
+```sh
+export ANDROID_HOME=$HOME/Android/Sdk
+packaging/android/gradlew -p packaging/android assembleRelease
+```
+
+The APK is `packaging/android/app/build/outputs/apk/release/app-release.apk`.
+Useful options are `-Pabis=arm64-v8a` (one ABI builds faster),
+`-Pversion_name=...` and `-Pversion_code=...`. SDL2 and the other third-party
+libraries are downloaded and built from source on the first build. Set
+`ANDROID_KEYSTORE`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS` and
+`ANDROID_KEY_PASSWORD` to sign with your own key.
+
 ## Releases
 
 Pushing a `v*` tag runs the `Release` workflow, which builds a Linux tarball
 (engine, game code and mods; start it with `./insanotic.sh`, which links the
-Xonotic 0.8.6 data packs from an installed Xonotic) and the Flatpak bundle,
-and publishes both on the GitHub release of that tag:
+Xonotic 0.8.6 data packs from an installed Xonotic), the Flatpak bundle and the
+Android APK, and publishes them on the GitHub release of that tag:
 
 ```sh
 git tag v0.1.0 && git push github v0.1.0
