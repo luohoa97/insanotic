@@ -13,6 +13,9 @@
 --  * target: the nearest visible enemy within aim_assist_cone degrees of the
 --    crosshair and aim_assist_range units, judged at the point the shot has
 --    to go to (see lead)
+--  * where on the body: the most central part you can see (an enemy half
+--    behind cover is aimed at the part that shows); the Rifle aims for the
+--    head (aim_assist_rifle_head)
 --  * lead: projectile weapons aim where the shot meets a moving enemy,
 --    airborne enemies along their fall, lobbed shots (Mortar) higher for the
 --    drop; splash weapons aim at a standing enemy's feet (weapons.lua,
@@ -56,6 +59,7 @@ cvar("aim_assist_lock", 1, "1 = while auto-fire shoots, aim exactly at the lead 
 cvar("aim_assist_lead", 1, "1 = lead moving enemies with projectile weapons")
 cvar("aim_assist_lead_extra", 0.05, "seconds added to the lead for network delay")
 cvar("aim_assist_feet", 1, "1 = splash weapons aim at a standing enemy's feet")
+cvar("aim_assist_rifle_head", 1, "1 = the Rifle aims for the head")
 cvar("aim_assist_steer", 1, "1 = steer Devastator rockets onto the enemy and detonate them next to it")
 cvar("aim_assist_autoswitch", 1, "1 = switch to the best weapon for the fight")
 cvar("aim_assist_switch_delay", 1.5, "seconds between automatic weapon switches")
@@ -115,8 +119,27 @@ local function visible_enemies(eye)
 		if not p.is_me and p.alive and not mate then
 			local center = p.origin + (p.mins + p.maxs) * 0.5
 			local dist = (center - eye):len()
-			if dist > 1 and xon.traceline(eye, center).fraction >= 0.999 then
-				out[#out + 1] = { p = p, dist = dist, center = center }
+			if dist > 1 then
+				-- which parts can be hit: body centre, chest, head, feet. An enemy
+				-- behind a low wall or a ledge is still a target through the part
+				-- that shows, and the aim goes to that part.
+				local cz = (p.mins.z + p.maxs.z) * 0.5
+				local parts = {
+					{ name = "center", off = V(0, 0, cz) },
+					{ name = "chest",  off = V(0, 0, cz + (p.maxs.z - cz) * 0.5) },
+					{ name = "head",   off = V(0, 0, p.maxs.z - 8) },
+					{ name = "feet",   off = V(0, 0, p.mins.z + 6) },
+				}
+				local seen, first = {}, nil
+				for _, part in ipairs(parts) do
+					if xon.traceline(eye, p.origin + part.off).fraction >= 0.999 then
+						seen[part.name] = part.off
+						first = first or part.off
+					end
+				end
+				if first then
+					out[#out + 1] = { p = p, dist = dist, center = center, offset = first, seen = seen }
+				end
 			end
 		end
 	end
@@ -175,10 +198,18 @@ local function pick_target(eye, fwd, enemies, w)
 	for _, e in ipairs(enemies) do
 		if e.dist <= range then
 			local point, pos
+			-- the part to aim at: the Rifle goes for the head, splash weapons
+			-- for the feet (in predict.lua), everything else the most central
+			-- visible part
+			local o = { feet = opts.feet and e.seen.feet ~= nil, offset = e.offset }
+			if w and w.name == "rifle" and e.seen.head and xon.cvar("aim_assist_rifle_head") ~= 0 then
+				o.offset = e.seen.head
+				o.feet = false
+			end
 			if xon.cvar("aim_assist_lead") ~= 0 then
-				point, _, pos = P.aim(eye, e.p, w, extra, opts)
+				point, _, pos = P.aim(eye, e.p, w, extra, o)
 			else
-				point, pos = e.center, e.p.origin
+				point, pos = e.p.origin + o.offset, e.p.origin
 			end
 			local off = angle_between((point - eye):normalize(), fwd)
 			if off <= cone and (not best or off < best.off) then

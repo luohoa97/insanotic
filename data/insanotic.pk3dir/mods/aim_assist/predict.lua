@@ -30,7 +30,8 @@ end
 function P.aim(eye, p, w, extra, opts)
 	local gravity = xon.cvar("sv_gravity") or 800
 	local air = not P.grounded(p)
-	local center_off = (p.mins + p.maxs) * 0.5
+	-- the body part to aim at, relative to the origin (default: centre)
+	local center_off = opts.offset or (p.mins + p.maxs) * 0.5
 	local t = extra
 	local pos = P.position(p, t, gravity, air)
 	if w and w.speed and w.kind ~= "hitscan" and w.kind ~= "beam" then
