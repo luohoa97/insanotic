@@ -67,11 +67,30 @@ class SetupActivity : ComponentActivity() {
 			InsanoticTheme {
 				val update by UpdateModel.state.collectAsStateWithLifecycle()
 				if (ready) {
-					LaunchedEffect(update) {
-						if (update == Update.UpToDate || update == Update.CheckFailed)
+					val offer by SetupModel.upgradeOffer.collectAsStateWithLifecycle()
+					val checked by SetupModel.upgradeChecked.collectAsStateWithLifecycle()
+					val upgrading by SetupModel.upgrading.collectAsStateWithLifecycle()
+					val state by SetupModel.state.collectAsStateWithLifecycle()
+					LaunchedEffect(Unit) { SetupModel.checkUpgrade(this@SetupActivity) }
+					// the game starts when there is no update to offer, and no
+					// replacement of the game data to offer or to wait for
+					LaunchedEffect(update, checked, offer, upgrading) {
+						if ((update == Update.UpToDate || update == Update.CheckFailed) && checked && offer == null && !upgrading)
 							startGame()
 					}
-					Shell { Gate(update) { startGame() } }
+					LaunchedEffect(state, upgrading) {
+						if (upgrading && state == Setup.Done)
+							startGame()
+					}
+					Shell {
+						val bytes = offer
+						if (upgrading)
+							UpgradeProgress(state)
+						else if (bytes != null && (update == Update.UpToDate || update == Update.CheckFailed))
+							UpgradeOffer(bytes)
+						else
+							Gate(update) { startGame() }
+					}
 				} else {
 					val state by SetupModel.state.collectAsStateWithLifecycle()
 					LaunchedEffect(Unit) { SetupModel.prepare(this@SetupActivity) }
@@ -224,6 +243,42 @@ private fun UpdateSection(update: Update, onPlay: (() -> Unit)?) {
 	}
 	if (onPlay != null && update !is Update.Downloading && update != Update.Installing)
 		OutlinedButton(onClick = onPlay) { Text(stringResource(R.string.update_later)) }
+}
+
+/** Offered once to a player who has the official packs. */
+@Composable
+private fun UpgradeOffer(bytes: Long) {
+	val ctx = LocalContext.current
+	val notifications = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
+		SetupModel.startUpgrade(ctx)
+	}
+	Text(stringResource(R.string.upgrade_text), style = MaterialTheme.typography.bodyLarge, textAlign = TextAlign.Center)
+	Button(
+		onClick = {
+			if (Build.VERSION.SDK_INT >= 33 &&
+				ctx.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+			)
+				notifications.launch(Manifest.permission.POST_NOTIFICATIONS)
+			else
+				SetupModel.startUpgrade(ctx)
+		},
+		modifier = Modifier.fillMaxWidth(),
+	) { Text(stringResource(R.string.upgrade_button, Formatter.formatFileSize(ctx, bytes)), textAlign = TextAlign.Center) }
+	OutlinedButton(onClick = { SetupModel.declineUpgrade(ctx) }) { Text(stringResource(R.string.upgrade_later)) }
+}
+
+@Composable
+private fun UpgradeProgress(state: Setup) {
+	val ctx = LocalContext.current
+	when (state) {
+		is Setup.Downloading -> Downloading(ctx, state)
+		is Setup.Verifying -> Waiting(stringResource(R.string.setup_verify, state.file))
+		is Setup.OutOfSpace -> Problem(
+			stringResource(R.string.setup_no_space, Formatter.formatFileSize(ctx, state.needed), Formatter.formatFileSize(ctx, state.available)),
+		) { SetupModel.startUpgrade(ctx) }
+		is Setup.Failed -> Problem(stringResource(R.string.setup_failed, state.message)) { SetupModel.startUpgrade(ctx) }
+		else -> Waiting(stringResource(R.string.setup_install))
+	}
 }
 
 @Composable

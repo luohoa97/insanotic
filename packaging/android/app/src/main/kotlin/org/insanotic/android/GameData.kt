@@ -22,6 +22,7 @@ object GameData {
 	private const val PACKS_MARKER = ".xonotic-0.8.6-packs"
 	private const val MUSIC_MARKER = ".xonotic-0.8.6-music"
 	private const val OWN_MARKER = ".insanotic-pk3-stamp"
+	private const val REPACKED_MARKER = ".insanotic-repacked"
 
 	/** -basedir: large data goes to the app's external files dir (no permission needed). */
 	fun baseDir(ctx: Context): File {
@@ -56,6 +57,15 @@ object GameData {
 		if (withMusic)
 			File(dataDir(ctx), MUSIC_MARKER).writeText("xonotic-0.8.6\n")
 	}
+
+	/** The packs in place are the repacked ones (zstd, Opus, ASTC), not the official ones. */
+	fun packsRepacked(ctx: Context): Boolean = File(dataDir(ctx), REPACKED_MARKER).isFile
+
+	fun markPacksRepacked(ctx: Context) {
+		File(dataDir(ctx), REPACKED_MARKER).writeText("assets\n")
+	}
+
+	fun musicInstalled(ctx: Context): Boolean = File(dataDir(ctx), MUSIC_MARKER).isFile
 
 	/** True when the packs and this build's own pk3 are both in place. */
 	fun isReady(ctx: Context): Boolean = packsInstalled(ctx) && ownPk3Current(ctx)

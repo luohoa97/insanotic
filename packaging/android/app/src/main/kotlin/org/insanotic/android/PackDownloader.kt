@@ -9,6 +9,8 @@ import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.IOException
 import java.io.RandomAccessFile
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
 import java.nio.ByteBuffer
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicIntegerArray
@@ -60,12 +62,26 @@ class PackDownloader(
 	private val url: String = GameData.RELEASE_URL,
 	private val assetsUrl: String = GameData.ASSETS_URL,
 	private val useRepacked: Boolean = true,
+	/**
+	 * Replace the official packs that are installed by the repacked ones: each
+	 * is downloaded and checked as <name>.new beside the old one, and only when
+	 * all of them are complete do they take the old ones' place.
+	 */
+	private val upgrade: Boolean = false,
 ) {
 	private val done = AtomicLong()
 
+	/** True when the packs this run fetched are the repacked ones. */
+	var usedRepacked = false
+		private set
+
 	/** Throws [NoSpace] when the packs will not fit; cancel the calling coroutine to stop. */
 	suspend fun run() = withContext(Dispatchers.IO) {
-		val all = repacked() ?: withRetries { RemoteZip.readCentralDirectory(url) }
+		val repackedSet = repacked()
+		if (upgrade && repackedSet == null)
+			throw IOException("the repacked packs are not available")
+		usedRepacked = repackedSet != null
+		val all = repackedSet ?: withRetries { RemoteZip.readCentralDirectory(url) }
 		val todo = ArrayList<ZipItem>()
 		var diskNeeded = 0L
 		var toFetch = 0L
@@ -107,7 +123,23 @@ class PackDownloader(
 			ticker.cancel()
 			listener.onProgress(done.get(), toFetch)
 		}
+		if (upgrade) {
+			// every replacement is complete and checked: now swap them in, one
+			// atomic rename each (a restart in the middle finds the rest as .new)
+			for (e in all) {
+				if (!wanted(e.name, withMusic))
+					continue
+				val fresh = File(dataDir, e.fileName + NEW)
+				if (fresh.isFile)
+					Files.move(fresh.toPath(), File(dataDir, e.fileName).toPath(),
+						StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE)
+			}
+		}
 	}
+
+	/** Bytes the upgrade would download, or null when there is nothing to upgrade to. */
+	suspend fun upgradeBytes(): Long? =
+		repacked()?.filter { wanted(it.name, withMusic) }?.sumOf { it.csize }?.takeIf { it > 0 }
 
 	private fun urlOf(e: ZipItem): String = e.url ?: url
 
@@ -138,7 +170,10 @@ class PackDownloader(
 	// a repacked pack is not the size of the official one, and a pack the player
 	// already has (the official one, say) is never replaced
 	private fun finished(e: ZipItem): Boolean =
-		File(dataDir, e.fileName).let { it.isFile && (e.url != null || it.length() == e.usize) }
+		if (upgrade)
+			File(dataDir, e.fileName + NEW).let { it.isFile && it.length() == e.usize }
+		else
+			File(dataDir, e.fileName).let { it.isFile && (e.url != null || it.length() == e.usize) }
 
 	private fun resumableBytes(e: ZipItem): Long =
 		if (e.method == 0) ChunkState.load(stateFile(e), partFile(e), e.csize).total() else 0L
@@ -319,13 +354,16 @@ class PackDownloader(
 	}
 
 	private fun publish(e: ZipItem, part: File) {
-		val dest = File(dataDir, e.fileName)
+		val dest = File(dataDir, e.fileName + if (upgrade) NEW else "")
 		dest.delete()
 		if (!part.renameTo(dest))
 			throw IOException("cannot create $dest")
 	}
 
 	companion object {
+		/** a finished, checked pack waiting to replace the official one */
+		const val NEW = ".new"
+
 		/** parallel connections for one pack */
 		const val CONNECTIONS = 6
 

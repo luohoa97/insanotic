@@ -150,8 +150,12 @@ before and after in its job summary. Sizes of the published android set: data
 The Android app asks the GPU for ASTC, and when it is there and the release
 is reachable downloads the `android-*` packs (listed in `manifest-android.txt`
 of the release); otherwise it takes the official packs from dl.xonotic.org as
-before. A pack that is already in the data directory is never replaced or
-deleted. Run `misc/insanotic/test-repack.sh` to test the repacker.
+before. A player who already has the official packs is offered, once, to replace them
+("Optimize game data for this device", with the download size): the repacked
+packs are downloaded next to the old ones as `.new` files, checked against their
+CRC32, and only when all are complete do they replace the old ones (the music
+pack only if it was installed). Otherwise a pack that is already in the data
+directory is never replaced or deleted. Run `misc/insanotic/test-repack.sh` to test the repacker.
 
 ## Nightly builds
 

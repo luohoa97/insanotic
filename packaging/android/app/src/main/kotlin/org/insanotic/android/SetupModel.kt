@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 
 /** What the setup screen shows. */
 sealed interface Setup {
@@ -55,6 +56,8 @@ object SetupModel {
 	private const val PREFS = "setup"
 	private const val PENDING = "pending"
 	private const val MUSIC = "music"
+	private const val UPGRADE = "upgrade"
+	private const val DECLINED = "upgrade_declined"
 
 	private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 	private var job: Job? = null
@@ -62,6 +65,61 @@ object SetupModel {
 	val state: StateFlow<Setup> = mutableState
 
 	val running: Boolean get() = job?.isActive == true
+
+	/** Bytes of the repacked packs offered to a player who has the official ones; null: no offer. */
+	val upgradeOffer = MutableStateFlow<Long?>(null)
+
+	/** the offer has been looked for (it needs the network, so it takes a moment) */
+	val upgradeChecked = MutableStateFlow(false)
+
+	/** the running or pending work replaces the official packs */
+	val upgrading = MutableStateFlow(false)
+
+	/**
+	 * Looks whether to offer the repacked packs: the official ones are
+	 * installed, the GPU takes ASTC, the release is reachable, and the player
+	 * has not said no. Also picks an interrupted upgrade up again.
+	 */
+	fun checkUpgrade(ctx: Context) {
+		val app = ctx.applicationContext
+		if (prefs(app).getBoolean(UPGRADE, false) && pending(app)) {
+			upgrading.value = true
+			startService(app, pendingMusic(app))
+			upgradeChecked.value = true
+			return
+		}
+		scope.launch {
+			try {
+				if (!GameData.packsInstalled(app) || GameData.packsRepacked(app) || prefs(app).getBoolean(DECLINED, false))
+					return@launch
+				val bytes = withTimeoutOrNull(8000) {
+					PackDownloader(GameData.dataDir(app), GameData.musicInstalled(app), ProgressListener(), upgrade = true).upgradeBytes()
+				}
+				upgradeOffer.value = bytes
+			} catch (e: Exception) {
+				Log.w(TAG, "no upgrade offer", e)
+			} finally {
+				upgradeChecked.value = true
+			}
+		}
+	}
+
+	/** The player does not want the repacked packs (asked once). */
+	fun declineUpgrade(ctx: Context) {
+		prefs(ctx).edit().putBoolean(DECLINED, true).apply()
+		upgradeOffer.value = null
+	}
+
+	/** The player accepted: download the repacked packs, then swap them in. */
+	fun startUpgrade(ctx: Context) {
+		if (running)
+			return
+		val withMusic = GameData.musicInstalled(ctx)
+		prefs(ctx).edit().putBoolean(PENDING, true).putBoolean(MUSIC, withMusic).putBoolean(UPGRADE, true).apply()
+		upgrading.value = true
+		upgradeOffer.value = null
+		startService(ctx.applicationContext, withMusic)
+	}
 
 	private fun prefs(ctx: Context) = ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
 
@@ -93,7 +151,8 @@ object SetupModel {
 
 	/** The player cancelled: the bytes stay on disk, but nothing resumes by itself. */
 	fun cancel(ctx: Context) {
-		prefs(ctx).edit().putBoolean(PENDING, false).apply()
+		prefs(ctx).edit().putBoolean(PENDING, false).putBoolean(UPGRADE, false).apply()
+		upgrading.value = false
 		pause()
 	}
 
@@ -119,14 +178,23 @@ object SetupModel {
 	fun launch(ctx: Context, withMusic: Boolean) {
 		if (running)
 			return
+		val upgrade = prefs(ctx).getBoolean(UPGRADE, false)
+		upgrading.value = upgrade
 		// set before the job starts, so a watcher never sees a stale state
-		if (!GameData.packsInstalled(ctx))
+		if (upgrade || !GameData.packsInstalled(ctx))
 			mutableState.value = Setup.Downloading(0, 0, "", 0, 0, 0)
 		job = scope.launch {
 			try {
-				if (!GameData.packsInstalled(ctx)) {
-					PackDownloader(GameData.dataDir(ctx), withMusic, ProgressListener()).run()
+				if (upgrade) {
+					PackDownloader(GameData.dataDir(ctx), withMusic, ProgressListener(), upgrade = true).run()
+					GameData.markPacksRepacked(ctx)
+					prefs(ctx).edit().putBoolean(UPGRADE, false).apply()
+				} else if (!GameData.packsInstalled(ctx)) {
+					val downloader = PackDownloader(GameData.dataDir(ctx), withMusic, ProgressListener())
+					downloader.run()
 					GameData.markPacksInstalled(ctx, withMusic)
+					if (downloader.usedRepacked)
+						GameData.markPacksRepacked(ctx)
 				}
 				if (!GameData.ownPk3Current(ctx)) {
 					mutableState.value = Setup.Installing
@@ -138,11 +206,11 @@ object SetupModel {
 				mutableState.value = Setup.Choose
 				throw e
 			} catch (e: NoSpace) {
-				prefs(ctx).edit().putBoolean(PENDING, false).apply()
+				prefs(ctx).edit().putBoolean(PENDING, false).putBoolean(UPGRADE, false).apply()
 				mutableState.value = Setup.OutOfSpace(e.needed, e.available)
 			} catch (e: Exception) {
 				Log.w(TAG, "setup failed", e)
-				prefs(ctx).edit().putBoolean(PENDING, false).apply()
+				prefs(ctx).edit().putBoolean(PENDING, false).putBoolean(UPGRADE, false).apply()
 				mutableState.value = Setup.Failed(e.message ?: e.toString())
 			}
 		}

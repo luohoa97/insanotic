@@ -24,6 +24,9 @@
 	<string name="setup_install">Installing Insanotic files…</string>
 	<string name="setup_done">Starting…</string>
 	<string name="setup_failed">Setup failed: %1$s</string>
+	<string name="upgrade_text">Your game data can be replaced by a version made for this device: textures this GPU reads directly and smaller sound files. The game then loads faster and needs much less memory. The current files are kept until the new ones are complete and checked.</string>
+	<string name="upgrade_button">Optimize game data for this device — download %1$s</string>
+	<string name="upgrade_later">Not now</string>
 	<string name="setup_retry">Retry</string>
 	<string name="setup_no_space">Not enough free storage: %1$s needed, %2$s available.</string>
 	<string name="update_check">Check for updates</string>
