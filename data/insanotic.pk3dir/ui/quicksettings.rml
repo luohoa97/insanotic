@@ -1,0 +1,47 @@
+<rml>
+<head>
+	<title>Quick settings</title>
+	<link type="text/template" href="templates/dialog.rml"/>
+</head>
+<body template="dialog">
+	<!-- The settings people reach for most, on one screen. Every control that
+	     has data-cvar shows that cvar when the dialog opens and writes it when
+	     the player changes it, nothing else is needed. -->
+	<div class="dialog-bar">
+		<div class="dialog-title">Quick settings</div>
+		<div class="dialog-close" data-close>&#215;</div>
+	</div>
+	<div class="dialog-body">
+		<tabset>
+			<tab>Audio</tab>
+			<panel>
+				<div class="row"><div class="caption">Sound volume</div><div class="control"><input type="range" class="range" min="0" max="1" step="0.05" data-cvar="volume"/></div></div>
+				<div class="row"><div class="caption">Music volume</div><div class="control"><input type="range" class="range" min="0" max="1" step="0.05" data-cvar="bgmvolume"/></div></div>
+				<label class="check sw"><input type="checkbox" class="checkbox switch" data-cvar="menu_sounds"/> Menu sounds</label>
+			</panel>
+			<tab>Video</tab>
+			<panel>
+				<div class="row"><div class="caption">Field of view</div><div class="control"><input type="range" class="range" min="60" max="130" step="1" data-cvar="fov"/></div></div>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="showfps"/> Show frames per second</label>
+				<div class="row"><div class="caption">Texture quality</div><div class="control">
+					<select data-cvar="gl_picmip">
+						<option value="0">High</option>
+						<option value="1">Medium</option>
+						<option value="2">Low</option>
+					</select>
+				</div></div>
+			</panel>
+			<tab>Player</tab>
+			<panel>
+				<div class="row"><div class="caption">Name</div><div class="control"><input type="text" class="text" data-cvar="_cl_name"/></div></div>
+				<div class="section">Weapon switching</div>
+				<label class="check"><input type="radio" class="radio" name="sw" value="0" data-cvar="cl_autoswitch"/> Never</label>
+				<label class="check"><input type="radio" class="radio" name="sw" value="1" data-cvar="cl_autoswitch"/> When picking up a better weapon</label>
+			</panel>
+		</tabset>
+	</div>
+	<div class="dialog-buttons">
+		<div class="button primary" data-close>Done</div>
+	</div>
+</body>
+</rml>

@@ -110,9 +110,9 @@ body {
 .chip {
 	display: inline-block;
 	position: relative;
-	width: 14%;
+	width: 17%;
 	height: 100%;
-	margin: 0 1%;
+	margin: 0 0.8%;
 	border: 1dp #ffffff40;
 	background-color: #0d1424cc;
 	cursor: pointer;
@@ -199,7 +199,11 @@ body {
 		height: 12%;
 	}
 	.chip {
-		width: 42%;
+		width: 29%;
+		margin: 0 1%;
 		min-height: 56dp;
+	}
+	.label {
+		font-size: 16dp;
 	}
 }

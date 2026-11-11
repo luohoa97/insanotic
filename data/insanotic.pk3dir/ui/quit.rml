@@ -1,0 +1,21 @@
+<rml>
+<head>
+	<title>Quit</title>
+	<link type="text/template" href="templates/dialog.rml"/>
+</head>
+<body template="dialog">
+	<!-- The Quit dialog of the QuakeC menu (dialog_quit.qc), in RML. "Yes" runs
+	     the same command; "No" closes the dialog. -->
+	<div class="dialog-bar">
+		<div class="dialog-title">Quit</div>
+		<div class="dialog-close" data-close>&#215;</div>
+	</div>
+	<div class="dialog-body">
+		Are you sure you want to quit?
+	</div>
+	<div class="dialog-buttons">
+		<div class="button danger" data-cmd="echo ]quit; quit">Yes</div>
+		<div class="button primary" data-close>No</div>
+	</div>
+</body>
+</rml>

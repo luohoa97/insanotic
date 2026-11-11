@@ -36,8 +36,9 @@
 			</div>
 		</div>
 		<div id="small">
+			<div class="chip" data-cmd="rml_show quicksettings"><div class="glow"></div><div class="label">Quick settings</div></div>
 			<div class="chip" data-cmd="menu_cmd directmenu Credits"><div class="glow"></div><div class="label">Credits</div></div>
-			<div class="chip" data-cmd="menu_cmd directmenu Quit"><div class="glow"></div><div class="label">Quit</div></div>
+			<div class="chip" data-cmd="rml_show quit"><div class="glow"></div><div class="label">Quit</div></div>
 		</div>
 	</div>
 	<div id="version">Insanotic <span data-cvar="insanotic_version"></span>  |  Xonotic <span data-cvar="g_xonoticversion"></span></div>
