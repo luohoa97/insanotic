@@ -217,6 +217,11 @@ Copyright 2008-2014 CodePoint Ltd, Shift Technology Ltd, and contributors;
 with its license. Its text is set in the Xolonium font by Severin Meyer
 (GPL with the font exception, `data/insanotic.pk3dir/ui/fonts/README.txt`).
 
+The Android build links Xonotic's d0_blind_id and d0_rijndael (BSD 3-clause,
+Rudolf Polzer; Rijndael is public domain), fetched at build time, with libtommath
+(public domain) for the big numbers instead of the LGPL GMP: players get an ID key
+and can join servers that require one.
+
 The repacking pipeline uses [ASTC Encoder](https://github.com/ARM-software/astc-encoder)
 (Apache-2.0, Arm Limited), FFmpeg and libopus (Xiph.Org) at build time only, and
 the engine decodes zstd with the Zstandard library (BSD, Meta; `darkplaces/zstd/`)

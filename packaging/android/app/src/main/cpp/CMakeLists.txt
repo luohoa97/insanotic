@@ -68,6 +68,14 @@ FetchContent_Declare(opusfile
 	URL https://downloads.xiph.org/releases/opus/opusfile-0.12.tar.gz
 		https://github.com/xiph/opusfile/releases/download/v0.12/opusfile-0.12.tar.gz
 	URL_HASH SHA256=118d8601c12dd6a44f52423e68ca9083cc9f2bfe72da7a8c1acb22a80ae3550b)
+FetchContent_Declare(tommath
+	URL https://github.com/libtom/libtommath/releases/download/v1.3.0/ltm-1.3.0.tar.xz
+	URL_HASH SHA256=296272d93435991308eb73607600c034b558807a07e829e751142e65ccfa9d08)
+# Xonotic's player ID library (BSD 3-clause; rijndael is public domain), as
+# of 2024: the version the official servers and keys work with
+FetchContent_Declare(d0blindid
+	GIT_REPOSITORY https://gitlab.com/xonotic/d0_blind_id.git
+	GIT_TAG 5ac2f5278d27fa158bb54c19c64aa60023353915)
 FetchContent_Declare(freetype
 	URL https://download.savannah.gnu.org/releases/freetype/freetype-2.13.2.tar.xz
 		https://download-mirror.savannah.gnu.org/releases/freetype/freetype-2.13.2.tar.xz
@@ -135,6 +143,32 @@ target_include_directories(opusfile PRIVATE
 	"${opus_SOURCE_DIR}/include")
 target_compile_options(opusfile PRIVATE -w)
 target_link_libraries(opusfile PUBLIC opus ogg)
+
+# --- d0_blind_id + d0_rijndael (static, for crypto.c LINK_TO_CRYPTO): the
+# player ID keys and the encrypted connections. Its big numbers come from
+# libtommath (public domain, built from its sources here) rather than GMP,
+# which is LGPL and would have to be relinkable. ---
+FetchContent_MakeAvailable(tommath)
+FetchContent_MakeAvailable(d0blindid)
+file(GLOB TOMMATH_SOURCES CONFIGURE_DEPENDS "${tommath_SOURCE_DIR}/bn_*.c")
+add_library(tommath STATIC ${TOMMATH_SOURCES})
+target_include_directories(tommath PUBLIC "${tommath_SOURCE_DIR}")
+# optimized even in debug builds: its MP_HAS() checks rely on dead code being removed
+target_compile_options(tommath PRIVATE -w -O2)
+# crypto.c includes <d0_blind_id/d0_blind_id.h>
+set(D0_INCLUDE "${CMAKE_BINARY_DIR}/d0include")
+foreach(h d0.h d0_blind_id.h d0_rijndael.h)
+	configure_file("${d0blindid_SOURCE_DIR}/${h}" "${D0_INCLUDE}/d0_blind_id/${h}" COPYONLY)
+endforeach()
+add_library(d0_blind_id STATIC
+	"${d0blindid_SOURCE_DIR}/d0_blind_id.c" "${d0blindid_SOURCE_DIR}/d0.c"
+	"${d0blindid_SOURCE_DIR}/d0_iobuf.c" "${d0blindid_SOURCE_DIR}/sha2.c"
+	"${d0blindid_SOURCE_DIR}/d0_bignum-tommath.c" "${d0blindid_SOURCE_DIR}/d0_rijndael.c")
+target_compile_definitions(d0_blind_id PRIVATE TOMMATH)
+target_include_directories(d0_blind_id PRIVATE "${d0blindid_SOURCE_DIR}")
+# sha2.c wants BYTE_ORDER from the system headers
+target_compile_options(d0_blind_id PRIVATE -w -include endian.h)
+target_link_libraries(d0_blind_id PUBLIC tommath)
 
 # --- freetype (static; fonts are TTF, DP_FREETYPE_STATIC on Android) ---
 set(FT_DISABLE_ZLIB OFF CACHE BOOL "" FORCE)
@@ -258,6 +292,7 @@ add_library(main SHARED ${SRC})
 target_include_directories(main PRIVATE
 	"${CMAKE_CURRENT_SOURCE_DIR}/shim"
 	"${DP}"
+	"${D0_INCLUDE}"
 	"${DP}/rmlui/Include")
 
 target_compile_definitions(main PRIVATE
@@ -289,7 +324,7 @@ target_include_directories(main PRIVATE
 
 target_link_libraries(main PRIVATE
 	SDL2::SDL2
-	opusfile vorbisfile vorbis ogg
+	opusfile vorbisfile vorbis ogg d0_blind_id
 	freetype
 	jpeg-static
 	z m dl log android GLESv2)
