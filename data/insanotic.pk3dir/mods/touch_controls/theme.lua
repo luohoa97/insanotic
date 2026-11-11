@@ -135,7 +135,9 @@ function theme.weapon(cx, cy, w, h, weapon, lit, opacity)
 		centred_text("-", cx, cy, h * 0.4, a * 0.6)
 		return
 	end
-	local icon = ICONS[weapon.name] or ("weapon" .. weapon.name)
+	-- the icon the server's game code names (custom weapons too), else
+	-- the stock names by netname
+	local icon = weapon.icon or ICONS[weapon.name] or ("weapon" .. weapon.name)
 	-- some weapons report a stat that is not an ammo count (a float's
 	-- bits read as an integer): show no number for those
 	local ammo = weapon.ammo
