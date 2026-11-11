@@ -55,11 +55,15 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
  * pk3 are installed (asking first, with progress), then starts the engine in
  * [GameActivity]. The work itself lives in [SetupModel].
  */
+private const val ACTION_OPTIMIZE_DATA = "org.insanotic.android.OPTIMIZE_DATA"
+
 class SetupActivity : ComponentActivity() {
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 		enableEdgeToEdge()
 		val ready = GameData.isReady(this)
+		if (intent?.action == ACTION_OPTIMIZE_DATA)
+			SetupModel.reofferUpgrade(this)
 		// a returning player goes straight into the game, unless there is an update
 		if (ready)
 			UpdateModel.check(this, force = false)

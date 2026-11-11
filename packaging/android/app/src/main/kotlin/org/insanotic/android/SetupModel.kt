@@ -104,6 +104,11 @@ object SetupModel {
 		}
 	}
 
+	/** The player asked for the offer again (the app icon's shortcut). */
+	fun reofferUpgrade(ctx: Context) {
+		prefs(ctx).edit().putBoolean(DECLINED, false).apply()
+	}
+
 	/** The player does not want the repacked packs (asked once). */
 	fun declineUpgrade(ctx: Context) {
 		prefs(ctx).edit().putBoolean(DECLINED, true).apply()

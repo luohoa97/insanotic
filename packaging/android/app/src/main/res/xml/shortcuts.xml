@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- Long press on the app icon: offers the repacked game data again after "Not now" -->
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+	<shortcut
+		android:shortcutId="optimize_data"
+		android:enabled="true"
+		android:shortcutShortLabel="@string/shortcut_optimize">
+		<intent
+			android:action="org.insanotic.android.OPTIMIZE_DATA"
+			android:targetPackage="org.insanotic.android"
+			android:targetClass="org.insanotic.android.SetupActivity" />
+	</shortcut>
+</shortcuts>
