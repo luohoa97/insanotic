@@ -1,0 +1,96 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# Repacks the official Xonotic 0.8.6 packs (zstd entries, Opus audio, and for
+# Android ASTC textures; see misc/insanotic/repack-assets.sh) and publishes
+# them as the assets of a GitHub release, which is where the Android app
+# fetches them from. The packs are not in git. Run it by hand (Actions >
+# Repack assets) or push a tag assets-*; the release is named after the tag
+# (default assets-0.8.6-r1). The job summary lists the sizes before and after.
+name: Repack assets
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release to publish the packs to
+        default: assets-0.8.6-r1
+      profiles:
+        description: Pack sets to build (android, desktop)
+        default: android desktop
+      astc_color:
+        description: ASTC block size of color textures
+        default: 6x6
+      astc_detail:
+        description: ASTC block size of normal maps and 2D graphics
+        default: 4x4
+  push:
+    tags:
+      - 'assets-*'
+
+permissions:
+  contents: write
+
+env:
+  XONOTIC_ZIP: https://dl.xonotic.org/xonotic-0.8.6.zip
+  ASTCENC_VERSION: 5.7.1
+  # SHA-256 of astcenc-5.7.1-linux-x64.zip, from the astc-encoder release
+  ASTCENC_SHA256: f1d576f0801e7701548da78d782f4bf70dfde3673a238d1a2ac0ebd3511b2f37
+
+jobs:
+  repack:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+
+      - name: Tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends ffmpeg unzip
+          ffmpeg -hide_banner -encoders | grep -q libopus
+          curl -fsSL -o astcenc.zip "https://github.com/ARM-software/astc-encoder/releases/download/$ASTCENC_VERSION/astcenc-$ASTCENC_VERSION-linux-x64.zip"
+          echo "$ASTCENC_SHA256  astcenc.zip" | sha256sum -c -
+          unzip -q astcenc.zip -d astcenc
+          if grep -q avx2 /proc/cpuinfo; then bin=astcenc-avx2; else bin=astcenc-sse4.1; fi
+          echo "ASTCENC=$PWD/astcenc/bin/$bin" >> "$GITHUB_ENV"
+
+      - name: Test the repacker
+        run: misc/insanotic/test-repack.sh
+
+      - name: Official packs
+        run: |
+          curl -fsSL -o xonotic.zip "$XONOTIC_ZIP"
+          mkdir official
+          unzip -q -j xonotic.zip 'Xonotic/data/*.pk3' -d official
+          rm xonotic.zip official/*compat*.pk3
+          ls -l official
+
+      - name: Repack
+        env:
+          ASTC_COLOR: ${{ inputs.astc_color || '6x6' }}
+          ASTC_DETAIL: ${{ inputs.astc_detail || '4x4' }}
+          PROFILES: ${{ inputs.profiles || 'android desktop' }}
+        run: |
+          for p in $PROFILES; do
+            misc/insanotic/repack-assets.sh -p "$p" -o out -j "$(nproc)" official/*.pk3
+            {
+              echo "### $p"
+              cat "out/sizes-$p.md"
+              echo
+            } >> "$GITHUB_STEP_SUMMARY"
+          done
+          ls -l out
+
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag || github.ref_name }}
+        run: |
+          gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --prerelease \
+            --title "Repacked game data $TAG" \
+            --notes "Xonotic 0.8.6 packs repacked by misc/insanotic/repack-assets.sh (zstd, Opus, and ASTC for android-*). The manifest-*.txt files list each pack with its size and CRC32."
+          gh release upload "$TAG" out/*.pk3 out/manifest-*.txt out/sizes-*.md --clobber
