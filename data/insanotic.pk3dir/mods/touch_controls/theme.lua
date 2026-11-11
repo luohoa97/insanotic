@@ -23,6 +23,9 @@ local ICONS = {
 	hlac = "weaponhlac", seeker = "weaponseeker", rifle = "weaponrifle",
 	fireball = "weaponfireball", tuba = "weapontuba", arc = "weaponarc",
 	shockwave = "weaponshockwave",
+	-- Overkill
+	okshotgun = "ok_weapon_shotgun", okmachinegun = "ok_weapon_smg", oknex = "ok_weapon_rail",
+	okhmg = "weaponhmg", okrpc = "weaponrpc", hmg = "weaponhmg", rpc = "weaponrpc",
 }
 
 local function parse_rgb(s, default)
