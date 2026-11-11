@@ -28,10 +28,11 @@ cvar("touch_controls_size", 1, "scale of all controls")
 cvar("touch_controls_opacity", 1, "opacity of all controls (0.2 - 1)")
 cvar("touch_controls_look_sensitivity", 0.25, "degrees of turn per screen unit dragged")
 cvar("touch_controls_stick_radius", 70, "joystick radius in screen units (before touch_controls_size)")
-cvar("touch_controls_stick_deadzone", 0.12, "fraction of the stick radius that does nothing")
+cvar("touch_controls_stick_deadzone", 0.08, "fraction of the stick radius that does nothing")
+cvar("touch_controls_stick_full", 0.85, "fraction of the stick radius that already means full speed")
 cvar("touch_controls_fire_look", 1, "1 = dragging on FIRE also turns the view")
 cvar("touch_controls_autohop", 1, "1 = holding JUMP jumps again at every landing (bunny hop)")
-cvar("touch_controls_airstrafe", 1, "1 = in the air, sideways stick plus turning the view strafes for speed (only where assists are allowed)")
+cvar("touch_controls_airstrafe", 0, "1 = in the air, sideways stick plus turning the view strafes for speed (only where assists are allowed); off by default: it rewrites the stick")
 
 local B = {
 	attack = xon.BUTTON_ATTACK, attack2 = xon.BUTTON_ATTACK2,
@@ -204,13 +205,20 @@ xon.on("Input", function(ev)
 		local r = layout.stick_r
 		local sy
 		sx, sy = (stick.kx - stick.bx) / r, (stick.ky - stick.by) / r
+		-- analog: the thumb's distance from the centre is the speed, its
+		-- direction the direction, exactly (no snapping to 8 ways), linear
+		-- from the dead zone to full speed near the rim. Full speed is the
+		-- server's top speed: input beyond it would make the outer part of
+		-- the stick all mean "full" and the movement feel digital.
 		local mag = math.sqrt(sx * sx + sy * sy)
 		local dead = xon.cvar("touch_controls_stick_deadzone")
+		local full = math.max(dead + 0.05, xon.cvar("touch_controls_stick_full"))
 		if mag > dead then
-			local k = math.min(1, (mag - dead) / (1 - dead)) / mag
+			local speed = math.min(1, (mag - dead) / (full - dead))
+			local top = xon.max_speed() or (xon.cvar("cl_forwardspeed") or 360)
+			local k = speed * top / mag
 			local m = ev.move
-			ev.move = xon.vec(m.x - sy * k * (xon.cvar("cl_forwardspeed") or 400),
-			                  m.y + sx * k * (xon.cvar("cl_sidespeed") or 400), m.z)
+			ev.move = xon.vec(m.x - sy * k, m.y + sx * k, m.z)
 		else
 			sx = 0
 		end
