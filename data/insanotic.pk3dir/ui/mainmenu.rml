@@ -8,9 +8,12 @@
 	<!-- The three big picture buttons and the two small ones below them, as in
 	     the QuakeC menu. A data-cmd is the console command a click runs;
 	     "menu_cmd directmenu X" makes the QuakeC menu open its dialog X. -->
+	<!-- The Xonotic logo (the 0.8.6 art). The QuakeC menu draws its own copy
+	     behind this one only when this document is not used. -->
+	<img id="logo" src="logo.png"/>
 	<div id="stage">
 		<div id="big">
-			<div class="card" id="singleplayer" data-cmd="menu_cmd directmenu Singleplayer">
+			<div class="card" id="singleplayer" data-cmd="rml_show singleplayer">
 				<div class="shade"></div>
 				<div class="glow"></div>
 				<div class="text">
@@ -18,7 +21,7 @@
 					<div class="title">Singleplayer</div>
 				</div>
 			</div>
-			<div class="card" id="multiplayer" data-cmd="menu_cmd directmenu Multiplayer">
+			<div class="card" id="multiplayer" data-cmd="rml_show servers">
 				<div class="shade"></div>
 				<div class="glow"></div>
 				<div class="text">

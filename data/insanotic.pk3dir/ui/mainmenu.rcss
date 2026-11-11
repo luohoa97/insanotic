@@ -8,6 +8,14 @@ body {
 	font-size: 16dp;
 }
 
+#logo {
+	position: absolute;
+	left: 50%;
+	top: 3%;
+	width: 36%;
+	margin-left: -18%;
+}
+
 #stage {
 	position: absolute;
 	left: 0;
@@ -149,6 +157,11 @@ body {
    rml_scale), so the same numbers give bigger things. The picture buttons
    grow to fill the space, and Credits and Quit become wide bars. */
 @media (max-height: 500dp) {
+	#logo {
+		top: 2%;
+		width: 28%;
+		margin-left: -14%;
+	}
 	#big {
 		top: 24%;
 		height: 46%;
@@ -180,9 +193,14 @@ body {
 /* Phones held upright (and any window taller than wide): the three picture
    buttons are stacked, each far taller than a finger needs. */
 @media (orientation: portrait) {
+	#logo {
+		top: 2%;
+		width: 64%;
+		margin-left: -32%;
+	}
 	#big {
-		top: 12%;
-		height: 56%;
+		top: 15%;
+		height: 54%;
 		left: 5%;
 		right: 5%;
 		flex-direction: column;
