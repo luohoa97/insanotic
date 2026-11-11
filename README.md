@@ -1,3 +1,41 @@
+# Insanotic
+
+**Insanotic** is a fork of [Xonotic](https://xonotic.org) 0.8.6 that adds
+Lua scripting. Server **plugins** (`plugins/<name>/init.lua`) hook every
+gameplay event of the dedicated server, in a sandbox that disables a
+misbehaving plugin instead of crashing the server. Players connect with an
+unmodified Xonotic 0.8.6 client. Client-side Lua **mods**, touch controls
+and a launcher are in progress.
+
+The project is three repositories, like upstream Xonotic:
+
+| Repository | Contents |
+|---|---|
+| [insanotic](https://github.com/luohoa97/insanotic) | this one: build scripts, docs, example plugins |
+| [insanotic-darkplaces](https://github.com/luohoa97/insanotic-darkplaces) | engine (DarkPlaces) with the Lua runtime |
+| [insanotic-data](https://github.com/luohoa97/insanotic-data) | game code (QuakeC) and data |
+
+### Build and run
+
+Needs git, a C compiler, make, curl and SDL2 development files for the
+client. Every command below is plain POSIX sh, so it works from fish too.
+
+```sh
+git clone https://github.com/luohoa97/insanotic.git
+cd insanotic
+misc/insanotic/checkout.sh   # engine, game code, compiler
+make run-server              # build everything, start a server with plugins
+make test-plugins            # sandbox tests
+```
+
+Docs: [docs/MODDING.md](docs/MODDING.md) (plugin quickstart, API, sandbox
+limits) and [docs/hooks.md](docs/hooks.md) (every server hook).
+
+Insanotic is free software under the GNU GPL version 3 or later, like
+Xonotic. The vendored Lua 5.4 is MIT licensed (`darkplaces/lua/LICENSE`).
+
+---
+
 # Xonotic
 
 ![Xonotic Logo](https://xonotic.org/static/img/xonotic_logo_web.svg)
