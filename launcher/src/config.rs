@@ -19,6 +19,8 @@ pub struct Config {
     pub server_plugins: bool,
     /// Folder names of client mods switched off (passed as cl_lua_disabled).
     pub disabled_mods: Vec<String>,
+    /// Folder names of server plugins switched off (passed as sv_lua_disabled).
+    pub disabled_plugins: Vec<String>,
     pub aim_assist_mode: u32,
     pub touch_controls_force: bool,
 }
@@ -35,6 +37,7 @@ impl Default for Config {
             port: 26000,
             server_plugins: true,
             disabled_mods: Vec::new(),
+            disabled_plugins: Vec::new(),
             aim_assist_mode: 2,
             touch_controls_force: false,
         }

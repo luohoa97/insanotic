@@ -528,6 +528,9 @@ fn build_host(state: &Shared, toasts: &adw::ToastOverlay) -> adw::PreferencesPag
                 "+set".into(),
                 "g_lua".into(),
                 (cfg.server_plugins as u8).to_string(),
+                "+set".into(),
+                "sv_lua_disabled".into(),
+                cfg.disabled_plugins.join(" "),
                 "+port".into(),
                 cfg.port.to_string(),
                 "+set".into(),
@@ -630,7 +633,7 @@ fn build_mods(state: &Shared, toasts: &adw::ToastOverlay) -> adw::PreferencesPag
         .build();
     let plugins_group = adw::PreferencesGroup::builder()
         .title("Server Plugins")
-        .description("Lua plugins that run on a server with plugins enabled (see Host).")
+        .description("Lua plugins that run on a server with plugins enabled (see Host). Changes apply the next time you start the server.")
         .build();
 
     let refresh_btn = gtk::Button::builder().icon_name("view-refresh-symbolic").valign(gtk::Align::Center).build();
@@ -696,10 +699,21 @@ fn build_mods(state: &Shared, toasts: &adw::ToastOverlay) -> adw::PreferencesPag
             }
             let plugins = scan::scan_extensions(&game, Kind::Plugin);
             for e in &plugins {
-                let row = adw::ActionRow::builder()
+                let row = adw::SwitchRow::builder()
                     .title(glib::markup_escape_text(&e.name).as_str())
                     .subtitle(glib::markup_escape_text(&describe(e)).as_str())
+                    .active(!state.cfg.borrow().disabled_plugins.contains(&e.folder))
                     .build();
+                let folder = e.folder.clone();
+                let st = state.clone();
+                row.connect_active_notify(move |r| {
+                    let mut cfg = st.cfg.borrow_mut();
+                    cfg.disabled_plugins.retain(|f| *f != folder);
+                    if !r.is_active() {
+                        cfg.disabled_plugins.push(folder.clone());
+                    }
+                    cfg.save();
+                });
                 plugins_group.add(&row);
                 added.borrow_mut().push((plugins_group.clone(), row.upcast()));
             }
