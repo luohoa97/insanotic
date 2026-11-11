@@ -3,6 +3,7 @@
 # Insanotic build and run targets, included from the top-level Makefile.
 # Recipes are plain POSIX sh, so they work the same from fish, bash or zsh.
 #
+#   make run              build client + QC and start Insanotic (menu)
 #   make run-server       build engine + QC, fetch the map, start a dedicated
 #                         server with Lua plugins on (g_lua 1) and some bots
 #   make test-plugins     end-to-end test of the plugin sandbox
@@ -12,7 +13,7 @@
 #
 # Knobs: INSANOTIC_MAP, INSANOTIC_PORT, INSANOTIC_BOTS, INSANOTIC_DP_FLAGS.
 
-INSANOTIC_GOALS := insanotic insanotic-server insanotic-client insanotic-qc \
+INSANOTIC_GOALS := run insanotic insanotic-server insanotic-client insanotic-qc \
 	insanotic-gmqcc insanotic-map insanotic-hooks run-server test-plugins
 
 INSANOTIC_MAP ?= stormkeep
@@ -49,17 +50,21 @@ insanotic-server:
 insanotic-client:
 	$(MAKE) -C darkplaces sdl-release $(INSANOTIC_DP_FLAGS)
 
+# official 0.8.6 map pack from an installed Xonotic when there is one (maps
+# with textures), otherwise just the compiled map from the autobuild server
 insanotic-map:
-	sh misc/insanotic/fetch-map.sh $(INSANOTIC_MAP)
+	sh misc/insanotic/link-release-data.sh 2>/dev/null || sh misc/insanotic/fetch-map.sh $(INSANOTIC_MAP)
 
 insanotic-hooks:
 	sh misc/insanotic/gen-lua-hooks.sh
+
+run: insanotic-client insanotic-qc insanotic-map
+	./darkplaces/darkplaces-sdl -xonotic -userdir build/userdir-client
 
 run-server: insanotic-server insanotic-qc insanotic-map
 	./darkplaces/darkplaces-dedicated -xonotic -userdir build/userdir \
 		+port $(INSANOTIC_PORT) +exec insanotic-server.cfg \
 		+set bot_number $(INSANOTIC_BOTS) +map $(INSANOTIC_MAP)
 
-test-plugins: insanotic-server insanotic-qc
-	sh misc/insanotic/fetch-map.sh stormkeep
+test-plugins: insanotic-server insanotic-qc insanotic-map
 	sh misc/insanotic/test-plugins.sh

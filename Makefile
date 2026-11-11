@@ -52,6 +52,7 @@ help:
 	@echo
 	@printf "     \e[1;33m===== Insanotic (git checkout) =====\e[m\n"
 	@echo
+	@echo   "  make run                   Build the client + QC and play Insanotic"
 	@echo   "  make run-server            Build engine + QC, start a dedicated server with Lua plugins"
 	@echo   "  make test-plugins          Run the Lua plugin sandbox tests"
 	@echo   "  make insanotic             Build the dedicated engine and the QC"
