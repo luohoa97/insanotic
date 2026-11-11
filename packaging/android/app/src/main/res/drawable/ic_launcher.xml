@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+	android:width="96dp"
+	android:height="96dp"
+	android:viewportWidth="96"
+	android:viewportHeight="96">
+	<path android:fillColor="#101820" android:pathData="M0,0h96v96h-96z" />
+	<!-- an "I" bar with a crosshair ring -->
+	<path android:fillColor="#FF6A1A" android:pathData="M40,24h16v48h-16z" />
+	<path
+		android:strokeColor="#FFFFFF"
+		android:strokeWidth="5"
+		android:pathData="M48,48m-30,0a30,30 0,1 1,60 0a30,30 0,1 1,-60 0" />
+</vector>

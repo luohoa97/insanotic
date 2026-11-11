@@ -1,0 +1,107 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# Flatpak manifest for Insanotic: the launcher, the engine (SDL client and
+# dedicated server) and the Insanotic game data. The Xonotic 0.8.6 maps,
+# textures and sounds are NOT bundled: on first run the launcher offers to
+# link them from an installed Xonotic or to download the official release.
+#
+# Build from the repository root of the main repo (the engine and the game
+# data are fetched from their own repositories):
+#
+#   flatpak-builder --user --install --force-clean build/flatpak \
+#       packaging/flatpak/io.github.luohoa97.Insanotic.yml
+#
+# Needs org.gnome.Sdk//49 and org.freedesktop.Sdk.Extension.rust-stable//25.08.
+# After a change of launcher/Cargo.lock, run packaging/flatpak/gen-cargo-sources.sh.
+
+app-id: io.github.luohoa97.Insanotic
+runtime: org.gnome.Platform
+runtime-version: '49'
+sdk: org.gnome.Sdk
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.rust-stable
+command: insanotic-launcher
+
+finish-args:
+  - --share=ipc
+  - --share=network
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --socket=pulseaudio
+  - --device=dri
+  # the engine keeps configs, saves and downloads in ~/.insanotic
+  - --persist=.insanotic
+  # read access to an installed Xonotic, to link its game assets
+  - --filesystem=/var/lib/flatpak/app/org.xonotic.Xonotic:ro
+  - --filesystem=xdg-data/flatpak/app/org.xonotic.Xonotic:ro
+  # where the launcher finds the program files (see launcher/src/assets.rs)
+  - --env=INSANOTIC_BUNDLE=/app/share/insanotic
+
+cleanup:
+  - /bin/gmqcc
+
+modules:
+  # QuakeC compiler, only needed to build the game code
+  - name: gmqcc
+    buildsystem: simple
+    build-commands:
+      - make -j"$FLATPAK_BUILDER_N_JOBS" gmqcc CXX=g++
+      - install -Dm755 gmqcc /app/bin/gmqcc
+    sources:
+      - type: git
+        url: https://gitlab.com/xonotic/gmqcc.git
+        tag: xonotic-v0.8.6
+
+  # engine: darkplaces with the Lua runtime
+  - name: insanotic-darkplaces
+    buildsystem: simple
+    build-commands:
+      - make -j"$FLATPAK_BUILDER_N_JOBS" sv-release sdl-release DP_LINK_JPEG=dlopen
+      - install -Dm755 darkplaces-sdl /app/share/insanotic/darkplaces/darkplaces-sdl
+      - install -Dm755 darkplaces-dedicated /app/share/insanotic/darkplaces/darkplaces-dedicated
+    sources:
+      - type: git
+        url: https://github.com/luohoa97/insanotic-darkplaces.git
+        branch: main
+
+  # game code (QuakeC compiled to progs.dat, csprogs.dat, menu.dat) and data
+  - name: insanotic-data
+    buildsystem: simple
+    build-commands:
+      # the watermark must stay the release's, so stock 0.8.6 clients accept csprogs.dat
+      - make -C qcsrc qc QCC=/app/bin/gmqcc QCCFLAGS_WATERMARK=xonotic-v0.8.6
+      - mkdir -p /app/share/insanotic/data/xonotic-data.pk3dir
+      - tar --exclude=./qcsrc --exclude=./.tmp --exclude=./.git -cf - . | tar -xf - -C /app/share/insanotic/data/xonotic-data.pk3dir
+    sources:
+      - type: git
+        url: https://github.com/luohoa97/insanotic-data.git
+        branch: main
+
+  # launcher, plus the Insanotic data of the main repository (mods, plugins, server config)
+  - name: insanotic-launcher
+    buildsystem: simple
+    build-options:
+      append-path: /usr/lib/sdk/rust-stable/bin
+      env:
+        CARGO_HOME: /run/build/insanotic-launcher/cargo
+    build-commands:
+      - cargo --offline build --release --manifest-path launcher/Cargo.toml
+      - install -Dm755 launcher/target/release/insanotic-launcher /app/bin/insanotic-launcher
+      - install -Dm644 launcher/data/icons/hicolor/scalable/apps/io.github.luohoa97.Insanotic.svg
+        /app/share/icons/hicolor/scalable/apps/io.github.luohoa97.Insanotic.svg
+      - install -Dm644 launcher/data/io.github.luohoa97.Insanotic.desktop
+        /app/share/applications/io.github.luohoa97.Insanotic.desktop
+      - install -Dm644 launcher/data/io.github.luohoa97.Insanotic.metainfo.xml
+        /app/share/metainfo/io.github.luohoa97.Insanotic.metainfo.xml
+      - mkdir -p /app/share/insanotic/data/insanotic.pk3dir
+      - cp -a insanotic.pk3dir/. /app/share/insanotic/data/insanotic.pk3dir/
+    sources:
+      - type: dir
+        path: ../../launcher
+        dest: launcher
+        skip:
+          - target
+      - type: dir
+        path: ../../data/insanotic.pk3dir
+        dest: insanotic.pk3dir
+      - cargo-sources.json

@@ -102,7 +102,7 @@ pub fn default_game_dir() -> PathBuf {
     built_from
 }
 
-/// The per-user Xonotic data directory (~/.xonotic/data).
+/// The per-user Insanotic data directory (~/.insanotic/data).
 pub fn user_data_dir() -> PathBuf {
-    gtk::glib::home_dir().join(".xonotic").join("data")
+    gtk::glib::home_dir().join(".insanotic").join("data")
 }
