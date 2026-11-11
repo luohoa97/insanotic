@@ -541,6 +541,63 @@ fn build_host(state: &Shared, toasts: &adw::ToastOverlay) -> adw::PreferencesPag
         });
     }
 
+    // server plugins
+    let plugins_group = adw::PreferencesGroup::builder()
+        .title("Plugins")
+        .description("Choose which Lua plugins the server loads. Changes apply the next time you start the server.")
+        .build();
+    let plugins_refresh = gtk::Button::builder().icon_name("view-refresh-symbolic").valign(gtk::Align::Center).build();
+    plugins_refresh.add_css_class("flat");
+    plugins_refresh.set_tooltip_text(Some("Rescan"));
+    plugins_refresh.update_property(&[gtk::accessible::Property::Label("Rescan server plugins")]);
+    plugins_group.set_header_suffix(Some(&plugins_refresh));
+    page.add(&plugins_group);
+    let plugin_rows: Rc<RefCell<Vec<gtk::Widget>>> = Rc::new(RefCell::new(Vec::new()));
+    let fill_plugins = {
+        let state = state.clone();
+        let group = plugins_group.clone();
+        let rows = plugin_rows.clone();
+        move || {
+            for w in rows.borrow_mut().drain(..) {
+                group.remove(&w);
+            }
+            let game = state.cfg.borrow().game_dir();
+            let plugins = scan::scan_extensions(&game, Kind::Plugin);
+            for e in &plugins {
+                let row = adw::SwitchRow::builder()
+                    .title(glib::markup_escape_text(&e.name).as_str())
+                    .subtitle(glib::markup_escape_text(&describe(e)).as_str())
+                    .active(!state.cfg.borrow().disabled_plugins.contains(&e.folder))
+                    .build();
+                let folder = e.folder.clone();
+                let st = state.clone();
+                row.connect_active_notify(move |r| {
+                    let mut cfg = st.cfg.borrow_mut();
+                    cfg.disabled_plugins.retain(|f| *f != folder);
+                    if !r.is_active() {
+                        cfg.disabled_plugins.push(folder.clone());
+                    }
+                    cfg.save();
+                });
+                group.add(&row);
+                rows.borrow_mut().push(row.upcast());
+            }
+            if plugins.is_empty() {
+                let row = adw::ActionRow::builder().title("No Server Plugins Found").build();
+                row.add_css_class("dimmed");
+                group.add(&row);
+                rows.borrow_mut().push(row.upcast());
+            }
+        }
+    };
+    fill_plugins();
+    let fill_plugins = Rc::new(fill_plugins);
+    {
+        let f = fill_plugins.clone();
+        state.game_changed.borrow_mut().push(Box::new(move || f()));
+        plugins_refresh.connect_clicked(move |_| fill_plugins());
+    }
+
     // console
     let console = adw::PreferencesGroup::builder().title("Console").build();
     let buffer = gtk::TextBuffer::new(None);
@@ -594,10 +651,12 @@ fn build_host(state: &Shared, toasts: &adw::ToastOverlay) -> adw::PreferencesPag
         let toggle = toggle.clone();
         let join = join.clone();
         let options = options.clone();
+        let plugins_group = plugins_group.clone();
         let cmd = cmd.clone();
         move |running: bool, text: &str| {
             status.set_subtitle(text);
             options.set_sensitive(!running);
+            plugins_group.set_sensitive(!running);
             join.set_sensitive(running);
             cmd.set_sensitive(running);
             toggle.set_label(if running { "Stop" } else { "Start" });
@@ -733,6 +792,18 @@ fn build_host(state: &Shared, toasts: &adw::ToastOverlay) -> adw::PreferencesPag
 
 // ------------------------------------------------------------------- Mods
 
+fn describe(e: &scan::Extension) -> String {
+    let mut head = e.origin.to_string();
+    if !e.version.is_empty() {
+        head = format!("Version {} · {}", e.version, e.origin);
+    }
+    if e.description.is_empty() {
+        head
+    } else {
+        format!("{head}\n{}", e.description)
+    }
+}
+
 fn build_mods(state: &Shared, toasts: &adw::ToastOverlay) -> adw::PreferencesPage {
     let page = adw::PreferencesPage::new();
 
@@ -740,46 +811,28 @@ fn build_mods(state: &Shared, toasts: &adw::ToastOverlay) -> adw::PreferencesPag
         .title("Client Mods")
         .description("Lua mods that run inside the game. Changes apply the next time you start the game.")
         .build();
-    let plugins_group = adw::PreferencesGroup::builder()
-        .title("Server Plugins")
-        .description("Lua plugins that run on a server with plugins enabled (see Host). Changes apply the next time you start the server.")
-        .build();
-
     let refresh_btn = gtk::Button::builder().icon_name("view-refresh-symbolic").valign(gtk::Align::Center).build();
     refresh_btn.add_css_class("flat");
     refresh_btn.set_tooltip_text(Some("Rescan"));
-    refresh_btn.update_property(&[gtk::accessible::Property::Label("Rescan mods and plugins")]);
+    refresh_btn.update_property(&[gtk::accessible::Property::Label("Rescan client mods")]);
     let open_btn = gtk::Button::builder().label("Open Mods Folder").valign(gtk::Align::Center).build();
     let header_box = gtk::Box::new(gtk::Orientation::Horizontal, 6);
     header_box.append(&refresh_btn);
     header_box.append(&open_btn);
     mods_group.set_header_suffix(Some(&header_box));
     page.add(&mods_group);
-    page.add(&plugins_group);
 
     let added: Rc<RefCell<Vec<(adw::PreferencesGroup, gtk::Widget)>>> = Rc::new(RefCell::new(Vec::new()));
 
     let rebuild = {
         let state = state.clone();
         let mods_group = mods_group.clone();
-        let plugins_group = plugins_group.clone();
         let added = added.clone();
         move || {
             for (g, w) in added.borrow_mut().drain(..) {
                 g.remove(&w);
             }
             let game = state.cfg.borrow().game_dir();
-            let describe = |e: &scan::Extension| {
-                let mut head = e.origin.to_string();
-                if !e.version.is_empty() {
-                    head = format!("Version {} · {}", e.version, e.origin);
-                }
-                if e.description.is_empty() {
-                    head
-                } else {
-                    format!("{head}\n{}", e.description)
-                }
-            };
             let mods = scan::scan_extensions(&game, Kind::Mod);
             for e in &mods {
                 let row = adw::SwitchRow::builder()
@@ -805,32 +858,6 @@ fn build_mods(state: &Shared, toasts: &adw::ToastOverlay) -> adw::PreferencesPag
                 row.add_css_class("dimmed");
                 mods_group.add(&row);
                 added.borrow_mut().push((mods_group.clone(), row.upcast()));
-            }
-            let plugins = scan::scan_extensions(&game, Kind::Plugin);
-            for e in &plugins {
-                let row = adw::SwitchRow::builder()
-                    .title(glib::markup_escape_text(&e.name).as_str())
-                    .subtitle(glib::markup_escape_text(&describe(e)).as_str())
-                    .active(!state.cfg.borrow().disabled_plugins.contains(&e.folder))
-                    .build();
-                let folder = e.folder.clone();
-                let st = state.clone();
-                row.connect_active_notify(move |r| {
-                    let mut cfg = st.cfg.borrow_mut();
-                    cfg.disabled_plugins.retain(|f| *f != folder);
-                    if !r.is_active() {
-                        cfg.disabled_plugins.push(folder.clone());
-                    }
-                    cfg.save();
-                });
-                plugins_group.add(&row);
-                added.borrow_mut().push((plugins_group.clone(), row.upcast()));
-            }
-            if plugins.is_empty() {
-                let row = adw::ActionRow::builder().title("No Server Plugins Found").build();
-                row.add_css_class("dimmed");
-                plugins_group.add(&row);
-                added.borrow_mut().push((plugins_group.clone(), row.upcast()));
             }
         }
     };
