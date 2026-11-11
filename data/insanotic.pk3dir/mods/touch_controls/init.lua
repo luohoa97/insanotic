@@ -51,6 +51,7 @@ local layout = {}
 local function update_layout(w, h)
 	local s = xon.cvar("touch_controls_size") * math.min(w, h) / 600
 	layout.scale = s
+	layout.scoreboard = xon.scoreboard and xon.scoreboard() or false
 	layout.w, layout.h = w, h
 	layout.stick_r = xon.cvar("touch_controls_stick_radius") * s
 	layout.stick_zone = { x0 = 0, y0 = h * 0.25, x1 = w * 0.45, y1 = h }
@@ -111,9 +112,16 @@ local function active()
 	return force > 0 or xon.input_mode() == "touch"
 end
 
+-- while the scoreboard is up only MENU, CHAT and TAB stay: the rest would
+-- cover it (and nobody aims or moves while reading it)
+local SCOREBOARD_KEEP = { menu = true, chat = true, score = true }
+local function shown(b)
+	return not layout.scoreboard or SCOREBOARD_KEEP[b.id]
+end
+
 local function hit_button(x, y)
 	for _, b in ipairs(layout.buttons) do
-		if math.abs(x - b.x) <= b.w * 0.55 and math.abs(y - b.y) <= b.h * 0.55 then
+		if shown(b) and math.abs(x - b.x) <= b.w * 0.55 and math.abs(y - b.y) <= b.h * 0.55 then
 			return b
 		end
 	end
@@ -131,7 +139,7 @@ local function finger_down(t)
 		held[b.id] = true
 		if b.tap then xon.command(b.tap) end
 		if b.press then xon.command(b.press) end
-	elseif not stick and in_zone(layout.stick_zone, t.x, t.y) then
+	elseif not stick and not layout.scoreboard and in_zone(layout.stick_zone, t.x, t.y) then
 		f.role = "stick"
 		stick = { id = t.id, bx = t.x, by = t.y, kx = t.x, ky = t.y }
 	else
@@ -290,7 +298,7 @@ xon.on("HUD", function(ev)
 	local o = math.max(0.2, math.min(1, xon.cvar("touch_controls_opacity")))
 	if stick then
 		theme.stick(stick.bx, stick.by, stick.kx, stick.ky, layout.stick_r, true, o)
-	else
+	elseif not layout.scoreboard then
 		theme.stick_hint(layout.stick_home.x, layout.stick_home.y, layout.stick_r, o)
 	end
 	local current
@@ -298,7 +306,9 @@ xon.on("HUD", function(ev)
 		if w.held then current = w break end
 	end
 	for _, b in ipairs(layout.buttons) do
-		if b.slot then
+		if not shown(b) then
+			-- hidden while the scoreboard is up
+		elseif b.slot then
 			theme.weapon(b.x, b.y, b.w, b.h, b.slot, held[b.id] or b.slot.held or b.slot.switching_to, o)
 		elseif b.weapon then
 			theme.weapon(b.x, b.y, b.w, b.h, current, held[b.id], o)
