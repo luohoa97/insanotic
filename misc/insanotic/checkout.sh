@@ -26,8 +26,8 @@ clone() { # clone <dir> <url> <branch-or-tag> [extra git args]
 	git clone "$@" --branch "$ref" "$url" "$dir"
 }
 
-clone darkplaces "$GH/insanotic-darkplaces.git" insanotic
-clone data/xonotic-data.pk3dir "$GH/insanotic-data.git" insanotic
+clone darkplaces "$GH/insanotic-darkplaces.git" main
+clone data/xonotic-data.pk3dir "$GH/insanotic-data.git" main
 clone gmqcc https://gitlab.com/xonotic/gmqcc.git xonotic-v0.8.6 --depth 1
 
 echo "done; next: make run-server"
