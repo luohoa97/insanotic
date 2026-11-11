@@ -222,6 +222,7 @@ target_compile_definitions(main PRIVATE
 	CONFIG_CD
 	LINK_TO_LIBJPEG
 	"BUILDTYPE=android-${INSANOTIC_VERSION}"
+	"INSANOTIC_VERSION=${INSANOTIC_VERSION}"
 	NO_BUILD_TIMESTAMPS)
 target_compile_options(main PRIVATE
 	-std=gnu11 -O3 -fno-strict-aliasing -fno-math-errno -fno-trapping-math

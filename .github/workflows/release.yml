@@ -84,6 +84,8 @@ jobs:
           git clone --depth 1 --branch "$GMQCC_TAG" "$GMQCC_REPO" gmqcc
 
       - name: Build
+        env:
+          INSANOTIC_VERSION: ${{ needs.version.outputs.version }}
         run: make -j"$(nproc)" insanotic-server insanotic-client insanotic-qc
 
       - name: Package

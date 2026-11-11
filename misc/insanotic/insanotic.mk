@@ -47,11 +47,14 @@ insanotic-qc: insanotic-gmqcc
 	$(MAKE) -C data/xonotic-data.pk3dir/qcsrc qc \
 		QCC=../../../../gmqcc/gmqcc QCCFLAGS_WATERMARK=$(INSANOTIC_WATERMARK)
 
+# the engine shows it as insanotic_version; CI sets the release name
+INSANOTIC_VERSION ?= dev-$(shell git rev-parse --short HEAD 2>/dev/null)
+
 insanotic-server:
-	$(MAKE) -C darkplaces sv-release $(INSANOTIC_DP_FLAGS)
+	$(MAKE) -C darkplaces sv-release CFLAGS_EXTRA='$(CFLAGS_EXTRA) -DINSANOTIC_VERSION=$(INSANOTIC_VERSION)' $(INSANOTIC_DP_FLAGS)
 
 insanotic-client:
-	$(MAKE) -C darkplaces sdl-release $(INSANOTIC_DP_FLAGS)
+	$(MAKE) -C darkplaces sdl-release CFLAGS_EXTRA='$(CFLAGS_EXTRA) -DINSANOTIC_VERSION=$(INSANOTIC_VERSION)' $(INSANOTIC_DP_FLAGS)
 
 # official 0.8.6 map pack from an installed Xonotic when there is one (maps
 # with textures), otherwise just the compiled map from the autobuild server
