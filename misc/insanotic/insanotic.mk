@@ -67,7 +67,7 @@ insanotic-hooks:
 	sh misc/insanotic/gen-lua-hooks.sh
 
 run: insanotic-client insanotic-qc insanotic-map
-	./darkplaces/darkplaces-sdl -xonotic -userdir build/userdir-client
+	./darkplaces/darkplaces-sdl -xonotic
 
 run-server: insanotic-server insanotic-qc insanotic-map
 	./darkplaces/darkplaces-dedicated -xonotic -userdir build/userdir \
