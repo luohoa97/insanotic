@@ -66,7 +66,9 @@ local function update_layout(w, h)
 		{ id = "prev",   label = "<",    x = w - 330 * s, y = wy, w = 52 * s, h = 52 * s, tap = "weapprev" },
 		{ id = "weapon", weapon = true,  x = w - 240 * s, y = wy, w = 84 * s, h = 62 * s, tap = "weaplast" },
 		{ id = "next",   label = ">",    x = w - 150 * s, y = wy, w = 52 * s, h = 52 * s, tap = "weapnext" },
-		{ id = "menu",   label = "MENU", x = 50 * s,  y = 36 * s, w = 76 * s, h = 40 * s, tap = "togglemenu" },
+		-- MENU: a tap opens the menu (on release), holding it half a second
+		-- opens the console instead (the on-screen keyboard comes with it)
+		{ id = "menu",   label = "MENU", x = 50 * s,  y = 36 * s, w = 76 * s, h = 40 * s, tap_release = "togglemenu", long = "toggleconsole" },
 		{ id = "chat",   label = "CHAT", x = 134 * s, y = 36 * s, w = 76 * s, h = 40 * s, tap = "messagemode" },
 		{ id = "score",  label = "TAB",  x = 218 * s, y = 36 * s, w = 76 * s, h = 40 * s, press = "+showscores", release = "-showscores" },
 	}
@@ -136,6 +138,7 @@ local function finger_down(t)
 	local b = hit_button(t.x, t.y)
 	if b then
 		f.role, f.button = "button", b
+		f.down_at = xon.realtime()
 		held[b.id] = true
 		if b.tap then xon.command(b.tap) end
 		if b.press then xon.command(b.press) end
@@ -175,6 +178,7 @@ local function finger_up(id, f)
 	if f.role == "button" then
 		held[f.button.id] = nil
 		if f.button.release then xon.command(f.button.release) end
+		if f.button.tap_release and not f.long_done then xon.command(f.button.tap_release) end
 	elseif f.role == "stick" then
 		stick = nil
 	end
@@ -293,7 +297,19 @@ xon.on("Input", function(ev)
 	ev.buttons = bits
 end)
 
+-- a button held long enough runs its long-press command once
+local function check_long_presses()
+	local now = xon.realtime()
+	for _, f in pairs(fingers) do
+		if f.role == "button" and f.button.long and not f.long_done and now - (f.down_at or now) >= 0.5 then
+			f.long_done = true
+			xon.command(f.button.long)
+		end
+	end
+end
+
 xon.on("HUD", function(ev)
+	check_long_presses()
 	if not (active() and ev.in_game) then return end
 	update_layout(ev.width, ev.height)
 	theme.refresh(layout.scale)
