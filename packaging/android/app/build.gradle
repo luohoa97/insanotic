@@ -1,0 +1,189 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+//
+// Insanotic for Android. Builds libmain.so (the DarkPlaces SDL2 client) with
+// CMake, takes SDL's Java glue from the same SDL2 source release the native
+// build uses, and packs the compiled QC plus data/insanotic.pk3dir into the
+// APK as one pk3. The 1-2 GB Xonotic data packs are NOT in the APK: the app
+// downloads them on first run (see GameData.java).
+//
+// Inputs are Gradle properties (-Pname=value), all optional:
+//   insanotic_root   checkout root (default: two levels above this project)
+//   engine_dir       darkplaces checkout (default: <root>/darkplaces)
+//   version_name     versionName (default: git describe, else "dev")
+//   version_code     versionCode (default: 1)
+//   abis             comma separated ABIs (default: arm64-v8a,x86_64)
+//   ndk_version      NDK revision to use (default below)
+//   deps_dir         download cache for third-party sources
+// Signing (release): ANDROID_KEYSTORE (path), ANDROID_KEYSTORE_PASSWORD,
+// ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD in the environment. Without them
+// the release APK is signed with the debug key so it still installs.
+
+import java.security.MessageDigest
+
+plugins {
+	id 'com.android.application'
+}
+
+def prop = { String name, String fallback -> project.findProperty(name) ?: fallback }
+
+def rootRepo   = file(prop('insanotic_root', "${rootDir}/../.."))
+def engineDir  = file(prop('engine_dir', "${rootRepo}/darkplaces"))
+def qcDir      = file("${rootRepo}/data/xonotic-data.pk3dir")
+def modsDir    = file("${rootRepo}/data/insanotic.pk3dir")
+def abiList    = prop('abis', 'arm64-v8a,x86_64').split(',').collect { it.trim() }
+def depsDir    = file(prop('deps_dir', "${buildDir}/deps"))
+
+def appVersion = prop('version_name', null)
+if (!appVersion) {
+	try {
+		def p = ['git', '-C', rootRepo.path, 'describe', '--tags', '--always'].execute()
+		appVersion = p.text.trim()
+		p.waitFor()
+	} catch (Exception ignored) {
+	}
+	appVersion = appVersion ?: 'dev'
+}
+
+// SDL2 source release: native library and Java glue (org.libsdl.app).
+def sdlVersion = '2.30.11'
+def sdlSha256  = '8b8d4aef2038533da814965220f88f77d60dfa0f32685f80ead65e501337da7f'
+def sdlTarball = new File(depsDir, "SDL2-${sdlVersion}.tar.gz")
+def sdlSrcDir  = new File(depsDir, "SDL2-${sdlVersion}")
+def sdlJavaDir = new File(sdlSrcDir, 'android-project/app/src/main/java')
+
+def fetchSdl = tasks.register('fetchSdl') {
+	description = 'Downloads and unpacks the SDL2 source release'
+	outputs.dir(sdlSrcDir)
+	doLast {
+		if (!sdlJavaDir.isDirectory()) {
+			depsDir.mkdirs()
+			if (!sdlTarball.isFile()) {
+				def url = "https://github.com/libsdl-org/SDL/releases/download/release-${sdlVersion}/SDL2-${sdlVersion}.tar.gz"
+				logger.lifecycle("Downloading ${url}")
+				new URL(url).withInputStream { i -> sdlTarball.withOutputStream { it << i } }
+			}
+			def md = MessageDigest.getInstance('SHA-256')
+			sdlTarball.eachByte(1 << 16) { buf, n -> md.update(buf, 0, n) }
+			def got = md.digest().collect { String.format('%02x', it) }.join()
+			if (got != sdlSha256) {
+				sdlTarball.delete()
+				throw new GradleException("SDL2 tarball checksum mismatch: ${got}")
+			}
+			copy {
+				from tarTree(resources.gzip(sdlTarball))
+				into depsDir
+			}
+		}
+	}
+}
+
+// The game files that go in the APK: compiled QC plus the Lua mods and
+// plugins, as one pk3 that sorts after every official data pack so it wins.
+def packGameData = tasks.register('packGameData', Zip) {
+	description = 'Packs the compiled QC and its cfgs, data/insanotic.pk3dir and the Android cfgs into a pk3'
+	destinationDirectory = layout.buildDirectory.dir('generated/gameassets')
+	archiveFileName = 'zzz-insanotic-android.pk3'
+	entryCompression = ZipEntryCompression.DEFLATED
+	preserveFileTimestamps = false
+	reproducibleFileOrder = true
+	from(qcDir) { include 'progs.dat', 'csprogs.dat', 'menu.dat', '*.cfg' }
+	from(modsDir)
+	from(file('src/gamedata'))
+	doFirst {
+		['progs.dat', 'csprogs.dat', 'menu.dat'].each {
+			if (!new File(qcDir, it).isFile())
+				throw new GradleException("${qcDir}/${it} is missing: build the QC first (make insanotic-qc)")
+		}
+		if (!modsDir.isDirectory())
+			throw new GradleException("${modsDir} is missing")
+	}
+}
+
+android {
+	namespace 'org.insanotic.android'
+	compileSdk 35
+	buildToolsVersion prop('build_tools_version', '36.0.0')
+	ndkVersion prop('ndk_version', '28.2.13676358')
+
+	defaultConfig {
+		applicationId 'org.insanotic.android'
+		minSdk 21
+		targetSdk 35
+		versionCode prop('version_code', '1').toInteger()
+		versionName appVersion
+
+		externalNativeBuild {
+			cmake {
+				abiFilters(*abiList)
+				arguments "-DANDROID_STL=c++_static",
+					"-DINSANOTIC_ENGINE_DIR=${engineDir}",
+					"-DSDL2_SOURCE_DIR=${sdlSrcDir}",
+					"-DINSANOTIC_DEPS_DIR=${depsDir}/native",
+					"-DINSANOTIC_VERSION=${appVersion}"
+			}
+		}
+	}
+
+	externalNativeBuild {
+		cmake {
+			path 'src/main/cpp/CMakeLists.txt'
+			version '3.22.1'
+		}
+	}
+
+	sourceSets {
+		main {
+			java.srcDir(files(sdlJavaDir) { builtBy fetchSdl })
+			assets.srcDir(files(layout.buildDirectory.dir('generated/gameassets')) { builtBy packGameData })
+		}
+	}
+
+	androidResources {
+		// the pk3 is a zip already, and the engine reads it through a copy
+		noCompress 'pk3'
+	}
+
+	packaging {
+		// libpng.so is dlopen()ed by the engine, so it has to be a real file
+		// in the app's native library directory.
+		jniLibs.useLegacyPackaging = true
+	}
+
+	signingConfigs {
+		release {
+			def ks = System.getenv('ANDROID_KEYSTORE')
+			if (ks) {
+				storeFile file(ks)
+				storePassword System.getenv('ANDROID_KEYSTORE_PASSWORD')
+				keyAlias System.getenv('ANDROID_KEY_ALIAS')
+				keyPassword System.getenv('ANDROID_KEY_PASSWORD')
+			}
+		}
+	}
+
+	buildTypes {
+		release {
+			minifyEnabled false
+			signingConfig System.getenv('ANDROID_KEYSTORE') ? signingConfigs.release : signingConfigs.debug
+		}
+	}
+
+	compileOptions {
+		sourceCompatibility JavaVersion.VERSION_17
+		targetCompatibility JavaVersion.VERSION_17
+	}
+
+	lint {
+		abortOnError false
+		checkReleaseBuilds false
+	}
+}
+
+// Everything that reads the unpacked SDL sources needs them fetched first.
+tasks.configureEach { t ->
+	if (t.name.startsWith('configureCMake') || t.name.startsWith('generateJsonModel')
+			|| t instanceof JavaCompile || t.name.toLowerCase().contains('lint'))
+		t.dependsOn fetchSdl
+	if (t.name.toLowerCase().contains('lint') || (t.name.startsWith('merge') && t.name.endsWith('Assets')))
+		t.dependsOn packGameData
+}
