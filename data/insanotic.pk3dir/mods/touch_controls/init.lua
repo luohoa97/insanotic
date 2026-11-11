@@ -28,7 +28,7 @@ end
 cvar("touch_controls_force", 0, "0 = show while a touchscreen is used, 1 = always show, -1 = never show")
 cvar("touch_controls_size", 1, "scale of all controls")
 cvar("touch_controls_opacity", 1, "opacity of all controls (0.2 - 1)")
-cvar("touch_controls_look_sensitivity", 0.25, "degrees of turn per screen unit dragged")
+cvar("touch_controls_look_sensitivity", 0.25, "degrees of turn per screen unit dragged at the default sensitivity (3); the sensitivity setting scales it")
 cvar("touch_controls_stick_radius", 70, "joystick radius in screen units (before touch_controls_size)")
 cvar("touch_controls_weaponbar", 1, "1 = a bar of big weapon buttons along the bottom (tap to select)")
 cvar("touch_controls_stick_follow", 0, "1 = dragging past the rim pulls the joystick base along; 0 = the base stays where the thumb landed")
@@ -231,7 +231,9 @@ xon.on("Input", function(ev)
 	if not active() then return end
 	local dt = ev.frametime or 0
 	-- look
-	local sens = xon.cvar("touch_controls_look_sensitivity")
+	-- the menu's Sensitivity slider (sensitivity, default 3) scales touch
+	-- turning too: at 3 a drag turns by touch_controls_look_sensitivity
+	local sens = xon.cvar("touch_controls_look_sensitivity") * (xon.cvar("sensitivity") or 3) / 3
 	if math.abs(look_dx) > 0.5 then
 		turn_dir = look_dx > 0 and 1 or -1  -- dragging right turns the view right
 		turn_left = TURN_MEMORY
