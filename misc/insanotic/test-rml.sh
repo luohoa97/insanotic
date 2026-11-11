@@ -7,7 +7,9 @@
 #   - the document is the one that is showing (rml_list),
 #   - a click on the Settings button runs its command, and the menu answers by
 #     opening the Settings dialog, which takes the RmlUi menu away again,
-#   - closing that dialog brings it back.
+#   - closing that dialog brings it back,
+#   - on a touch screen a drag scrolls a list (tests/ui/scrolltest.rml), and a
+#     tap on one of its rows runs that row's command.
 # The pixel positions are for 1280x720: (1000, 400) is the Settings button, the
 # third of the row of three. A fresh profile would first show the first-run
 # dialog, so the player name is set.
@@ -65,5 +67,20 @@ else
 	echo "FAIL closing the dialog brings the document back"
 	fail=1
 fi
+
+# Touch screen: the list in tests/ui/scrolltest.rml is 40 rows high, the drag
+# goes 250 pixels up, and the tap lands on a row after that.
+echo "== touch screen"
+log=$(timeout 120 "$ENGINE" -xonotic -game tests -basedir "$PWD" -userdir "$USERDIR" \
+	+developer 1 +_cl_name RmlTest +vid_fullscreen 0 +vid_width 1280 +vid_height 720 +vid_touchscreen 1 \
+	+defer 12 "rml_show scrolltest" \
+	+defer 13 "rml_drag 640 450 640 200" \
+	+defer 16 "rml_click 640 300" \
+	+defer 18 quit 2>&1)
+
+reject "no RmlUi warnings or errors" "^RmlUi: .*\(Could not\|No font\|not found\|did not\|Invalid\|Unknown\)" "$log"
+expect "dragging the list scrolls it" "dragged a list to scroll position [0-9][0-9][0-9]" "$log"
+reject "the drag does not click a row" "RmlUi: command echo ROW_" "$(printf '%s\n' "$log" | sed '/dragged a list/,$d')"
+expect "tapping a row runs its command" "RmlUi: command echo ROW_" "$log"
 
 exit $fail

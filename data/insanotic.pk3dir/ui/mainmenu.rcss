@@ -2,17 +2,10 @@
    monitor, and about 450 dp on a touch screen (see rml_scale), so the same
    numbers give bigger things on phones. */
 
-div {
-	display: block;
-}
-
 body {
-	display: block;
 	width: 100%;
 	height: 100%;
-	font-family: "Xolonium GPL";
 	font-size: 16dp;
-	color: #ffffff;
 }
 
 #stage {
@@ -42,6 +35,8 @@ body {
 	border: 1dp #ffffff40;
 	background-color: #0d1424;
 	cursor: pointer;
+	tab-index: auto;
+	nav: auto; /* arrow keys move between the buttons */
 	animation: rise 0.45s cubic-out;
 }
 .card:last-child {
@@ -55,7 +50,7 @@ body {
 	image-color: #808080;
 }
 
-.card:hover, .card:active {
+.card:hover, .card:active, .card:focus-visible {
 	border-color: #4da6ff;
 }
 
@@ -79,7 +74,7 @@ body {
 	background-color: #4da6ff00;
 	transition: background-color 0.12s;
 }
-.card:hover .glow, .chip:hover .glow {
+.card:hover .glow, .chip:hover .glow, .card:focus-visible .glow, .chip:focus-visible .glow {
 	background-color: #4da6ff33;
 }
 .card:active .glow, .chip:active .glow {
@@ -121,8 +116,10 @@ body {
 	border: 1dp #ffffff40;
 	background-color: #0d1424cc;
 	cursor: pointer;
+	tab-index: auto;
+	nav: auto;
 }
-.chip:hover, .chip:active {
+.chip:hover, .chip:active, .chip:focus-visible {
 	border-color: #4da6ff;
 }
 .label {

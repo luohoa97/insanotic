@@ -1,0 +1,61 @@
+<rml>
+<head>
+	<title>Scroll test</title>
+	<link type="text/rcss" href="common.rcss"/>
+	<style>
+		body { width: 100%; height: 100%; font-size: 16dp; }
+		#panel { position: absolute; left: 20%; top: 10%; width: 60%; height: 60%; background-color: #0d1424; border: 1dp #4da6ff; }
+		#list { height: 100%; overflow-y: scroll; }
+		.row { height: 34dp; padding: 14dp 0dp 0dp 12dp; border-bottom: 1dp #ffffff30; }
+		.row:hover { background-color: #4da6ff55; }
+	</style>
+</head>
+<body>
+	<!-- 40 rows of 48 dp in a list that shows about 8: dragging it has to scroll
+	     it, and a plain tap on a row has to run that row's command. -->
+	<div id="panel">
+		<div id="list">
+		<div class="row" data-cmd="echo ROW_1">Row 1</div>
+		<div class="row" data-cmd="echo ROW_2">Row 2</div>
+		<div class="row" data-cmd="echo ROW_3">Row 3</div>
+		<div class="row" data-cmd="echo ROW_4">Row 4</div>
+		<div class="row" data-cmd="echo ROW_5">Row 5</div>
+		<div class="row" data-cmd="echo ROW_6">Row 6</div>
+		<div class="row" data-cmd="echo ROW_7">Row 7</div>
+		<div class="row" data-cmd="echo ROW_8">Row 8</div>
+		<div class="row" data-cmd="echo ROW_9">Row 9</div>
+		<div class="row" data-cmd="echo ROW_10">Row 10</div>
+		<div class="row" data-cmd="echo ROW_11">Row 11</div>
+		<div class="row" data-cmd="echo ROW_12">Row 12</div>
+		<div class="row" data-cmd="echo ROW_13">Row 13</div>
+		<div class="row" data-cmd="echo ROW_14">Row 14</div>
+		<div class="row" data-cmd="echo ROW_15">Row 15</div>
+		<div class="row" data-cmd="echo ROW_16">Row 16</div>
+		<div class="row" data-cmd="echo ROW_17">Row 17</div>
+		<div class="row" data-cmd="echo ROW_18">Row 18</div>
+		<div class="row" data-cmd="echo ROW_19">Row 19</div>
+		<div class="row" data-cmd="echo ROW_20">Row 20</div>
+		<div class="row" data-cmd="echo ROW_21">Row 21</div>
+		<div class="row" data-cmd="echo ROW_22">Row 22</div>
+		<div class="row" data-cmd="echo ROW_23">Row 23</div>
+		<div class="row" data-cmd="echo ROW_24">Row 24</div>
+		<div class="row" data-cmd="echo ROW_25">Row 25</div>
+		<div class="row" data-cmd="echo ROW_26">Row 26</div>
+		<div class="row" data-cmd="echo ROW_27">Row 27</div>
+		<div class="row" data-cmd="echo ROW_28">Row 28</div>
+		<div class="row" data-cmd="echo ROW_29">Row 29</div>
+		<div class="row" data-cmd="echo ROW_30">Row 30</div>
+		<div class="row" data-cmd="echo ROW_31">Row 31</div>
+		<div class="row" data-cmd="echo ROW_32">Row 32</div>
+		<div class="row" data-cmd="echo ROW_33">Row 33</div>
+		<div class="row" data-cmd="echo ROW_34">Row 34</div>
+		<div class="row" data-cmd="echo ROW_35">Row 35</div>
+		<div class="row" data-cmd="echo ROW_36">Row 36</div>
+		<div class="row" data-cmd="echo ROW_37">Row 37</div>
+		<div class="row" data-cmd="echo ROW_38">Row 38</div>
+		<div class="row" data-cmd="echo ROW_39">Row 39</div>
+		<div class="row" data-cmd="echo ROW_40">Row 40</div>
+		</div>
+	</div>
+</body>
+</rml>

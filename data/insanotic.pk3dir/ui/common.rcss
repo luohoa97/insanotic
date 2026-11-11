@@ -1,0 +1,43 @@
+/* What every Insanotic document needs and RmlUi does not assume: it has no
+   built-in stylesheet, so without these a div is inline and a scroll bar is
+   as wide as the list it belongs to. Link it first. */
+
+div, body {
+	display: block;
+}
+
+body {
+	font-family: "Xolonium GPL";
+	color: #ffffff;
+}
+
+/* thin scroll bars, in the menu's blue; a touch screen drags the content
+   itself, so these only show where the list is */
+scrollbarvertical {
+	width: 8dp;
+	margin-left: 4dp;
+}
+scrollbarhorizontal {
+	height: 8dp;
+	margin-top: 4dp;
+}
+scrollbarvertical slidertrack, scrollbarhorizontal slidertrack {
+	background-color: #ffffff1a;
+}
+scrollbarvertical sliderbar {
+	width: 8dp;
+	min-height: 32dp;
+	background-color: #4da6ff99;
+}
+scrollbarhorizontal sliderbar {
+	height: 8dp;
+	min-width: 32dp;
+	background-color: #4da6ff99;
+}
+scrollbarvertical sliderbar:hover, scrollbarhorizontal sliderbar:hover,
+scrollbarvertical sliderbar:active, scrollbarhorizontal sliderbar:active {
+	background-color: #4da6ff;
+}
+sliderarrowdec, sliderarrowinc {
+	display: none;
+}
