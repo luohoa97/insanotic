@@ -82,8 +82,8 @@ end
 function S.choose(weapons, target, health, hold_bonus)
 	local best, best_score, held, held_score
 	for _, wp in ipairs(weapons) do
-		local w = W.get(wp.name)
-		local usable = wp.owned and w and w.kind ~= "none" and w.dps and (wp.ammo == nil or wp.ammo > 0)
+		local w = W.get(wp.name, wp.ammo)
+		local usable = wp.owned and w and w.kind ~= "none" and w.dps and (wp.ammo == nil or wp.ammo > 0 or w.melee)
 		if usable then
 			local score = w.dps * reach(w, target.dist) * hit_chance(w, target.dist, target.lateral, target.air)
 				* safety(w, target, health) * band_priority(wp.name, target.dist)

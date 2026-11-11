@@ -38,6 +38,13 @@
 -- approach of Xonotic Touch's touch_aim.c and touch_hud.c.
 
 local W = require("weapons")
+
+-- ammo of the weapon in hand (nil when it needs none)
+local function held_ammo()
+	for _, wp in ipairs(xon.weapons()) do
+		if wp.held then return wp.ammo end
+	end
+end
 local P = require("predict")
 local S = require("switch")
 local V = xon.vec
@@ -467,7 +474,7 @@ local function auto_switch(ev, enemies, now)
 	if not nearest then return end
 	-- the weapon in hand would hurt us at this distance: switch now, without
 	-- waiting out the timers (it would not fire anyway)
-	local held_w = held and W.get(held)
+	local held_w = held and W.get(held, held_ammo())
 	local urgent = held_w and blast_hits_me(xon.view(), impact_point(xon.view(), nearest.center), held_w)
 	if urgent then
 		if now - state.last_switch < 0.3 then return end
@@ -496,7 +503,7 @@ xon.on("Input", function(ev)
 	local now = xon.realtime()
 	local eye = xon.view()
 	local held = xon.held_weapon()
-	local w = held and W.get(held)
+	local w = held and W.get(held, held_ammo())
 	local enemies = visible_enemies(eye)
 	track_wounds(xon.players())
 

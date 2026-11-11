@@ -49,8 +49,20 @@ local defs = {
 -- older names some servers still send
 local aliases = { hmg = "okhmg", rpc = "okrpc" }
 
-function W.get(name)
+-- melee: a shotgun without shells swings its blade (its secondary attack)
+-- and only reaches arm's length
+local function melee(name)
+	local r = c("g_balance_" .. name .. "_secondary_melee_range", 120)
+	local dmg = c("g_balance_" .. name .. "_secondary_damage", name == "okshotgun" and 25 or 70)
+	local refire = math.max(0.05, c("g_balance_" .. name .. "_secondary_refire", 1.25))
+	return { name = name, kind = "hitscan", melee = true, splash = 0, spread = 0, gravity = 0,
+		range = {0, r * 0.8, r}, damage = dmg, dps = dmg / refire }
+end
+
+-- ammo (optional): the weapon's ammo now; a shotgun at 0 is a melee weapon
+function W.get(name, ammo)
 	name = aliases[name] or name
+	if ammo == 0 and (name == "shotgun" or name == "okshotgun") then return melee(name) end
 	local d = defs[name]
 	if not d then return nil end
 	local p = { name = name, kind = d.kind, splash = d.splash or 0, range = d.range or {0, 1000, 3000},
