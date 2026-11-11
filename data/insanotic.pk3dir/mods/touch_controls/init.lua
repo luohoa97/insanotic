@@ -1,9 +1,11 @@
 -- SPDX-License-Identifier: GPL-3.0-or-later
 -- touch_controls: on-screen controls for touchscreens.
 --
--- Left side: a dynamic joystick. It appears where your thumb lands, the
--- knob follows the thumb, and it vanishes when you let go. Dragging past
--- the rim pulls the base along, so you never "fall off" the stick.
+-- Left side: a dynamic joystick. It appears where your thumb lands and
+-- stays there until you let go; the knob follows the thumb and stops at the
+-- rim (dragging further keeps full speed in that direction, the base does
+-- not move). touch_controls_stick_follow 1 brings back a base that is
+-- pulled along behind the thumb.
 -- Right side: drag anywhere to look. Buttons: FIRE (drag on it to aim while
 -- shooting), ALT, JUMP, DUCK, weapon next/previous, and MENU / CHAT / SCORE
 -- along the top.
@@ -28,6 +30,7 @@ cvar("touch_controls_size", 1, "scale of all controls")
 cvar("touch_controls_opacity", 1, "opacity of all controls (0.2 - 1)")
 cvar("touch_controls_look_sensitivity", 0.25, "degrees of turn per screen unit dragged")
 cvar("touch_controls_stick_radius", 70, "joystick radius in screen units (before touch_controls_size)")
+cvar("touch_controls_stick_follow", 0, "1 = dragging past the rim pulls the joystick base along; 0 = the base stays where the thumb landed")
 cvar("touch_controls_stick_deadzone", 0.08, "fraction of the stick radius that does nothing")
 cvar("touch_controls_stick_full", 0.85, "fraction of the stick radius that already means full speed")
 cvar("touch_controls_fire_look", 1, "1 = dragging on FIRE also turns the view")
@@ -119,11 +122,17 @@ local function finger_move(id, f, t)
 		local r = layout.stick_r
 		local ox, oy = t.x - stick.bx, t.y - stick.by
 		local d = math.sqrt(ox * ox + oy * oy)
-		if d > r then -- drag the base along behind the thumb
+		if d > r and xon.cvar("touch_controls_stick_follow") ~= 0 then
+			-- drag the base along behind the thumb
 			stick.bx = t.x - ox / d * r
 			stick.by = t.y - oy / d * r
+			stick.kx, stick.ky = t.x, t.y
+		elseif d > r then
+			-- the knob stops at the rim, pointing at the thumb
+			stick.kx, stick.ky = stick.bx + ox / d * r, stick.by + oy / d * r
+		else
+			stick.kx, stick.ky = t.x, t.y
 		end
-		stick.kx, stick.ky = t.x, t.y
 	end
 end
 
