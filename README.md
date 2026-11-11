@@ -42,6 +42,22 @@ Xonotic. The vendored Lua 5.4 is MIT licensed (`darkplaces/lua/LICENSE`).
 
 Xonotic is an addictive, arena-style first person shooter with crisp movement and a wide array of weapons. It combines intuitive mechanics with in-your-face action to elevate your heart rate.
 
+## Launcher
+
+A desktop launcher (Rust, GTK 4 + libadwaita) starts the game, hosts a local
+server with a live console, lists client mods and server plugins with enable
+switches, and passes the quick toggles (aim assist, touch controls) to the game.
+
+```sh
+make launcher            # build launcher/target/release/insanotic-launcher
+make launcher-install    # install it, its icon and .desktop file into ~/.local
+```
+
+It needs the GTK 4 and libadwaita development files and a Rust toolchain. It
+finds the game in the directory it was built from; set `INSANOTIC_DIR` or the
+game directory in its Settings page to use another checkout. Settings are kept
+in `~/.config/insanotic/launcher.json`.
+
 ## License
 
 Xonotic is and will always be free and open source. It is available under the [copyleft](https://www.gnu.org/copyleft/)-style [GPLv3+](https://www.gnu.org/licenses/gpl-3.0.html) license (see the [COPYING](COPYING) file for details).

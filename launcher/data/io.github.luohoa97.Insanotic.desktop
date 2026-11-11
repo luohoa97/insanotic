@@ -1,0 +1,12 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+[Desktop Entry]
+Type=Application
+Name=Insanotic
+GenericName=First-Person Shooter
+Comment=Play, host and mod Insanotic, Xonotic with Lua scripting
+Exec=insanotic-launcher
+Icon=io.github.luohoa97.Insanotic
+Terminal=false
+Categories=Game;ActionGame;
+Keywords=xonotic;fps;shooter;lua;mods;
+StartupNotify=true

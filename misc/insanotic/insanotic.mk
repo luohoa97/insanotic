@@ -10,11 +10,14 @@
 #   make insanotic        build the dedicated engine and the QC
 #   make insanotic-client build the SDL client
 #   make insanotic-hooks  regenerate docs/hooks.md and the QC hook forwarders
+#   make launcher         build the desktop launcher (launcher/)
+#   make launcher-install install the launcher into ~/.local
 #
 # Knobs: INSANOTIC_MAP, INSANOTIC_PORT, INSANOTIC_BOTS, INSANOTIC_DP_FLAGS.
 
 INSANOTIC_GOALS := run insanotic insanotic-server insanotic-client insanotic-qc \
-	insanotic-gmqcc insanotic-map insanotic-hooks run-server test-plugins
+	insanotic-gmqcc insanotic-map insanotic-hooks run-server test-plugins \
+	launcher launcher-install
 
 INSANOTIC_MAP ?= stormkeep
 INSANOTIC_PORT ?= 26000
@@ -73,3 +76,23 @@ run-server: insanotic-server insanotic-qc insanotic-map
 
 test-plugins: insanotic-server insanotic-qc insanotic-map
 	sh misc/insanotic/test-plugins.sh
+
+# Desktop launcher (Rust, GTK 4 + libadwaita), see launcher/
+#   make launcher           build launcher/target/release/insanotic-launcher
+#   make launcher-install   install it, its icon and .desktop file into ~/.local
+INSANOTIC_CARGO ?= cargo
+INSANOTIC_PREFIX ?= $(HOME)/.local
+
+launcher:
+	cd launcher && $(INSANOTIC_CARGO) build --release
+
+launcher-install: launcher
+	install -Dm755 launcher/target/release/insanotic-launcher $(INSANOTIC_PREFIX)/bin/insanotic-launcher
+	install -Dm644 launcher/data/icons/hicolor/scalable/apps/io.github.luohoa97.Insanotic.svg \
+		$(INSANOTIC_PREFIX)/share/icons/hicolor/scalable/apps/io.github.luohoa97.Insanotic.svg
+	mkdir -p $(INSANOTIC_PREFIX)/share/applications
+	sed 's|^Exec=.*|Exec=$(INSANOTIC_PREFIX)/bin/insanotic-launcher|' \
+		launcher/data/io.github.luohoa97.Insanotic.desktop \
+		> $(INSANOTIC_PREFIX)/share/applications/io.github.luohoa97.Insanotic.desktop
+	-gtk-update-icon-cache -q -t $(INSANOTIC_PREFIX)/share/icons/hicolor
+	-update-desktop-database -q $(INSANOTIC_PREFIX)/share/applications
