@@ -164,7 +164,7 @@ set_target_properties(pngdl PROPERTIES OUTPUT_NAME png)
 
 # ---------------------------------------------------------------------------
 # The engine. This list is OBJ_SDL (+ OBJ_COMMON, OBJ_MENU, OBJ_SND_COMMON,
-# OBJ_LUA) from darkplaces/makefile.inc with the Android choices applied:
+# OBJ_LUA, OBJ_RML) from darkplaces/makefile.inc with the Android choices applied:
 # no CD audio (cd_null), no video capture (cap_*), sys_sdl/vid_sdl/thread_sdl.
 # ---------------------------------------------------------------------------
 set(DP "${INSANOTIC_ENGINE_DIR}")
@@ -175,7 +175,7 @@ set(LUA_SOURCES
 	lcorolib lmathlib lstrlib ltablib lutf8lib)
 set(ENGINE_SOURCES
 	builddate.c sys_sdl.c vid_sdl.c thread_sdl.c
-	menu.c mvm_cmds.c
+	menu.c mvm_cmds.c ui_rml_engine.c
 	snd_main.c snd_mem.c snd_mix.c snd_ogg.c snd_wav.c snd_sdl.c
 	cd_shared.c cd_null.c
 	bih.c crypto.c cl_collision.c cl_demo.c cl_dyntexture.c cl_input.c
@@ -202,6 +202,15 @@ foreach(f ${LUA_SOURCES})
 endforeach()
 # zstd decoder for method-93 pk3 entries (vendored in darkplaces/zstd)
 list(APPEND SRC "${DP}/zstd/zstddeclib.c")
+
+# RmlUi (vendored in darkplaces/rmlui) and its glue are C++17; the sources are
+# the same directories OBJ_RMLUI in makefile.inc lists.
+file(GLOB RMLUI_SOURCES CONFIGURE_DEPENDS
+	"${DP}/rmlui/Source/Core/*.cpp"
+	"${DP}/rmlui/Source/Core/Elements/*.cpp"
+	"${DP}/rmlui/Source/Core/FontEngineDefault/*.cpp"
+	"${DP}/rmlui/Source/Core/Layout/*.cpp")
+list(APPEND SRC "${DP}/ui_rml.cpp" ${RMLUI_SOURCES})
 foreach(f ${SRC})
 	if(NOT EXISTS "${f}")
 		message(FATAL_ERROR "engine source missing: ${f}")
@@ -215,7 +224,8 @@ add_library(main SHARED ${SRC})
 # Source-compatible shims for headers the engine tree does not carry.
 target_include_directories(main PRIVATE
 	"${CMAKE_CURRENT_SOURCE_DIR}/shim"
-	"${DP}")
+	"${DP}"
+	"${DP}/rmlui/Include")
 
 target_compile_definitions(main PRIVATE
 	_FILE_OFFSET_BITS=64
@@ -225,9 +235,13 @@ target_compile_definitions(main PRIVATE
 	LINK_TO_LIBJPEG
 	"BUILDTYPE=android-${INSANOTIC_VERSION}"
 	"INSANOTIC_VERSION=${INSANOTIC_VERSION}"
+	RMLUI_STATIC_LIB
+	RMLUI_FONT_ENGINE_FREETYPE
 	NO_BUILD_TIMESTAMPS)
 target_compile_options(main PRIVATE
-	-std=gnu11 -O3 -fno-strict-aliasing -fno-math-errno -fno-trapping-math
+	$<$<COMPILE_LANGUAGE:C>:-std=gnu11>
+	$<$<COMPILE_LANGUAGE:CXX>:-std=gnu++17>
+	-O3 -fno-strict-aliasing -fno-math-errno -fno-trapping-math
 	-Wno-everything)
 
 # gl_textures.c names desktop-GL enums its GLES2 header lacks (the code paths
