@@ -10,12 +10,14 @@
 --
 -- What it does, each frame:
 --  * finds the nearest visible enemy within aim_assist_cone degrees of
---    the crosshair
---  * magnetism: turns the view toward it at aim_assist_pull (fraction of
---    the remaining error per second), gently, never snapping
+--    the crosshair and aim_assist_range units
+--  * magnetism: turns the view toward it, never snapping. The strength
+--    ramps from aim_assist_pull_min at the edge of the cone to
+--    aim_assist_pull_max with the crosshair on the target (share of the
+--    remaining aim error removed per second)
 --  * auto-fire: holds fire while the crosshair ray passes through the
---    enemy's body scaled by aim_assist_hitbox_scale, after
---    aim_assist_autofire_delay seconds
+--    enemy's body scaled by aim_assist_hitbox_scale, within
+--    aim_assist_autofire_range units, after aim_assist_autofire_delay s
 --
 -- Finding players and teams follows the approach of Xonotic Touch's
 -- touch_aim.c (see xon.players in docs/MODDING.md).
@@ -24,9 +26,11 @@ local function cvar(name, default, desc)
 	xon.cvar_register(name, default, "aim_assist: " .. desc)
 end
 cvar("aim_assist_mode", 2, "0 = off, 1 = touchscreen only, 2 = any input (always only where the server allows it)")
-cvar("aim_assist_cone", 8, "magnetism cone half-angle in degrees")
-cvar("aim_assist_range", 3000, "maximum target distance")
-cvar("aim_assist_pull", 4, "magnetism strength: share of the aim error removed per second")
+cvar("aim_assist_cone", 8, "degrees from the crosshair where the pull starts")
+cvar("aim_assist_range", 3000, "maximum target distance for the pull")
+cvar("aim_assist_pull_min", 1, "pull strength at the edge of the cone (share of the aim error removed per second)")
+cvar("aim_assist_pull_max", 6, "pull strength with the crosshair on the target")
+cvar("aim_assist_autofire_range", 2000, "maximum target distance for auto-fire")
 cvar("aim_assist_hitbox_scale", 1.25, "enemy body scale for the auto-fire test")
 cvar("aim_assist_autofire", 1, "1 = fire while an enemy is under the crosshair")
 cvar("aim_assist_autofire_delay", 0.08, "seconds the enemy must stay under the crosshair before firing")
@@ -77,7 +81,7 @@ local function find_target(eye, fwd)
 	if teamplay == nil then teamplay = true end
 	local cos_cone = math.cos(math.rad(xon.cvar("aim_assist_cone")))
 	local range = xon.cvar("aim_assist_range")
-	local best_c, center, half
+	local best_c, center, half, best_dist
 	for _, p in ipairs(players) do
 		if not p.is_me and p.alive and not (teamplay and my_color and p.team_color == my_color) then
 			local c = p.origin + (p.mins + p.maxs) * 0.5
@@ -87,12 +91,14 @@ local function find_target(eye, fwd)
 				local cosang = (d / dist) * fwd
 				if cosang >= cos_cone and (not best_c or cosang > best_c)
 				   and xon.traceline(eye, c).fraction >= 0.999 then
-					best_c, center, half = cosang, c, (p.maxs - p.mins) * 0.5
+					best_c, center, half, best_dist = cosang, c, (p.maxs - p.mins) * 0.5, dist
 				end
 			end
 		end
 	end
-	return center, half
+	-- angle from the crosshair, for the pull ramp
+	local off = best_c and math.deg(math.acos(math.min(1, best_c))) or nil
+	return center, half, best_dist, off
 end
 
 local on_since, last_on = nil, -1
@@ -101,16 +107,19 @@ xon.on("Input", function(ev)
 	if not enabled() then on_since = nil return end
 	local eye = xon.view()
 	local fwd = xon.forward(ev.angles)
-	local center, half = find_target(eye, fwd)
+	local center, half, dist, off = find_target(eye, fwd)
 	local now = xon.realtime()
 	if center then
 		-- magnetism, frame-rate independent
 		local want = xon.vectoangles(center - eye)
-		local k = 1 - math.exp(-xon.cvar("aim_assist_pull") * ev.frametime)
+		local cone = math.max(0.1, xon.cvar("aim_assist_cone"))
+		local t = 1 - math.min(1, off / cone) -- 0 at the cone edge, 1 on target
+		local lo, hi = xon.cvar("aim_assist_pull_min"), xon.cvar("aim_assist_pull_max")
+		local k = 1 - math.exp(-(lo + (hi - lo) * t) * ev.frametime)
 		local a = ev.angles
 		ev.angles = V(a.x + angle_diff(a.x, want.x) * k, a.y + angle_diff(a.y, want.y) * k, a.z)
 		-- auto-fire against the enlarged body
-		if xon.cvar("aim_assist_autofire") ~= 0
+		if xon.cvar("aim_assist_autofire") ~= 0 and dist <= xon.cvar("aim_assist_autofire_range")
 		   and ray_hits_box(eye, xon.forward(ev.angles), center, half * xon.cvar("aim_assist_hitbox_scale")) then
 			on_since = on_since or now
 			last_on = now
