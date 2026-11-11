@@ -3,8 +3,11 @@
 -- for mouse.
 --
 -- Runs only where it is allowed: local games (you host, e.g. against bots)
--- and servers that set sv_allow_assist 1. On any other server it does
--- nothing, whatever the settings below say.
+-- and servers that allow it. A server allows each part on its own:
+-- sv_allow_aim_assist (aim pull, turn to attacker, rocket steering, hit
+-- marker), sv_allow_autofire, sv_allow_autoswitch; sv_allow_assist 1
+-- allows all three. On any other server a part does nothing, whatever the
+-- settings below say.
 --
 -- aim_assist_mode: 0 off, 1 only while playing with the touchscreen,
 -- 2 with any input (default).
@@ -106,8 +109,14 @@ local function ray_hits_box(start, dir, center, half)
 	return true
 end
 
+-- each feature has its own server permission (sv_allow_aim_assist,
+-- sv_allow_autofire, sv_allow_autoswitch; sv_allow_assist allows all)
+local function allowed(kind)
+	return xon.assist_allowed(kind)
+end
+
 local function enabled()
-	if not xon.assist_allowed() then return false end
+	if not (allowed("aim") or allowed("autofire") or allowed("autoswitch")) then return false end
 	local mode = xon.cvar("aim_assist_mode")
 	if mode == 2 then return true end
 	if mode == 1 then return xon.input_mode() == "touch" end
@@ -458,7 +467,7 @@ local function steer_devastator(ev, eye, w, now)
 end
 
 local function auto_switch(ev, enemies, now)
-	if xon.cvar("aim_assist_autoswitch") == 0 or state.steer then return end
+	if xon.cvar("aim_assist_autoswitch") == 0 or state.steer or not allowed("autoswitch") then return end
 	local weapons = xon.weapons()
 	local held
 	for _, wp in ipairs(weapons) do if wp.held then held = wp.name end end
@@ -507,14 +516,15 @@ xon.on("Input", function(ev)
 	local enemies = visible_enemies(eye)
 	track_wounds(xon.players())
 
-	if w and w.kind == "guided" and xon.cvar("aim_assist_steer") ~= 0 and steer_devastator(ev, eye, w, now) then
+	local can_aim, can_fire = allowed("aim"), allowed("autofire")
+	if can_aim and w and w.kind == "guided" and xon.cvar("aim_assist_steer") ~= 0 and steer_devastator(ev, eye, w, now) then
 		return
 	end
 
 	auto_switch(ev, enemies, now)
 
 	track_hits(eye, now, state.target ~= nil)
-	if turn_to_attacker(ev, eye, now) then return end
+	if can_aim and turn_to_attacker(ev, eye, now) then return end
 
 	if w and w.kind == "none" then state.on_since = nil return end
 	local t = pick_target(eye, xon.forward(ev.angles), enemies, w)
@@ -528,7 +538,9 @@ xon.on("Input", function(ev)
 		local lo, hi = xon.cvar("aim_assist_pull_min"), xon.cvar("aim_assist_pull_max")
 		local k = 1 - math.exp(-(lo + (hi - lo) * ramp) * ev.frametime)
 		local a = ev.angles
-		ev.angles = V(a.x + angle_diff(a.x, want.x) * k, a.y + angle_diff(a.y, want.y) * k, a.z)
+		if can_aim then
+			ev.angles = V(a.x + angle_diff(a.x, want.x) * k, a.y + angle_diff(a.y, want.y) * k, a.z)
+		end
 		-- auto-fire against the enlarged body where the shot will meet it
 		local half = (t.e.p.maxs - t.e.p.mins) * 0.5 * xon.cvar("aim_assist_hitbox_scale")
 		local center = t.pos + (t.e.p.mins + t.e.p.maxs) * 0.5
@@ -538,10 +550,11 @@ xon.on("Input", function(ev)
 			and not blast_hits_me(eye, impact_point(eye, t.point), w)
 		-- with the lock, the shot snaps onto the lead point this very frame, so
 		-- there is no need to wait for the pull to bring the crosshair over
-		local lock = xon.cvar("aim_assist_lock") ~= 0
+		-- the lock turns the view: aim assistance, not just auto-fire
+		local lock = can_aim and xon.cvar("aim_assist_lock") ~= 0
 		local aimed = ray_hits_box(eye, xon.forward(ev.angles), center, half) or t.off < 1
 			or (lock and t.off <= xon.cvar("aim_assist_autofire_cone"))
-		if reachable and safe and xon.cvar("aim_assist_autofire") ~= 0 and aimed then
+		if can_fire and reachable and safe and xon.cvar("aim_assist_autofire") ~= 0 and aimed then
 			state.on_since = state.on_since or now
 			state.last_on = now
 			if now - state.on_since >= xon.cvar("aim_assist_autofire_delay") then
@@ -561,7 +574,7 @@ xon.on("Input", function(ev)
 	end
 	-- keep firing briefly after the enemy slips off the crosshair, but only
 	-- while nothing (wall, teammate) is right in front of the shot
-	local lingering = state.last_on > 0 and now - state.last_on < xon.cvar("aim_assist_autofire_release")
+	local lingering = can_fire and state.last_on > 0 and now - state.last_on < xon.cvar("aim_assist_autofire_release")
 	if lingering and not firing then
 		local fwd = xon.forward(ev.angles)
 		local tr = xon.traceline(eye, eye + fwd * 2000)
@@ -583,8 +596,10 @@ end)
 xon.on("Connect", function()
 	state.steer, state.last_held = nil, nil
 	if xon.cvar("aim_assist_mode") ~= 0 then
-		xon.print(xon.assist_allowed() and "aim assist available on this server"
-			or "aim assist off: this server does not allow it (sv_allow_assist)")
+		local function word(kind, name) return name .. (allowed(kind) and " on" or " off") end
+		xon.print("assistance on this server: " .. word("aim", "aim") .. ", " .. word("autofire", "auto-fire")
+			.. ", " .. word("autoswitch", "weapon switch")
+			.. " (server cvars sv_allow_aim_assist, sv_allow_autofire, sv_allow_autoswitch)")
 	end
 end)
 
@@ -592,7 +607,7 @@ end)
 -- fading out over two seconds
 xon.on("HUD", function(ev)
 	local a = state.attacker
-	if not ev.in_game or not a or xon.cvar("aim_assist_hit_marker") == 0 or not enabled() then return end
+	if not ev.in_game or not a or xon.cvar("aim_assist_hit_marker") == 0 or not enabled() or not allowed("aim") then return end
 	local age = xon.realtime() - a.at
 	if age > 2 then return end
 	local eye, angles = xon.view()
