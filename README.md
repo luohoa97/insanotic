@@ -123,6 +123,11 @@ Android APK, and publishes them on the GitHub release of that tag:
 git tag v0.1.0 && git push github v0.1.0
 ```
 
+## Credits
+
+Insanotic is made by Neil Luo, on top of Xonotic by Team Xonotic and
+DarkPlaces by Forest "LordHavoc" Hale and contributors.
+
 ## License
 
 Xonotic is and will always be free and open source. It is available under the [copyleft](https://www.gnu.org/copyleft/)-style [GPLv3+](https://www.gnu.org/licenses/gpl-3.0.html) license (see the [COPYING](COPYING) file for details).
