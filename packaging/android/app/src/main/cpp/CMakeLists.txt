@@ -60,6 +60,14 @@ FetchContent_Declare(vorbis
 	URL https://downloads.xiph.org/releases/vorbis/libvorbis-1.3.7.tar.gz
 		https://github.com/xiph/vorbis/releases/download/v1.3.7/libvorbis-1.3.7.tar.gz
 	URL_HASH SHA256=0e982409a9c3fc82ee06e08205b1355e5c6aa4c36bca58146ef399621b0ce5ab)
+FetchContent_Declare(opus
+	URL https://downloads.xiph.org/releases/opus/opus-1.5.2.tar.gz
+		https://github.com/xiph/opus/releases/download/v1.5.2/opus-1.5.2.tar.gz
+	URL_HASH SHA256=65c1d2f78b9f2fb20082c38cbe47c951ad5839345876e46941612ee87f9a7ce1)
+FetchContent_Declare(opusfile
+	URL https://downloads.xiph.org/releases/opus/opusfile-0.12.tar.gz
+		https://github.com/xiph/opusfile/releases/download/v0.12/opusfile-0.12.tar.gz
+	URL_HASH SHA256=118d8601c12dd6a44f52423e68ca9083cc9f2bfe72da7a8c1acb22a80ae3550b)
 FetchContent_Declare(freetype
 	URL https://download.savannah.gnu.org/releases/freetype/freetype-2.13.2.tar.xz
 		https://download-mirror.savannah.gnu.org/releases/freetype/freetype-2.13.2.tar.xz
@@ -102,6 +110,31 @@ if(NOT vorbis_POPULATED)
 	list(APPEND CMAKE_MODULE_PATH "${vorbis_BINARY_DIR}")
 	add_subdirectory("${vorbis_SOURCE_DIR}" "${vorbis_BINARY_DIR}" EXCLUDE_FROM_ALL)
 endif()
+
+# --- opus + opusfile (static, for snd_ogg.c LINK_TO_LIBOPUS). libopus builds
+# with its own CMake project; opusfile ships only autotools, so its four
+# source files are compiled directly (without HTTP streaming, which the
+# engine does not use: sounds come from the packs). ---
+set(OPUS_BUILD_PROGRAMS OFF CACHE BOOL "" FORCE)
+set(OPUS_BUILD_TESTING OFF CACHE BOOL "" FORCE)
+set(OPUS_INSTALL_PKG_CONFIG_MODULE OFF CACHE BOOL "" FORCE)
+set(OPUS_INSTALL_CMAKE_CONFIG_MODULE OFF CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(opus)
+FetchContent_GetProperties(opusfile)
+if(NOT opusfile_POPULATED)
+	FetchContent_Populate(opusfile)
+endif()
+add_library(opusfile STATIC
+	"${opusfile_SOURCE_DIR}/src/opusfile.c"
+	"${opusfile_SOURCE_DIR}/src/info.c"
+	"${opusfile_SOURCE_DIR}/src/internal.c"
+	"${opusfile_SOURCE_DIR}/src/stream.c")
+target_include_directories(opusfile PRIVATE
+	"${opusfile_SOURCE_DIR}/include" "${opusfile_SOURCE_DIR}/src"
+	"${ogg_SOURCE_DIR}/include" "${ogg_BINARY_DIR}/include"
+	"${opus_SOURCE_DIR}/include")
+target_compile_options(opusfile PRIVATE -w)
+target_link_libraries(opusfile PUBLIC opus ogg)
 
 # --- freetype (static; fonts are TTF, DP_FREETYPE_STATIC on Android) ---
 set(FT_DISABLE_ZLIB OFF CACHE BOOL "" FORCE)
@@ -256,7 +289,7 @@ target_include_directories(main PRIVATE
 
 target_link_libraries(main PRIVATE
 	SDL2::SDL2
-	vorbisfile vorbis ogg
+	opusfile vorbisfile vorbis ogg
 	freetype
 	jpeg-static
 	z m dl log android GLESv2)
