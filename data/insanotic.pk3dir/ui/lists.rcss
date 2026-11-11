@@ -87,11 +87,13 @@
 	padding-right: 6dp;
 	min-height: 24dp;
 }
+/* a cell clips its text to its own width: the margin is outside what
+   overflow hides, so a long name stops short of the next column */
 .srv > div {
 	flex: none;
 	overflow: hidden;
 	white-space: nowrap;
-	padding-right: 8dp;
+	margin-right: 10dp;
 }
 .srv .c-ping { width: 56dp; }
 .srv .c-name { flex: 1 1 0; min-width: 0; }
@@ -110,7 +112,8 @@
 	tab-index: auto;
 	color: #4da6ff;
 	font-size: 14dp;
-	padding: 10dp 8dp 8dp 0;
+	padding: 10dp 0 8dp 0;
+	margin-right: 10dp;
 	min-height: 24dp;
 }
 .srv-head > div:hover {
@@ -319,5 +322,113 @@
 	}
 	.level .badge {
 		display: none;
+	}
+}
+
+/* ---- server info panel ---------------------------------------------- */
+
+.info-veil {
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 0;
+	bottom: 0;
+	background-color: #000000b3;
+	z-index: 10;
+}
+.info {
+	position: absolute;
+	left: 50%;
+	width: 620dp;
+	margin-left: -310dp;
+	top: 4%;
+	bottom: 4%;
+	background-color: #0d1424;
+	border: 1dp #4da6ff;
+	display: flex;
+	flex-direction: column;
+}
+.info .pic {
+	flex: none;
+	position: relative;
+	height: 120dp;
+	background-color: #080d18;
+}
+.info .pic .shade {
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 0;
+	bottom: 0;
+	decorator: vertical-gradient(#00000000 #000000d0);
+}
+.info .pic .t {
+	position: absolute;
+	left: 14dp;
+	right: 14dp;
+	bottom: 8dp;
+	font-size: 19dp;
+	font-weight: bold;
+	white-space: nowrap;
+	overflow: hidden;
+}
+.info .facts {
+	flex: none;
+	padding: 10dp 14dp 4dp 14dp;
+	font-size: 15dp;
+	color: #ccd9e6;
+}
+.info .facts b {
+	color: #ffffff;
+}
+.info .plist {
+	flex: 1 1 0;
+	min-height: 0;
+	margin: 4dp 14dp 0 14dp;
+}
+.info .plist .item {
+	display: flex;
+	flex-direction: row;
+	cursor: default;
+	padding-top: 8dp;
+	padding-bottom: 6dp;
+}
+.info .plist .item > div { flex: none; width: 60dp; }
+.info .plist .item > .n { flex: 1 1 0; min-width: 0; overflow: hidden; white-space: nowrap; }
+.info .plist .spec { color: #8899aa; }
+.info .btns .button {
+	min-width: 0;
+	padding-left: 16dp;
+	padding-right: 16dp;
+}
+.info .btns {
+	flex: none;
+	padding: 10dp 14dp 12dp 14dp;
+	text-align: right;
+}
+@media (max-height: 500dp) {
+	.info {
+		width: auto;
+		left: 2%;
+		right: 2%;
+		margin-left: 0;
+		top: 2%;
+		bottom: 2%;
+	}
+	.info .pic {
+		height: 70dp;
+	}
+	.info .facts {
+		padding-top: 6dp;
+	}
+}
+@media (orientation: portrait) {
+	.info {
+		width: auto;
+		left: 2%;
+		right: 2%;
+		margin-left: 0;
+		top: 3%;
+		bottom: 3%;
 	}
 }

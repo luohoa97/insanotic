@@ -39,6 +39,31 @@
 			</div>
 		</div>
 	</div>
+	<div class="info-veil" id="infoveil" data-if="info_open">
+		<div class="info">
+			<div class="pic" data-style-decorator="'image(' + info_image + ' cover center center)'">
+				<div class="shade"></div>
+				<div class="t">{{ info_name }}</div>
+			</div>
+			<div class="facts">
+				<b>{{ info_mode }}</b> on <b>{{ info_map }}</b> &#183; ping <b>{{ info_ping }}</b><br/>
+				<b>{{ info_humans }}</b> players<span data-if="info_bots > 0"> and {{ info_bots }} bots</span> of {{ info_slots }} &#183; {{ info_address }}
+			</div>
+			<div class="list plist">
+				<div class="item spec" data-if="info_players.size == 0"><div class="n">No player list</div></div>
+				<div class="item" data-for="p : info_players" data-class-spec="p.spectator">
+					<div>{{ p.spectator ? 'spec' : p.score }}</div>
+					<div>{{ p.ping }}</div>
+					<div class="n">{{ p.name }}</div>
+				</div>
+			</div>
+			<div class="btns">
+				<div class="button" data-event-click="toggle_favorite()"><span data-if="!info_favorite">Add to favorites</span><span data-if="info_favorite">Remove favorite</span></div>
+				<div class="button" data-event-click="info_close()">Close</div>
+				<div class="button primary" data-event-click="info_join()">Join!</div>
+			</div>
+		</div>
+	</div>
 	<div class="dialog-buttons">
 		<div class="label">Address</div><div class="grow addr"><input type="text" class="text" data-value="address"/></div>
 		<div class="button" data-cmd="menu_cmd directmenu Multiplayer" data-close>More...</div>
