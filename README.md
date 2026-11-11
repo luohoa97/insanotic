@@ -45,8 +45,9 @@ Xonotic is an addictive, arena-style first person shooter with crisp movement an
 ## Launcher
 
 A desktop launcher (Rust, GTK 4 + libadwaita) starts the game, hosts a local
-server with a live console, lists client mods and server plugins with enable
-switches, and passes the quick toggles (aim assist, touch controls) to the game.
+server with a live console and per-plugin switches for its server plugins,
+lists client mods with enable switches, and passes the quick toggles (aim
+assist, touch controls) to the game.
 
 ```sh
 make launcher            # build launcher/target/release/insanotic-launcher
@@ -56,7 +57,26 @@ make launcher-install    # install it, its icon and .desktop file into ~/.local
 It needs the GTK 4 and libadwaita development files and a Rust toolchain. It
 finds the game in the directory it was built from; set `INSANOTIC_DIR` or the
 game directory in its Settings page to use another checkout. Settings are kept
-in `~/.config/insanotic/launcher.json`.
+in `~/.config/insanotic/launcher.json`. The game keeps its configs, saves and
+your own mods in `~/.insanotic` (mods go in `~/.insanotic/data/mods`, which the
+Mods page's "Open Mods Folder" button opens).
+
+### Flatpak
+
+`packaging/flatpak/` builds the launcher, the engine and the Insanotic data as
+a Flatpak (`io.github.luohoa97.Insanotic`). The large Xonotic 0.8.6 packs are not
+bundled: on first run the launcher links them from an installed
+`org.xonotic.Xonotic` Flatpak or downloads the official release. Build it with
+
+```sh
+flatpak-builder --user --install --force-clean --jobs=2 \
+    --state-dir=build/flatpak-state build/flatpak-app \
+    packaging/flatpak/io.github.luohoa97.Insanotic.yml
+```
+
+After changing `launcher/Cargo.lock`, regenerate `cargo-sources.json` with
+`packaging/flatpak/gen-cargo-sources.sh`. The `Flatpak` workflow builds a bundle
+for every `v*` tag.
 
 ## License
 
