@@ -10,6 +10,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -25,8 +26,10 @@ public class SetupActivity extends Activity {
 	private TextView status;
 	private ProgressBar bar;
 	private Button retry;
+	private CheckBox music;
 	private final AtomicBoolean cancel = new AtomicBoolean();
 	private Thread worker;
+	private String fileLabel = "";
 
 	@Override
 	protected void onCreate(Bundle state) {
@@ -37,6 +40,9 @@ public class SetupActivity extends Activity {
 			startGame();
 			return;
 		}
+		// after an app update only Insanotic's own pk3 needs installing: no
+		// questions to ask
+		boolean packsPresent = GameData.packsInstalled(this);
 
 		LinearLayout root = new LinearLayout(this);
 		root.setOrientation(LinearLayout.VERTICAL);
@@ -67,56 +73,57 @@ public class SetupActivity extends Activity {
 
 		bar = new ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal);
 		bar.setMax(1000);
-		bar.setIndeterminate(true);
+		bar.setIndeterminate(false);
 		root.addView(bar, new LinearLayout.LayoutParams(
 			(int) (420 * getResources().getDisplayMetrics().density),
 			LinearLayout.LayoutParams.WRAP_CONTENT));
 
+		music = new CheckBox(this);
+		music.setText(R.string.setup_music);
+		music.setTextColor(Color.LTGRAY);
+		music.setVisibility(packsPresent ? View.GONE : View.VISIBLE);
+		root.addView(music);
+
 		retry = new Button(this);
-		retry.setText(R.string.setup_retry);
-		retry.setVisibility(View.GONE);
+		retry.setText(R.string.setup_start);
+		retry.setVisibility(packsPresent ? View.GONE : View.VISIBLE);
 		retry.setOnClickListener(v -> begin());
 		root.addView(retry);
 
 		setContentView(root);
-		begin();
+		if (packsPresent)
+			begin();
+		else
+			status.setText(R.string.setup_choose);
 	}
 
 	private void begin() {
 		retry.setVisibility(View.GONE);
+		music.setEnabled(false);
 		bar.setIndeterminate(true);
 		cancel.set(false);
-		worker = new Thread(this::work, "insanotic-setup");
+		final boolean withMusic = music.isChecked();
+		worker = new Thread(() -> work(withMusic), "insanotic-setup");
 		worker.start();
 	}
 
-	private void work() {
+	private void work(boolean withMusic) {
 		try {
 			GameData.prepare(this, new GameData.Progress() {
 				@Override
 				public void onDownload(long done, long total) {
 					runOnUiThread(() -> {
-						if (total > 0) {
-							bar.setIndeterminate(false);
-							bar.setProgress((int) (done * 1000 / total));
-							status.setText(getString(R.string.setup_download,
-								Formatter.formatFileSize(SetupActivity.this, done),
-								Formatter.formatFileSize(SetupActivity.this, total)));
-						} else {
-							bar.setIndeterminate(true);
-							status.setText(getString(R.string.setup_download_unknown,
-								Formatter.formatFileSize(SetupActivity.this, done)));
-						}
+						bar.setIndeterminate(false);
+						bar.setProgress(total > 0 ? (int) (done * 1000 / total) : 0);
+						status.setText(getString(R.string.setup_download,
+							Formatter.formatFileSize(SetupActivity.this, done),
+							Formatter.formatFileSize(SetupActivity.this, total)) + "\n" + fileLabel);
 					});
 				}
 
 				@Override
-				public void onExtract(String name, int index, int count) {
-					runOnUiThread(() -> {
-						bar.setIndeterminate(false);
-						bar.setProgress(index * 1000 / count);
-						status.setText(getString(R.string.setup_extract, name, index, count));
-					});
+				public void onFile(String name, int index, int count) {
+					runOnUiThread(() -> fileLabel = getString(R.string.setup_file, name, index, count));
 				}
 
 				@Override
@@ -126,7 +133,7 @@ public class SetupActivity extends Activity {
 						status.setText(R.string.setup_install);
 					});
 				}
-			}, cancel);
+			}, cancel, withMusic);
 			runOnUiThread(() -> {
 				status.setText(R.string.setup_done);
 				startGame();
@@ -145,7 +152,9 @@ public class SetupActivity extends Activity {
 		runOnUiThread(() -> {
 			bar.setIndeterminate(false);
 			status.setText(getString(R.string.setup_failed, message));
+			retry.setText(R.string.setup_retry);
 			retry.setVisibility(View.VISIBLE);
+			music.setEnabled(true);
 		});
 	}
 

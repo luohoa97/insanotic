@@ -90,10 +90,11 @@ not from the Play Store, and release builds are signed with a debug key unless
 the maintainers configured a keystore, so Android may warn). Or install it
 from a computer with `adb install insanotic-<version>-android.apk`.
 
-The APK holds only Insanotic's own files. The first time you start the app it
-downloads the official Xonotic 0.8.6 release (about 1 GB) and unpacks the data
-packs, so keep roughly 3 GB free and use Wi-Fi. The download resumes if it is
-interrupted.
+The APK holds only Insanotic's own files. On first start the app streams the
+data packs (about 950 MB) from the official Xonotic 0.8.6 release straight
+into the game folder, so it needs about 1 GB of free storage. Wi-Fi is
+recommended. The music pack (111 MB) is optional: a checkbox on the setup
+screen, off by default. An interrupted download resumes where it stopped.
 
 To build the APK yourself you need a JDK 17, the Android SDK with platform 35,
 build-tools 36.0.0, NDK 28.2.13676358 and CMake 3.22.1, and the compiled QC
