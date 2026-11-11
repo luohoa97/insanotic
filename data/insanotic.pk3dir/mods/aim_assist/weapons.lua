@@ -47,7 +47,8 @@ function W.get(name)
 	if d.speed then p.speed = c(d.speed[1], d.speed[2]) end
 	if d.up then p.up = c(d.up[1], d.up[2]) end
 	if d.dmg then
-		local dmg = c(d.dmg[1], d.dmg[2]) * (d.pellets and c(d.pellets[1], d.pellets[2]) or 1)
+		p.damage = c(d.dmg[1], d.dmg[2]) -- one projectile / pellet
+		local dmg = p.damage * (d.pellets and c(d.pellets[1], d.pellets[2]) or 1)
 		local refire = math.max(0.05, c(d.refire[1], d.refire[2]))
 		p.dps = dmg / refire
 	end

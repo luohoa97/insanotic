@@ -62,6 +62,7 @@ cvar("aim_assist_lead_extra", 0.05, "seconds added to the lead for network delay
 cvar("aim_assist_feet", 1, "1 = splash weapons aim at a standing enemy's feet")
 cvar("aim_assist_rifle_head", 1, "1 = the Rifle aims for the head")
 cvar("aim_assist_steer", 1, "1 = steer Devastator rockets onto the enemy and detonate them next to it")
+cvar("aim_assist_selfdamage_tolerance", 0.2, "share of your health and armor one shot may cost you in self damage (0 = never hurt yourself)")
 cvar("aim_assist_turn", 1, "1 = when an enemy hits you, turn toward them (only someone who just hit you and can see you)")
 cvar("aim_assist_turn_speed", 12, "how fast the turn toward an attacker is (share of the angle per second)")
 cvar("aim_assist_hit_marker", 1, "1 = show where the last hit came from at the edge of the crosshair")
@@ -177,7 +178,12 @@ local function selfdamage_on()
 end
 local function blast_hits_me(eye, impact, w)
 	if not w or w.splash <= 0 or not selfdamage_on() then return false end
-	return (impact - eye):len() <= w.splash + SELF_MARGIN
+	if (impact - eye):len() > w.splash + SELF_MARGIN then return false end
+	-- inside the blast: acceptable when it costs little of what you have
+	local st = xon.stats()
+	local pct = xon.cvar("g_balance_selfdamagepercent") or 0.65
+	local cost = (w.damage or 100) * pct
+	return cost > ((st.health or 0) + (st.armor or 0)) * xon.cvar("aim_assist_selfdamage_tolerance")
 end
 -- where a shot toward point actually goes off: the first wall in the way, or
 -- the point itself
@@ -454,20 +460,31 @@ local function auto_switch(ev, enemies, now)
 		if state.last_held and now - state.our_switch_at > 1.5 then state.manual_at = now end
 		state.last_held = held
 	end
-	if now - state.manual_at < xon.cvar("aim_assist_switch_manual") then return end
-	if now - state.last_switch < xon.cvar("aim_assist_switch_delay") then return end
 	local nearest
 	for _, e in ipairs(enemies) do
 		if not nearest or e.dist < nearest.dist then nearest = e end
 	end
 	if not nearest then return end
+	-- the weapon in hand would hurt us at this distance: switch now, without
+	-- waiting out the timers (it would not fire anyway)
+	local held_w = held and W.get(held)
+	local urgent = held_w and blast_hits_me(xon.view(), impact_point(xon.view(), nearest.center), held_w)
+	if urgent then
+		if now - state.last_switch < 0.3 then return end
+	else
+		if now - state.manual_at < xon.cvar("aim_assist_switch_manual") then return end
+		if now - state.last_switch < xon.cvar("aim_assist_switch_delay") then return end
+	end
 	local v = nearest.p.velocity
 	local to = (nearest.center - xon.view()):normalize()
 	local lateral = (v - to * (v * to)):len()
 	-- the blast would go off at the target or at the first wall before it
 	local impact = (impact_point(xon.view(), nearest.center) - xon.view()):len()
 	local choice = S.choose(weapons, { dist = nearest.dist, impact = impact, lateral = lateral,
-		air = not P.grounded(nearest.p), selfdamage = selfdamage_on() }, xon.stats().health, 1.3)
+		air = not P.grounded(nearest.p), selfdamage = selfdamage_on(),
+		selfdamage_pct = xon.cvar("g_balance_selfdamagepercent") or 0.65,
+		tolerance = xon.cvar("aim_assist_selfdamage_tolerance") },
+		(xon.stats().health or 0) + (xon.stats().armor or 0), 1.3)
 	if choice then
 		ev.impulse = choice.impulse
 		state.last_switch, state.our_switch_at = now, now

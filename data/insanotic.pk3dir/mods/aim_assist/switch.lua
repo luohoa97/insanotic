@@ -43,7 +43,12 @@ local function safety(w, target, health)
 	if w.splash <= 0 then return 1 end
 	local impact = math.min(target.dist, target.impact or target.dist)
 	if not target.selfdamage then return 1 end
-	if impact <= w.splash + 32 then return 0 end
+	if impact <= w.splash + 32 then
+		-- in the blast: only worth it when the cost is small next to what we have
+		local cost = (w.damage or 100) * (target.selfdamage_pct or 0.65)
+		if cost <= health * (target.tolerance or 0) then return 0.5 end
+		return 0
+	end
 	if impact <= w.splash * 1.6 + 32 then return 0.4 end
 	if health < 40 and impact < w.splash * 2.5 then return 0.3 end
 	return 1
