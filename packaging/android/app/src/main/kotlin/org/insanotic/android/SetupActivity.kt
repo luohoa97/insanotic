@@ -16,6 +16,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -33,6 +34,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -57,19 +59,28 @@ class SetupActivity : ComponentActivity() {
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 		enableEdgeToEdge()
-		if (GameData.isReady(this)) {
-			startGame()
-			return
-		}
+		val ready = GameData.isReady(this)
+		// a returning player goes straight into the game, unless there is an update
+		if (ready)
+			UpdateModel.check(this, force = false)
 		setContent {
 			InsanoticTheme {
-				val state by SetupModel.state.collectAsStateWithLifecycle()
-				LaunchedEffect(Unit) { SetupModel.prepare(this@SetupActivity) }
-				LaunchedEffect(state) {
-					if (state == Setup.Done)
-						startGame()
+				val update by UpdateModel.state.collectAsStateWithLifecycle()
+				if (ready) {
+					LaunchedEffect(update) {
+						if (update == Update.UpToDate || update == Update.CheckFailed)
+							startGame()
+					}
+					Shell { Gate(update) { startGame() } }
+				} else {
+					val state by SetupModel.state.collectAsStateWithLifecycle()
+					LaunchedEffect(Unit) { SetupModel.prepare(this@SetupActivity) }
+					LaunchedEffect(state) {
+						if (state == Setup.Done)
+							startGame()
+					}
+					SetupScreen(state, update)
 				}
-				SetupScreen(state)
 			}
 		}
 	}
@@ -80,13 +91,9 @@ class SetupActivity : ComponentActivity() {
 	}
 }
 
+/** The frame every screen shares: the title, centred, at most 480 dp wide. */
 @Composable
-private fun SetupScreen(state: Setup) {
-	val ctx = LocalContext.current
-	var withMusic by rememberSaveable { mutableStateOf(false) }
-	val notifications = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
-		SetupModel.start(ctx, withMusic)
-	}
+private fun Shell(content: @Composable ColumnScope.() -> Unit) {
 	Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
 		Column(
 			modifier = Modifier
@@ -107,35 +114,116 @@ private fun SetupScreen(state: Setup) {
 					style = MaterialTheme.typography.displaySmall,
 					color = MaterialTheme.colorScheme.primary,
 				)
-				when (state) {
-					Setup.Choose -> Choose(withMusic, { withMusic = it }) {
-						// the notification permission only decides whether the progress
-						// notification is shown; the download starts either way
-						if (Build.VERSION.SDK_INT >= 33 &&
-							ctx.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
-						)
-							notifications.launch(Manifest.permission.POST_NOTIFICATIONS)
-						else
-							SetupModel.start(ctx, withMusic)
-					}
-					is Setup.Verifying -> Waiting(stringResource(R.string.setup_verify, state.file))
-					Setup.Installing -> Waiting(stringResource(R.string.setup_install))
-					Setup.Done -> Waiting(stringResource(R.string.setup_done))
-					is Setup.Downloading -> Downloading(ctx, state)
-					is Setup.OutOfSpace -> Problem(
-						stringResource(
-							R.string.setup_no_space,
-							Formatter.formatFileSize(ctx, state.needed),
-							Formatter.formatFileSize(ctx, state.available),
-						),
-					) { SetupModel.start(ctx, withMusic) }
-					is Setup.Failed -> Problem(stringResource(R.string.setup_failed, state.message)) {
-						SetupModel.start(ctx, withMusic)
-					}
-				}
+				content()
 			}
 		}
 	}
+}
+
+@Composable
+private fun SetupScreen(state: Setup, update: Update) {
+	val ctx = LocalContext.current
+	var withMusic by rememberSaveable { mutableStateOf(false) }
+	val notifications = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
+		SetupModel.start(ctx, withMusic)
+	}
+	Shell {
+		when (state) {
+			Setup.Choose -> Choose(withMusic, { withMusic = it }) {
+				// the notification permission only decides whether the progress
+				// notification is shown; the download starts either way
+				if (Build.VERSION.SDK_INT >= 33 &&
+					ctx.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+				)
+					notifications.launch(Manifest.permission.POST_NOTIFICATIONS)
+				else
+					SetupModel.start(ctx, withMusic)
+			}
+			is Setup.Verifying -> Waiting(stringResource(R.string.setup_verify, state.file))
+			Setup.Installing -> Waiting(stringResource(R.string.setup_install))
+			Setup.Done -> Waiting(stringResource(R.string.setup_done))
+			is Setup.Downloading -> Downloading(ctx, state)
+			is Setup.OutOfSpace -> Problem(
+				stringResource(
+					R.string.setup_no_space,
+					Formatter.formatFileSize(ctx, state.needed),
+					Formatter.formatFileSize(ctx, state.available),
+				),
+			) { SetupModel.start(ctx, withMusic) }
+			is Setup.Failed -> Problem(stringResource(R.string.setup_failed, state.message)) {
+				SetupModel.start(ctx, withMusic)
+			}
+		}
+		// updating is for a player who is not in the middle of the download
+		if (state == Setup.Choose || state is Setup.Failed || state is Setup.OutOfSpace)
+			UpdateSection(update, onPlay = null)
+	}
+}
+
+/** Shown on start-up while the app looks for an update, and when there is one. */
+@Composable
+private fun Gate(update: Update, onPlay: () -> Unit) {
+	when (update) {
+		Update.Idle, Update.Checking, Update.UpToDate, Update.CheckFailed ->
+			Waiting(stringResource(R.string.update_checking))
+		else -> UpdateSection(update, onPlay)
+	}
+}
+
+/**
+ * The update card. With [onPlay] (start-up) the player may skip the update;
+ * without it (setup screen) there is a button to check by hand.
+ */
+@Composable
+private fun UpdateSection(update: Update, onPlay: (() -> Unit)?) {
+	val ctx = LocalContext.current
+	Text(
+		stringResource(R.string.update_installed, UpdateModel.installedName(ctx)),
+		style = MaterialTheme.typography.bodySmall,
+		color = MaterialTheme.colorScheme.onSurfaceVariant,
+	)
+	when (update) {
+		Update.Idle, Update.UpToDate, Update.CheckFailed -> {
+			if (update == Update.UpToDate && onPlay == null)
+				Text(stringResource(R.string.update_uptodate), style = MaterialTheme.typography.bodyMedium)
+			TextButton(onClick = { UpdateModel.check(ctx, force = true) }) { Text(stringResource(R.string.update_check)) }
+		}
+		Update.Checking -> Waiting(stringResource(R.string.update_checking))
+		is Update.Available -> {
+			Text(stringResource(R.string.update_available, update.info.versionName), style = MaterialTheme.typography.titleMedium)
+			Button(onClick = { UpdateModel.install(ctx, update.info) }, modifier = Modifier.fillMaxWidth()) {
+				Text(stringResource(R.string.update_now))
+			}
+		}
+		is Update.NeedsPermission -> {
+			Text(stringResource(R.string.update_permission), style = MaterialTheme.typography.bodyMedium, textAlign = TextAlign.Center)
+			Button(onClick = { ctx.startActivity(UpdateModel.permissionIntent(ctx)) }, modifier = Modifier.fillMaxWidth()) {
+				Text(stringResource(R.string.update_permission_button))
+			}
+			OutlinedButton(onClick = { UpdateModel.install(ctx, update.info) }, modifier = Modifier.fillMaxWidth()) {
+				Text(stringResource(R.string.update_now))
+			}
+		}
+		is Update.Downloading -> {
+			Text(stringResource(R.string.update_downloading), style = MaterialTheme.typography.titleMedium)
+			if (update.total > 0)
+				LinearProgressIndicator(progress = { update.done.toFloat() / update.total }, modifier = Modifier.fillMaxWidth())
+			else
+				LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+		}
+		Update.Installing -> Waiting(stringResource(R.string.update_installing))
+		is Update.InstallFailed -> {
+			Text(
+				stringResource(R.string.update_failed, update.message),
+				style = MaterialTheme.typography.bodyMedium,
+				color = MaterialTheme.colorScheme.error,
+				textAlign = TextAlign.Center,
+			)
+			TextButton(onClick = { UpdateModel.check(ctx, force = true) }) { Text(stringResource(R.string.update_check)) }
+		}
+	}
+	if (onPlay != null && update !is Update.Downloading && update != Update.Installing)
+		OutlinedButton(onClick = onPlay) { Text(stringResource(R.string.update_later)) }
 }
 
 @Composable

@@ -23,4 +23,18 @@
 	<string name="setup_failed">Setup failed: %1$s</string>
 	<string name="setup_retry">Retry</string>
 	<string name="setup_no_space">Not enough free storage: %1$s needed, %2$s available.</string>
+	<string name="update_check">Check for updates</string>
+	<string name="update_checking">Checking for updates…</string>
+	<string name="update_uptodate">Insanotic is up to date.</string>
+	<string name="update_available">Update available: %1$s</string>
+	<string name="update_installed">Installed: %1$s</string>
+	<string name="update_now">Update now</string>
+	<string name="update_later">Play without updating</string>
+	<string name="update_downloading">Downloading the update</string>
+	<string name="update_installing">Installing the update…</string>
+	<string name="update_permission">To update itself, Insanotic needs your permission to install apps.</string>
+	<string name="update_permission_button">Allow</string>
+	<string name="update_failed">Update failed: %1$s</string>
+	<string name="update_failed_generic">the installer refused the update</string>
+	<string name="update_wrong_key">This update is signed with a different key than the installed app, so Android refuses it. Uninstall Insanotic once and install the new APK from the releases page (the game data in the app folder is removed with it).</string>
 </resources>

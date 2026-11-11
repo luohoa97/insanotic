@@ -99,6 +99,13 @@ or the system killing the app: it continues from the bytes already on disk.
 The music pack (111 MB) is optional: a checkbox on the setup screen, off by
 default.
 
+The app updates itself: when it starts (at most every six hours) and from the
+"Check for updates" button on the setup screen it looks at the `nightly`
+release (`version.json`), and if there is a newer build offers to download and
+install it. Android asks once to allow Insanotic to install apps. Updates only
+install over an app signed with the same key, which is the case for APKs from
+the releases page once the maintainers have configured a signing key.
+
 To build the APK yourself you need a JDK 17, the Android SDK with platform 35,
 build-tools 36.0.0, NDK 28.2.13676358 and CMake 3.22.1, and the compiled QC
 (`make insanotic-qc` after `misc/insanotic/checkout.sh`). Then, from the
