@@ -75,8 +75,18 @@ flatpak-builder --user --install --force-clean --jobs=2 \
 ```
 
 After changing `launcher/Cargo.lock`, regenerate `cargo-sources.json` with
-`packaging/flatpak/gen-cargo-sources.sh`. The `Flatpak` workflow builds a bundle
-for every `v*` tag.
+`packaging/flatpak/gen-cargo-sources.sh`.
+
+## Releases
+
+Pushing a `v*` tag runs the `Release` workflow, which builds a Linux tarball
+(engine, game code and mods; start it with `./insanotic.sh`, which links the
+Xonotic 0.8.6 data packs from an installed Xonotic) and the Flatpak bundle,
+and publishes both on the GitHub release of that tag:
+
+```sh
+git tag v0.1.0 && git push github v0.1.0
+```
 
 ## License
 

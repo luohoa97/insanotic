@@ -1,0 +1,127 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# Builds every package of Insanotic and, for a version tag (v*), publishes
+# them as the GitHub release of that tag:
+#   insanotic-<version>-linux-x86_64.tar.gz   engine, game code, mods; start
+#                                             with ./insanotic.sh
+#   insanotic-<version>.flatpak               launcher + game (Flatpak bundle)
+# The Xonotic 0.8.6 data packs (1-2 GB) are in none of them: the tarball
+# links them from an installed Xonotic, the Flatpak launcher sets them up on
+# first run.
+#
+# Run it by hand (Actions > Release > Run workflow) to build the packages
+# as workflow artifacts without publishing a release.
+#
+# The engine (insanotic-darkplaces) and the game data (insanotic-data) come
+# from their own repositories, branch main.
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  ENGINE_REPO: https://github.com/luohoa97/insanotic-darkplaces.git
+  DATA_REPO: https://github.com/luohoa97/insanotic-data.git
+  GMQCC_REPO: https://gitlab.com/xonotic/gmqcc.git
+  GMQCC_TAG: xonotic-v0.8.6
+
+jobs:
+  version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+    steps:
+      - id: v
+        run: |
+          case "$GITHUB_REF" in
+            refs/tags/v*) echo "version=${GITHUB_REF#refs/tags/v}" >> "$GITHUB_OUTPUT" ;;
+            *) echo "version=dev-${GITHUB_SHA::8}" >> "$GITHUB_OUTPUT" ;;
+          esac
+
+  linux:
+    needs: version
+    # the oldest supported runner, so the binaries run on older glibc too
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends build-essential libsdl2-dev zlib1g-dev
+
+      - name: Fetch engine, game data and QC compiler
+        run: |
+          git clone --depth 1 "$ENGINE_REPO" darkplaces
+          git clone --depth 1 "$DATA_REPO" data/xonotic-data.pk3dir
+          git clone --depth 1 --branch "$GMQCC_TAG" "$GMQCC_REPO" gmqcc
+
+      - name: Build
+        run: make -j"$(nproc)" insanotic-server insanotic-client insanotic-qc
+
+      - name: Package
+        env:
+          VERSION: ${{ needs.version.outputs.version }}
+        run: |
+          name=insanotic-$VERSION-linux-x86_64
+          dest=dist/$name
+          mkdir -p "$dest/data/xonotic-data.pk3dir"
+          cp darkplaces/darkplaces-sdl darkplaces/darkplaces-dedicated "$dest/"
+          cp misc/insanotic/insanotic.sh misc/insanotic/link-release-data.sh "$dest/"
+          cp COPYING "$dest/" 2>/dev/null || true
+          # only what Insanotic changes or builds: the release data pack
+          # (loaded first) has everything else
+          src=data/xonotic-data.pk3dir
+          (cd "$src" && ls *.dat *.cfg) | while read -r f; do
+            cp "$src/$f" "$dest/data/xonotic-data.pk3dir/"
+          done
+          cp -a data/insanotic.pk3dir "$dest/data/"
+          tar -C dist -czf "dist/$name.tar.gz" "$name"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux
+          path: dist/*.tar.gz
+
+  flatpak:
+    needs: version
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/flathub-infra/flatpak-github-actions:gnome-49
+      options: --privileged
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: flatpak/flatpak-github-actions/flatpak-builder@v6
+        with:
+          bundle: insanotic-${{ needs.version.outputs.version }}.flatpak
+          manifest-path: packaging/flatpak/io.github.luohoa97.Insanotic.yml
+          cache-key: flatpak-builder-${{ github.sha }}
+          restore-cache: false
+          upload-artifact: false
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: flatpak
+          path: insanotic-*.flatpak
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [linux, flatpak]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+          generate_release_notes: true
