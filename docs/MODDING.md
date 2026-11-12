@@ -234,6 +234,43 @@ request is ignored. A page lives in the same RmlUi context as the game's own
 documents but is marked as untrusted (separate rules above, enforced in
 `darkplaces/ui_rml.cpp`); it is not a separate sandbox process.
 
+## Map previews in the server list
+
+The Insanotic server browser shows each server's map as a darkened picture
+behind its row. Maps that the player has (in the game files, or downloaded
+before) need nothing. For a map the player does not have, an Insanotic server
+can send a small picture itself. It works without any plugin:
+
+| Cvar | Default | Meaning |
+|---|---|---|
+| `sv_mappreview` | `1` | The server adds `\inspreview\1` to its info response when it has a picture of its current map (`maps/<name>.jpg`, `.png` or `.tga` in its game files), and answers requests for it. `0` never. |
+
+How it goes, so that it cannot be abused to flood somebody:
+
+1. The client sees `inspreview` in the server's answer to the server list
+   query. Stock servers do not send it, so a stock server is never asked.
+2. For a row in view whose map it has no picture of, it sends `getchallenge`,
+   the same request it makes to connect. The server's answer, a random string,
+   goes only to the address that asked.
+3. It sends `getmappreview <challenge> <map>`. The server ignores it unless the
+   challenge is the one it gave to that address, the map is the map it is
+   running, and the address did not ask in the last second. A request is a few
+   dozen bytes; a reply is about 8 packets, but only to an address that has
+   shown it can receive them.
+4. The server answers with the picture as a JPEG of about 256x128 pixels, at
+   most 16 KB, made once for each map, in pieces of 1000 bytes:
+   `mappreview <map> <crc> <index> <count> <size>` and a newline, then the bytes.
+5. The client takes pieces only from the address it asked, for the map it
+   asked for, checks the size and the CRC, checks that it decodes as an image
+   of at most 512x512 pixels, and keeps it as
+   `mappreviews/<map>-<crc>.jpg` in its game folder. Any server running that
+   map then shows it, and it is never asked again. At most three requests are
+   open at a time, each is dropped after six seconds, and a map that failed is
+   not asked for again in that session.
+
+`make test-mappreview` starts a local server on a map the client does not
+have and checks all of this.
+
 ## Sandbox limits
 
 Every plugin runs in its own Lua state.

@@ -8,6 +8,7 @@
 #                         server with Lua plugins on (g_lua 1) and some bots
 #   make test-plugins     end-to-end test of the plugin sandbox
 #   make test-rml         click through the RmlUi main menu (needs a display)
+#   make test-mappreview  server list map pictures from a local server (needs a display)
 #   make insanotic        build the dedicated engine and the QC
 #   make insanotic-client build the SDL client
 #   make insanotic-hooks  regenerate docs/hooks.md and the QC hook forwarders
@@ -17,7 +18,7 @@
 # Knobs: INSANOTIC_MAP, INSANOTIC_PORT, INSANOTIC_BOTS, INSANOTIC_DP_FLAGS.
 
 INSANOTIC_GOALS := run insanotic insanotic-server insanotic-client insanotic-qc \
-	insanotic-gmqcc insanotic-map insanotic-hooks run-server test-plugins test-rml \
+	insanotic-gmqcc insanotic-map insanotic-hooks run-server test-plugins test-rml test-mappreview \
 	launcher launcher-install
 
 INSANOTIC_MAP ?= stormkeep
@@ -83,6 +84,9 @@ test-plugins: insanotic-server insanotic-qc insanotic-map
 
 test-rml: insanotic-client insanotic-qc insanotic-map
 	sh misc/insanotic/test-rml.sh
+
+test-mappreview: insanotic-server insanotic-client insanotic-qc
+	sh misc/insanotic/test-mappreview.sh
 
 # Desktop launcher (Rust, GTK 4 + libadwaita), see launcher/
 #   make launcher           build launcher/target/release/insanotic-launcher
