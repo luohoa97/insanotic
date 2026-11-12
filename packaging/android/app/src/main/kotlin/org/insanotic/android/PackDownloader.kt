@@ -244,7 +244,7 @@ class PackDownloader(
 		val chunkStart = i.toLong() * ChunkState.CHUNK
 		val size = state.sizeOf(i)
 		var failures = 0
-		val buf = ByteArray(64 * 1024)
+		val buf = ByteArray(256 * 1024)
 		while (state.pos(i) < size) {
 			coroutineContext.ensureActive()
 			val from = chunkStart + state.pos(i)
@@ -333,7 +333,7 @@ class PackDownloader(
 				}
 			}
 			FileOutputStream(part).use { out ->
-				val buf = ByteArray(64 * 1024)
+				val buf = ByteArray(256 * 1024)
 				val src = InflaterInputStream(raw, Inflater(true))
 				while (true) {
 					coroutineContext.ensureActive()
@@ -364,8 +364,9 @@ class PackDownloader(
 		/** a finished, checked pack waiting to replace the official one */
 		const val NEW = ".new"
 
-		/** parallel connections for one pack */
-		const val CONNECTIONS = 6
+		/** parallel connections for one pack (8 keep a gigabit link full;
+		 * one CDN connection usually tops out well below that) */
+		const val CONNECTIONS = 8
 
 		/** room for filesystem overhead and the own pk3 */
 		const val SLACK_BYTES = 50L * 1024 * 1024

@@ -33,7 +33,9 @@ class HttpFetch(
 	@Volatile var error: String? = null
 	@Volatile private var finished = false
 	@Volatile private var cancelled = false
-	private val queue = ArrayBlockingQueue<ByteArray>(16)
+	// up to 64 reads of 256 KiB (16 MiB) wait for the engine, which drains
+	// them by time each frame: room for a gigabit link between frames
+	private val queue = ArrayBlockingQueue<ByteArray>(64)
 	private var pending: ByteArray? = null
 	private var pendingAt = 0
 	private var thread: Thread? = null
@@ -99,7 +101,7 @@ class HttpFetch(
 			responseCode = code
 			val body = if (code >= 400) c.errorStream else c.inputStream
 			if (body != null) body.use {
-				val buf = ByteArray(32 * 1024)
+				val buf = ByteArray(256 * 1024)
 				while (!cancelled) {
 					val n = it.read(buf)
 					if (n < 0) break
