@@ -284,7 +284,7 @@ input.range sliderprogress {
 input.range sliderbar {
 	width: 28dp;
 	height: 28dp;
-	margin-top: -10dp;
+	margin-top: 10dp; /* the bar is placed from the top of the 48 dp strip; the line is at 24 dp */
 	border-radius: 14dp;
 	background-color: #ffffff;
 }

@@ -382,8 +382,7 @@
 	left: 50%;
 	width: 620dp;
 	margin-left: -310dp;
-	top: 4%;
-	bottom: 4%;
+	top: 6%;
 	background-color: #0d1424;
 	border: 1dp #4da6ff;
 	display: flex;
@@ -395,6 +394,17 @@
 	height: 190dp;
 	background-color: #080d18;
 }
+/* with players the panel is tall and the list scrolls; without it ends
+   after the facts */
+.info.tall {
+	bottom: 6%;
+}
+.info .none {
+	flex: none;
+	padding: 14dp 14dp 6dp 14dp;
+	color: #8899aa;
+	font-size: 16dp;
+}
 .info .pic .nopic {
 	position: absolute;
 	left: 0;
@@ -402,7 +412,7 @@
 	top: 40%;
 	text-align: center;
 	font-size: 26dp;
-	color: #4a5a72;
+	color: #6b7d99;
 }
 .info .t {
 	flex: none;
@@ -455,6 +465,8 @@
 		right: 2%;
 		margin-left: 0;
 		top: 2%;
+	}
+	.info.tall {
 		bottom: 2%;
 	}
 	.info .pic {
@@ -471,6 +483,8 @@
 		right: 2%;
 		margin-left: 0;
 		top: 3%;
+	}
+	.info.tall {
 		bottom: 3%;
 	}
 }

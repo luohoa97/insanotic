@@ -44,17 +44,17 @@
 		</div>
 	</div>
 	<div class="info-veil" id="infoveil" data-if="info_open">
-		<div class="info">
+		<div class="info" data-class-tall="info_players.size > 0">
 			<div class="t">{{ info_name }}</div>
 			<div class="pic" data-class-nopic="info_image == ''" data-style-decorator="info_image != '' ? 'image(' + info_image + ' contain center center)' : 'none'">
 				<div class="nopic" data-if="info_image == ''">{{ info_map }}</div>
 			</div>
 			<div class="facts">
 				<b>{{ info_mode }}</b> on <b>{{ info_map }}</b> &#183; ping <b>{{ info_ping }}</b><br/>
-				<b>{{ info_humans }}</b> players<span data-if="info_bots > 0"> and {{ info_bots }} bots</span> of {{ info_slots }} &#183; {{ info_address }}
+				<b>{{ info_humans }}</b> players<span data-if="info_bots > 0"> and {{ info_bots }} bots</span><span data-if="info_spectators > 0">, {{ info_spectators }} watching</span> of {{ info_slots }} &#183; {{ info_address }}
 			</div>
-			<div class="list plist">
-				<div class="item spec" data-if="info_players.size == 0"><div class="n">No player list</div></div>
+			<div class="none" data-if="info_players.size == 0">No players right now</div>
+			<div class="list plist" data-if="info_players.size > 0">
 				<div class="item" data-for="p : info_players" data-class-spec="p.spectator">
 					<div>{{ p.spectator ? 'spec' : p.score }}</div>
 					<div>{{ p.ping }}</div>
