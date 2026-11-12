@@ -189,6 +189,27 @@ reject "no RmlUi warnings or errors" "^RmlUi: .*\(Could not\|No font\|not found\
 expect "a tapped key binding takes the next key" '"F7" = "+forward"' "$log"
 expect "Escape cancels the capture and leaves the page open" "settings (shown)" "$(printf '%s\n' "$log" | sed -n '/^CANCELLED/,$p')"
 
+# Text: a field gets a whole string as one input event (what an input method
+# commits, with a character that is more than one byte), and Ctrl+V pastes
+# the system clipboard. The Player tab of Quick settings has the name field.
+echo "== text input"
+log=$(timeout 120 "$ENGINE" -xonotic -basedir "$PWD" -userdir "$USERDIR" \
+	+developer 1 +_cl_name RmlTest +vid_fullscreen 0 +vid_width 1280 +vid_height 720 +vid_touchscreen 0 \
+	+defer 12 "rml_show quicksettings" \
+	+defer 13 "rml_click 609 274" \
+	+defer 14 "rml_click 757 339" \
+	+defer 15 "rml_text héllowörld" \
+	+defer 15.5 "rml_key ENTER" \
+	+defer 16 "echo FIRST; _cl_name" \
+	+defer 17 "rml_clip PASTED" \
+	+defer 18 "rml_key ctrl+v" \
+	+defer 18.5 "rml_key ENTER" \
+	+defer 19 "echo SECOND; _cl_name" \
+	+defer 20 quit 2>&1)
+reject "no RmlUi warnings or errors" "^RmlUi: .*\(Could not\|No font\|not found\|did not\|Invalid\|Unknown\|Failed\|Error\|Syntax\)" "$log"
+expect "a whole string arrives in one input event" "héllowörld" "$(printf '%s\n' "$log" | sed -n '/^FIRST/,/^SECOND/p')"
+expect "Ctrl+V pastes the system clipboard" "PASTED" "$(printf '%s\n' "$log" | sed -n '/^SECOND/,$p')"
+
 # A finger is no pointer: no hover at all, and pressing is only for where it
 # went down. tests/ui/touchtest.rml has one button; the finger goes down on
 # empty space and drags over it, then goes down on it and drags off.
