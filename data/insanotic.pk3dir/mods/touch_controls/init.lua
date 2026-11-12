@@ -52,6 +52,8 @@ local function update_layout(w, h)
 	local s = xon.cvar("touch_controls_size") * math.min(w, h) / 600
 	layout.scale = s
 	layout.scoreboard = xon.scoreboard and xon.scoreboard() or false
+	local _, _, _, dead = xon.me()
+	layout.dead = dead and true or false
 	layout.w, layout.h = w, h
 	layout.stick_r = xon.cvar("touch_controls_stick_radius") * s
 	layout.stick_zone = { x0 = 0, y0 = h * 0.25, x1 = w * 0.45, y1 = h }
@@ -117,8 +119,10 @@ end
 -- while the scoreboard is up only MENU, CHAT and TAB stay: the rest would
 -- cover it (and nobody aims or moves while reading it)
 local SCOREBOARD_KEEP = { menu = true, chat = true, score = true }
+-- dead (Xonotic shows the scoreboard then too): JUMP and FIRE respawn
+local DEAD_KEEP = { jump = true, fire = true }
 local function shown(b)
-	return not layout.scoreboard or SCOREBOARD_KEEP[b.id]
+	return not layout.scoreboard or SCOREBOARD_KEEP[b.id] or (layout.dead and DEAD_KEEP[b.id])
 end
 
 local function hit_button(x, y)
