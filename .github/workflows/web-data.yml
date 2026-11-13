@@ -78,8 +78,8 @@ jobs:
           mkdir -p user
           timeout 150 xvfb-run -a -s "-screen 0 1280x720x24" ./darkplaces/darkplaces-sdl -xonotic -basedir "$PWD" -userdir "$PWD/user" \
             +vid_width 800 +vid_height 450 +vid_fullscreen 0 +cl_preload 1 +bot_number 2 \
-            +map "${{ steps.map.outputs.map }}" > run.log 2>&1 || true
-          tail -30 run.log
+            +map "${{ steps.map.outputs.map }}" > run.log 2>&1 && echo "exit 0" || echo "exit $?"
+          grep -v "^\s*\(Channels\|Format\|Frequency\|Samples\)" run.log | tail -80
           list=$(find user -name insanotic_preload.txt | head -1)
           test -n "$list" || { echo "no preload list was written"; exit 1; }
           cp "$list" preload.txt
