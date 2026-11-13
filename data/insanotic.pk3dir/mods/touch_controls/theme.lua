@@ -1,13 +1,8 @@
 -- SPDX-License-Identifier: GPL-3.0-or-later
--- The look of the controls: Xonotic's own HUD. Panels use the border image
--- of the player's HUD skin (gfx/hud/<hud_skin>/border_default), tinted with
--- hud_panel_bg_color and hud_panel_bg_alpha like the HUD's own panels; weapon
--- buttons show the skin's weapon icons; text uses the HUD font.
---
--- The border image is cut into a 9-slice the way the HUD does it (draw_BorderPicture
--- in qcsrc/lib/draw.qh): the four corner quarters keep their size, the edges and
--- the middle stretch. The border width is hud_panel_bg_border * 4, scaled
--- with the controls.
+-- The look of the controls: the same as the RmlUi menus. Flat rectangular
+-- panels in the shadcn zinc palette with a 1 unit border, the Insanotic blue
+-- accent (#4da6ff) for pressed state; weapon buttons show the HUD skin's
+-- weapon icons; text uses the HUD font.
 local theme = {}
 
 local FALLBACK_BG = {0, 0.14, 0.25}  -- hud_luma.cfg
@@ -66,50 +61,22 @@ local function skin_pic(name, x, y, w, h, r, g, b, a)
 	return xon.draw_pic("gfx/hud/default/" .. name, x, y, w, h, r, g, b, a)
 end
 
-local function mix(c, to, k)
-	return c[1] + (to[1] - c[1]) * k, c[2] + (to[2] - c[2]) * k, c[3] + (to[3] - c[3]) * k
-end
-
-local WHITE = {1, 1, 1}
-local ACCENT = {0.55, 0.85, 1}
-
--- the border image as a 9-slice
-local function border_pic(name, x, y, w, h, r, g, b, a)
-	local path = "gfx/hud/" .. hud.skin .. "/" .. name
-	local d = math.min(hud.border, w / 2, h / 2)
-	local function part(px, py, pw, ph, s0, t0, s1, t1)
-		xon.draw_subpic(path, px, py, pw, ph, s0, t0, s1, t1, r, g, b, a)
-	end
-	if not xon.draw_subpic(path, x, y, 1, 1, 0, 0, 0.25, 0.25, r, g, b, 0) then
-		path = "gfx/hud/default/" .. name
-	end
-	local x2, y2 = x + w - d, y + h - d
-	local mw, mh = w - 2 * d, h - 2 * d
-	part(x, y, d, d, 0, 0, 0.25, 0.25)
-	part(x + d, y, mw, d, 0.25, 0, 0.75, 0.25)
-	part(x2, y, d, d, 0.75, 0, 1, 0.25)
-	part(x, y + d, d, mh, 0, 0.25, 0.25, 0.75)
-	part(x + d, y + d, mw, mh, 0.25, 0.25, 0.75, 0.75)
-	part(x2, y + d, d, mh, 0.75, 0.25, 1, 0.75)
-	part(x, y2, d, d, 0, 0.75, 0.25, 1)
-	part(x + d, y2, mw, d, 0.25, 0.75, 0.75, 1)
-	part(x2, y2, d, d, 0.75, 0.75, 1, 1)
-end
-
--- a HUD panel background; "lit" lights it up (finger on it). The HUD's own
--- panels sit on a calm background; these float over the game and have to be
--- found with a thumb, so the panel is drawn twice for body and a rim of
--- weapon_current_bg (the HUD's "selected weapon" frame) marks the button.
+-- a flat panel in the style of the menus: zinc fill, 1 unit zinc border,
+-- square corners. "lit" (finger on it) turns it Insanotic blue.
+local ZINC_FILL = {0.035, 0.035, 0.043}   -- #09090b
+local ZINC_EDGE = {0.247, 0.247, 0.275}   -- #3f3f46
+local BLUE = {0.302, 0.651, 1}            -- #4da6ff
+local BLUE_DEEP = {0.169, 0.471, 0.788}   -- #2b78c9
 function theme.panel(x, y, w, h, lit, opacity)
-	local a = math.min(1, hud.bg_alpha * opacity)
-	local r, g, b = mix(hud.bg, WHITE, 0.12)
-	if lit then
-		r, g, b = mix(hud.bg, ACCENT, 0.75)
-		a = math.max(a, 0.9 * opacity)
-	end
-	border_pic("border_default", x, y, w, h, r, g, b, a)
-	border_pic("border_default", x, y, w, h, r, g, b, a * 0.6)
-	skin_pic("weapon_current_bg", x, y, w, h, 1, 1, 1, (lit and 0.9 or 0.3) * opacity)
+	local t = math.max(1, hud.scale * 1.5)
+	local fill, edge, a = ZINC_FILL, ZINC_EDGE, 0.72 * opacity
+	if lit then fill, edge, a = BLUE_DEEP, BLUE, 0.9 * opacity end
+	xon.draw_fill(x, y, w, h, fill[1], fill[2], fill[3], a)
+	local ea = math.min(1, a * 1.3)
+	xon.draw_fill(x, y, w, t, edge[1], edge[2], edge[3], ea)
+	xon.draw_fill(x, y + h - t, w, t, edge[1], edge[2], edge[3], ea)
+	xon.draw_fill(x, y + t, t, h - 2 * t, edge[1], edge[2], edge[3], ea)
+	xon.draw_fill(x + w - t, y + t, t, h - 2 * t, edge[1], edge[2], edge[3], ea)
 end
 
 local function centred_text(label, cx, cy, size, a)
@@ -149,24 +116,23 @@ function theme.weapon(cx, cy, w, h, weapon, lit, opacity)
 	end
 end
 
--- joystick: base where the finger landed, knob under the finger
+-- joystick: base where the finger landed, knob under the finger. Zinc base
+-- with a thin rim, a blue knob while held.
 function theme.stick(bx, by, kx, ky, r, active, opacity)
-	local bg, a = hud.bg, math.min(1, hud.bg_alpha * opacity)
-	xon.draw_circle(bx, by, r, bg[1], bg[2], bg[3], a * 0.55)
-	local rr, rg, rb = mix(bg, active and ACCENT or WHITE, active and 0.7 or 0.45)
-	xon.draw_ring(bx, by, r, rr, rg, rb, a * 0.85)
-	local kr, kg, kb = mix(bg, active and ACCENT or WHITE, 0.6)
-	xon.draw_circle(kx, ky, r * 0.42, kr, kg, kb, a * 0.85)
-	xon.draw_ring(kx, ky, r * 0.42, 1, 1, 1, a * 0.7)
+	local a = opacity
+	xon.draw_circle(bx, by, r, ZINC_FILL[1], ZINC_FILL[2], ZINC_FILL[3], 0.6 * a)
+	xon.draw_ring(bx, by, r, ZINC_EDGE[1], ZINC_EDGE[2], ZINC_EDGE[3], 0.95 * a)
+	local k = active and BLUE or {0.63, 0.63, 0.67}
+	xon.draw_circle(kx, ky, r * 0.4, k[1], k[2], k[3], 0.9 * a)
+	xon.draw_ring(kx, ky, r * 0.4, 1, 1, 1, 0.5 * a)
 end
 
 -- hint where the stick can be placed while no finger is down
 function theme.stick_hint(x, y, r, opacity)
-	local bg, a = hud.bg, math.min(1, hud.bg_alpha * opacity)
-	xon.draw_circle(x, y, r, bg[1], bg[2], bg[3], a * 0.3)
-	local rr, rg, rb = mix(bg, WHITE, 0.45)
-	xon.draw_ring(x, y, r, rr, rg, rb, a * 0.5)
-	xon.draw_circle(x, y, r * 0.42, bg[1], bg[2], bg[3], a * 0.6)
+	local a = opacity
+	xon.draw_circle(x, y, r, ZINC_FILL[1], ZINC_FILL[2], ZINC_FILL[3], 0.3 * a)
+	xon.draw_ring(x, y, r, ZINC_EDGE[1], ZINC_EDGE[2], ZINC_EDGE[3], 0.6 * a)
+	xon.draw_circle(x, y, r * 0.4, ZINC_EDGE[1], ZINC_EDGE[2], ZINC_EDGE[3], 0.35 * a)
 end
 
 return theme
