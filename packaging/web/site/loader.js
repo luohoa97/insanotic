@@ -112,7 +112,7 @@
 		stage.style.display = "block";
 		const dpr = Math.min(window.devicePixelRatio || 1, 2);
 		const w = Math.round(window.innerWidth * dpr), h = Math.round(window.innerHeight * dpr);
-		const args = ["-basedir", GAME, "-userdir", USER, "-nohome", "-nocurl",
+		const args = ["-xonotic", "-basedir", GAME, "-userdir", USER, "-nohome", "-nocurl",
 			"+vid_fullscreen", "0", "+vid_width", String(w), "+vid_height", String(h)]
 			.concat(manifest.args || []);
 		canvas.focus();
