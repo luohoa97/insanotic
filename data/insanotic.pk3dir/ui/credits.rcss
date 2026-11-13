@@ -1,0 +1,40 @@
+/* Credits: a long list of names that scrolls. Used with lists.rcss. */
+
+#content {
+	width: 620dp;
+	margin-left: -310dp;
+}
+.credits {
+	padding: 4dp 12dp 12dp 4dp;
+	overflow-y: auto;
+	text-align: center;
+}
+.ctitle {
+	margin-top: 22dp;
+	margin-bottom: 6dp;
+	font-size: 22dp;
+	font-weight: bold;
+	color: #4da6ff;
+}
+.cfunc {
+	margin-top: 12dp;
+	font-size: 15dp;
+	color: #a1a1aa;
+}
+.people {
+	display: block;
+}
+.person {
+	display: block;
+	font-size: 17dp;
+	padding: 2dp 0;
+}
+
+@media (max-width: 660dp) {
+	#content {
+		left: 2%;
+		right: 2%;
+		width: auto;
+		margin-left: 0;
+	}
+}

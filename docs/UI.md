@@ -202,6 +202,19 @@ Leave button names what is being left: campaign, singleplayer, multiplayer
 or a demo), and `red`, `blue`, `yellow`, `pink` on teamselect (the teams the
 match has). See `ui_rml_engine.c`, `UI_RML_Draw`.
 
+## Credits, first run and Welcome
+
+`ui/credits.rml` (generated from the list in `credits.qc`; add a name in both),
+`ui/firstrun.rml` (name, language and statistics choice, shown once while the
+player name is still the default) and `ui/welcome.rml` (what a server says
+when you join) replace the QuakeC dialogs of the same names. The Welcome page
+has no data model: the menu code puts the text in the cvars
+`_menu_welcome_name`, `_menu_welcome_type`, `_menu_welcome_title`,
+`_menu_welcome_details` and `_menu_welcome_map`, and the page shows them with
+`data-cvar`. `data-cvar-image="cvar"` on an element shows the picture whose
+path the cvar holds as its background, covering the element. The body gets
+the class `demo` while a demo plays.
+
 ## What the engine's renderer cannot do
 
 Gradient decorators (`linear-gradient`, `radial-gradient`) do not work;
