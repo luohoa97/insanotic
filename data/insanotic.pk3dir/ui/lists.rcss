@@ -118,6 +118,11 @@
 .srv.nopic .shade {
 	decorator: none;
 }
+/* rows the list keeps but does not show (the engine never shortens the
+   list, see ServersRebuild in ui_rml_models.cpp) */
+.list .item.srv.gone {
+	display: none;
+}
 .srv.nopic .c-map {
 	color: #71717a;
 }
