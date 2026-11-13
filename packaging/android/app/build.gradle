@@ -14,6 +14,10 @@
 //   abis             comma separated ABIs (default: arm64-v8a,x86_64)
 //   ndk_version      NDK revision to use (default below)
 //   deps_dir         download cache for third-party sources
+//   angle_dir        folder with <abi>/libEGL_angle.so and <abi>/libGLESv2_angle.so
+//                    to bundle (default: packaging/android/angle/prebuilt, see
+//                    angle/README.md). Without them the app only has the
+//                    native GLES driver and -angle falls back to it.
 // Signing (release): ANDROID_KEYSTORE (path), ANDROID_KEYSTORE_PASSWORD,
 // ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD in the environment. Without them
 // the release APK is signed with the debug key so it still installs.
@@ -34,6 +38,7 @@ def qcDir      = file("${rootRepo}/data/xonotic-data.pk3dir")
 def modsDir    = file("${rootRepo}/data/insanotic.pk3dir")
 def abiList    = prop('abis', 'arm64-v8a,x86_64').split(',').collect { it.trim() }
 def depsDir    = file(prop('deps_dir', "${buildDir}/deps"))
+def angleDir   = file(prop('angle_dir', "${projectDir}/../angle/prebuilt"))
 
 def appVersion = prop('version_name', null)
 if (!appVersion) {
@@ -142,6 +147,9 @@ android {
 		main {
 			java.srcDir(files(sdlJavaDir) { builtBy fetchSdl })
 			assets.srcDir(files(layout.buildDirectory.dir('generated/gameassets')) { builtBy packGameData })
+			// ANGLE (GLES on Vulkan), only when a build was dropped in angle_dir
+			if (new File(angleDir, 'arm64-v8a/libEGL_angle.so').isFile())
+				jniLibs.srcDir(angleDir)
 		}
 	}
 

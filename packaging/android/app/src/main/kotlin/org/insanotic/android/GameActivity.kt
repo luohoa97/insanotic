@@ -74,6 +74,9 @@ class GameActivity : SDLActivity() {
 		for (n in done + 1..UPDATES)
 			args += listOf("+exec", "insanotic-android-update-$n.cfg")
 		prefs.edit().putInt("settings_updates", UPDATES).apply()
+		// dev hook for A/B tests, e.g. adb shell am start -n <pkg>/.GameActivity
+		// --es engine_args "-angle +r_viewfbo 1"
+		intent?.getStringExtra("engine_args")?.trim()?.split(Regex("\\s+"))?.filter { it.isNotEmpty() }?.let { args += it }
 		return args.toTypedArray()
 	}
 }
