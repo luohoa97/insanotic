@@ -14,6 +14,9 @@ trap 'rm -rf "$work"' EXIT
 mkdir -p "$work"
 
 ffmpeg -nostdin -loglevel error -f lavfi -i anoisesrc=d=3:c=pink -ac 2 -c:a vorbis -strict -2 "$work/tone.ogg"
+# a 32 kHz source: encoded straight from the Vorbis decoder, ffmpeg writes Opus
+# page timestamps that libopusfile rejects for files like this one
+ffmpeg -nostdin -loglevel error -f lavfi -i "sine=frequency=440:duration=1.2:sample_rate=32000" -ac 2 -c:a vorbis -strict -2 "$work/rate32.ogg"
 python3 -I - "$work" <<'PY'
 import struct, sys, zipfile
 w = sys.argv[1]
@@ -30,6 +33,7 @@ with zipfile.ZipFile(w + "/in.pk3", "w", zipfile.ZIP_DEFLATED) as z:
     z.writestr("scripts/test.cfg", "echo hello\n" * 100)
     z.writestr("textures/x.jpg", b"\xff\xd8" + bytes(range(256)) * 4)
     z.write(w + "/tone.ogg", "sound/misc/tone.ogg")
+    z.write(w + "/rate32.ogg", "sound/misc/rate32.ogg")
     z.writestr("dds/textures/x.dds", dds)
     link = zipfile.ZipInfo("dds/x.dds")
     link.external_attr = 0o120777 << 16
@@ -56,6 +60,7 @@ check(cfg.compress_type == 93 and z.read(cfg) == b"echo hello\n" * 100, profile 
 check(names["textures/x.jpg"].compress_type == 0, profile + ": jpg stays stored")
 check("sound/misc/tone.opus" in names and "sound/misc/tone.ogg" not in names, profile + ": Ogg became Opus")
 check(b"OpusHead" in z.read("sound/misc/tone.opus")[:80], profile + ": the Opus file is Opus")
+check("sound/misc/rate32.opus" in names or "sound/misc/rate32.ogg" in names, profile + ": the 32 kHz sound survived")
 if profile == "desktop":
     check("dds/textures/x.dds" in names, "desktop: DXT texture untouched")
 else:
