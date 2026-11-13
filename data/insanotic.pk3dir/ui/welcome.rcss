@@ -1,0 +1,42 @@
+#content {
+	width: 640dp;
+	margin-left: -320dp;
+	margin-top: -250dp;
+}
+.banner {
+	position: relative;
+	height: 150dp;
+	background-color: #18181b;
+	margin-bottom: 14dp;
+}
+.banner .shade {
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	height: 60%;
+	decorator: vertical-gradient(#00000000 #000000d0);
+}
+.banner .btext {
+	position: absolute;
+	left: 18dp;
+	bottom: 12dp;
+}
+.btype {
+	font-size: 14dp;
+	color: #4da6ff;
+}
+.btitle {
+	font-size: 30dp;
+	font-weight: bold;
+}
+.details {
+	max-height: 200dp;
+	overflow-y: auto;
+	white-space: pre-line;
+	font-size: 16dp;
+	color: #a1a1aa;
+}
+body.demo .dialog-buttons .button {
+	opacity: 0.4;
+}

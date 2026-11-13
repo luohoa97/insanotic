@@ -1,0 +1,5 @@
+#content {
+	width: 560dp;
+	margin-left: -280dp;
+	margin-top: -230dp;
+}

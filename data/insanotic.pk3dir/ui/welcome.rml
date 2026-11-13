@@ -1,0 +1,30 @@
+<rml>
+<head>
+	<title>Welcome</title>
+	<link type="text/template" href="templates/dialog.rml"/>
+	<link type="text/rcss" href="welcome.rcss"/>
+</head>
+<body template="dialog">
+	<!-- What the server says when you join (replaces the QuakeC Welcome
+	     dialog). The menu code puts the text in the cvars _menu_welcome_*:
+	     name, map (a picture path), type, title, details. -->
+	<div class="dialog-bar">
+		<div class="dialog-title" data-cvar="_menu_welcome_name"></div>
+		<div class="dialog-close" data-close>&#215;</div>
+	</div>
+	<div class="dialog-body">
+		<div class="banner" data-cvar-image="_menu_welcome_map">
+			<div class="shade"></div>
+			<div class="btext">
+				<div class="btype" data-cvar="_menu_welcome_type"></div>
+				<div class="btitle" data-cvar="_menu_welcome_title"></div>
+			</div>
+		</div>
+		<div class="details" data-cvar="_menu_welcome_details"></div>
+	</div>
+	<div class="dialog-buttons">
+		<div class="button primary" data-cmd="cmd join" data-close>Join</div>
+		<div class="button" data-cmd="cmd spectate" data-close>Spectate</div>
+	</div>
+</body>
+</rml>
