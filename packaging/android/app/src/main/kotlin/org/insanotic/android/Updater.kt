@@ -59,6 +59,8 @@ object UpdateModel {
 	private const val BASE = "https://github.com/luohoa97/insanotic/releases/download/nightly/"
 	private const val PREFS = "update"
 	private const val LAST_CHECK = "lastCheck"
+	private const val FOUND_CODE = "foundCode"
+	private const val FOUND_NAME = "foundName"
 	private const val CHECK_EVERY_MS = 6L * 60 * 60 * 1000
 	const val ACTION_RESULT = "org.insanotic.android.UPDATE_RESULT"
 
@@ -74,28 +76,47 @@ object UpdateModel {
 		ctx.packageManager.getPackageInfo(ctx.packageName, 0).versionName ?: "?"
 
 	/**
-	 * Looks for a newer build. Unless forced, at most every few hours, so that
-	 * starting the game is not held up by the network every time.
+	 * Start-up check. Never waits for the network: it answers from what the
+	 * last background check found, and refreshes that in the background (at
+	 * most every few hours) for the next launch. Dev builds never check, as the
+	 * nightly is a different app with a different signature.
 	 */
 	fun check(ctx: Context, force: Boolean) {
 		val app = ctx.applicationContext
-		val prefs = app.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-		if (job?.isActive == true)
-			return
-		if (!force && System.currentTimeMillis() - prefs.getLong(LAST_CHECK, 0) < CHECK_EVERY_MS) {
+		if (BuildConfig.DEBUG) {
 			mutableState.value = Update.UpToDate
 			return
 		}
-		mutableState.value = Update.Checking
+		val prefs = app.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+		if (job?.isActive == true)
+			return
+		val due = force || System.currentTimeMillis() - prefs.getLong(LAST_CHECK, 0) >= CHECK_EVERY_MS
+		if (!force) {
+			val code = prefs.getLong(FOUND_CODE, 0)
+			mutableState.value = if (code > installedCode(app))
+				Update.Available(UpdateInfo(code, prefs.getString(FOUND_NAME, "?") ?: "?", BASE + "insanotic-android.apk"))
+			else
+				Update.UpToDate
+		} else {
+			mutableState.value = Update.Checking
+		}
+		if (!due)
+			return
 		job = scope.launch {
-			mutableState.value = try {
+			try {
 				val info = fetchInfo()
-				prefs.edit().putLong(LAST_CHECK, System.currentTimeMillis()).apply()
-				if (info.versionCode > installedCode(app)) Update.Available(info) else Update.UpToDate
+				prefs.edit()
+					.putLong(LAST_CHECK, System.currentTimeMillis())
+					.putLong(FOUND_CODE, info.versionCode)
+					.putString(FOUND_NAME, info.versionName)
+					.apply()
+				// only a hand-made check changes what is on screen
+				if (force)
+					mutableState.value = if (info.versionCode > installedCode(app)) Update.Available(info) else Update.UpToDate
 			} catch (e: IOException) {
-				Update.CheckFailed
+				if (force) mutableState.value = Update.CheckFailed
 			} catch (e: org.json.JSONException) {
-				Update.CheckFailed
+				if (force) mutableState.value = Update.CheckFailed
 			}
 		}
 	}
