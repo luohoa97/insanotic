@@ -562,3 +562,20 @@ progress.bar fill {
 		margin-bottom: 14dp;
 	}
 }
+
+/* ---- narrow windows ---------------------------------------------------- */
+
+/* A dialog is 560 or 760 dp wide; a window narrower than that (a desktop
+   window dragged small, a split screen) gets the dialog's width from the
+   window instead of cutting it off. */
+@media (max-width: 800dp) {
+	.dialog, .dialog.wide {
+		left: 3%;
+		right: 3%;
+		width: auto;
+		margin-left: 0;
+	}
+	.dialog-body.scroll {
+		max-height: 260dp;
+	}
+}
