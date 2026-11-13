@@ -188,6 +188,17 @@ action, then press the new key or mouse button (Escape cancels); the engine
 hands that press to the page instead of anywhere else
 (`UIE_CaptureKeys` in `ui_rml_engine.c`).
 
+## In-game menu and team selection
+
+`ui/gamemenu.rml` is what Escape opens during a match, and `ui/teamselect.rml`
+the team choice of a team match; they replace the QuakeC GameMenu and
+TeamSelect dialogs while `menu_rmlui` is on (the QuakeC menu hands over in
+`m_goto`). The engine puts classes on their `<body>` so a stylesheet can react
+to the game without scripting: `campaign`, `solo` and `demo` on gamemenu (the
+Leave button names what is being left: campaign, singleplayer, multiplayer
+or a demo), and `red`, `blue`, `yellow`, `pink` on teamselect (the teams the
+match has). See `ui_rml_engine.c`, `UI_RML_Draw`.
+
 ## What the engine's renderer cannot do
 
 Gradient decorators (`linear-gradient`, `radial-gradient`) do not work;

@@ -1,0 +1,26 @@
+<rml>
+<head>
+	<title>Team selection</title>
+	<link type="text/template" href="templates/dialog.rml"/>
+	<link type="text/rcss" href="teamselect.rcss"/>
+</head>
+<body template="dialog">
+	<!-- Team selection at the start of a team match (replaces the QuakeC
+	     TeamSelect dialog). The engine puts "red", "blue", "yellow" and
+	     "pink" on this body for the teams the match has. -->
+	<div class="dialog-bar">
+		<div class="dialog-title">Select a team</div>
+		<div class="dialog-close" data-close>&#215;</div>
+	</div>
+	<div class="dialog-body">
+		<div class="button primary block" data-cmd="cmd selectteam auto; cmd join" data-close>Join the best team (auto-select)</div>
+		<div class="teams">
+			<div class="button team red" data-cmd="cmd selectteam red; cmd join" data-close>Red</div>
+			<div class="button team blue" data-cmd="cmd selectteam blue; cmd join" data-close>Blue</div>
+			<div class="button team yellow" data-cmd="cmd selectteam yellow; cmd join" data-close>Yellow</div>
+			<div class="button team pink" data-cmd="cmd selectteam pink; cmd join" data-close>Pink</div>
+		</div>
+		<div class="button block" data-cmd="cmd spectate" data-close>Spectate</div>
+	</div>
+</body>
+</rml>
