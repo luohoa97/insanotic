@@ -373,8 +373,13 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          pattern: '{github-pages,web}'
-          path: parts
+          name: github-pages
+          path: parts/github-pages
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: web
+          path: parts/web
 
       - name: Merge the parts
         run: |
@@ -405,7 +410,7 @@ jobs:
           path: dist
           merge-multiple: true
 
-      - run: rm -f dist/artifact.tar # the Pages site, not a download
+      - run: rm -f dist/artifact.tar dist/web-site.tar.gz # the Pages site, not a download
 
       - uses: softprops/action-gh-release@v2
         with:
