@@ -158,6 +158,6 @@ target_link_options(insanotic PRIVATE ${PORTS}
 	-sFORCE_FILESYSTEM=1 -sINVOKE_RUN=0 -sEXIT_RUNTIME=0
 	-sMODULARIZE=1 -sEXPORT_NAME=InsanoticEngine -sENVIRONMENT=web
 	-sEXPORTED_RUNTIME_METHODS=FS,IDBFS,callMain,ccall,cwrap,UTF8ToString
-	-sEXPORTED_FUNCTIONS=_main,_malloc,_free
+	-sEXPORTED_FUNCTIONS=_main,_malloc,_free,_Web_Command
 	-O3)
 set_target_properties(insanotic PROPERTIES SUFFIX ".js")

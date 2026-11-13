@@ -1,0 +1,103 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# Builds the browser's game data (packaging/web/make-web-pack.py): runs the
+# desktop client once on the smallest official map under a virtual display,
+# lets the engine write down every file the map load opens, and packs just
+# those files. Published as the assets of the release "web-data"; the release
+# workflow adds them to the Pages site. Run it by hand when the engine, the
+# game data or the map choice changes.
+name: Web data
+
+on:
+  workflow_dispatch:
+    inputs:
+      map:
+        description: Map to pack (empty = the smallest official one)
+        default: ''
+  pull_request:
+    paths:
+      - 'packaging/web/make-web-pack.py'
+      - '.github/workflows/web-data.yml'
+  push:
+    paths:
+      - 'packaging/web/make-web-pack.py'
+      - '.github/workflows/web-data.yml'
+    branches: [main]
+
+permissions:
+  contents: write
+
+env:
+  XONOTIC_ZIP: https://dl.xonotic.org/xonotic-0.8.6.zip
+  ENGINE_REPO: https://github.com/luohoa97/insanotic-darkplaces.git
+  DATA_REPO: https://github.com/luohoa97/insanotic-data.git
+  GMQCC_REPO: https://gitlab.com/xonotic/gmqcc.git
+  GMQCC_TAG: xonotic-v0.8.6
+
+jobs:
+  pack:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends build-essential libsdl2-dev libfreetype-dev zlib1g-dev \
+            xvfb libgl1-mesa-dri libglx-mesa0 unzip
+
+      - name: Engine, game data and QC
+        run: |
+          git clone --depth 1 "$ENGINE_REPO" darkplaces
+          git clone --depth 1 "$DATA_REPO" data/xonotic-data.pk3dir
+          git clone --depth 1 --branch "$GMQCC_TAG" "$GMQCC_REPO" gmqcc
+          make -j"$(nproc)" insanotic-client insanotic-qc
+
+      - name: Official packs
+        run: |
+          curl -fsSL -o xonotic.zip "$XONOTIC_ZIP"
+          unzip -q -j xonotic.zip 'Xonotic/data/*.pk3' -d data
+          rm xonotic.zip data/*compat*.pk3
+          ls -l data
+
+      - name: Pick the map
+        id: map
+        run: |
+          map='${{ inputs.map }}'
+          [ -n "$map" ] || map=$(python3 packaging/web/make-web-pack.py --data data --pick-map)
+          echo "map=$map" | tee -a "$GITHUB_OUTPUT"
+
+      # the engine records the files a map load opens (cl_preload) and writes
+      # the list 20 s after the match starts
+      - name: Load the map once
+        env:
+          SDL_AUDIODRIVER: dummy
+          LIBGL_ALWAYS_SOFTWARE: '1'
+        run: |
+          mkdir -p user
+          timeout 150 xvfb-run -a -s "-screen 0 1280x720x24" ./darkplaces/darkplaces-sdl -xonotic -basedir "$PWD" -userdir "$PWD/user" \
+            +vid_width 800 +vid_height 450 +vid_fullscreen 0 +cl_preload 1 +bot_number 2 \
+            +map "${{ steps.map.outputs.map }}" > run.log 2>&1 || true
+          tail -30 run.log
+          list=$(find user -name insanotic_preload.txt | head -1)
+          test -n "$list" || { echo "no preload list was written"; exit 1; }
+          cp "$list" preload.txt
+          wc -l preload.txt
+
+      - name: Pack
+        run: |
+          python3 packaging/web/make-web-pack.py --data data --preload preload.txt --out web-pack.pk3 \
+            | tee pack.log
+          echo "${{ steps.map.outputs.map }}" > web-map.txt
+          cp preload.txt web-preload.txt
+
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view web-data >/dev/null 2>&1 || gh release create web-data --prerelease \
+            --title "Web data" --notes "Game data for the browser build (packaging/web/make-web-pack.py): the files one map load opens."
+          gh release upload web-data web-pack.pk3 web-map.txt web-preload.txt --clobber
+
+      - run: cat pack.log >> "$GITHUB_STEP_SUMMARY"

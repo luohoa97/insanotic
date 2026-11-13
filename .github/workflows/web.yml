@@ -60,6 +60,23 @@ jobs:
         with:
           node-version: 22
 
+      # the browser's game data, when the "Web data" workflow has published it
+      - name: Fetch the web data
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p packaging/web/dist/data
+          if gh release download web-data -R "$GITHUB_REPOSITORY" -p web-pack.pk3 -p web-map.txt -D packaging/web/data-dl; then
+            mv packaging/web/data-dl/web-pack.pk3 packaging/web/dist/data/zzz-web-pack.pk3
+            map=$(cat packaging/web/data-dl/web-map.txt)
+            size=$(stat -c %s packaging/web/dist/data/zzz-web-pack.pk3)
+            printf '{ "packs": [ { "name": "zzz-web-pack.pk3", "url": "data/zzz-web-pack.pk3", "size": %d } ], "map": "%s", "args": [] }\n' "$size" "$map" \
+              > packaging/web/dist/manifest.json
+            echo "WEB_MAP=$map" >> "$GITHUB_ENV"
+          else
+            echo "no web data published yet: booting without it"
+          fi
+
       - name: Smoke test
         working-directory: packaging/web
         run: |
