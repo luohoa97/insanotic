@@ -13,7 +13,8 @@ There is no scripting. A document is wired up with attributes:
 | Attribute | On | Does |
 |---|---|---|
 | `data-cmd="..."` | any element | Click or tap runs that console command. |
-| `data-close` | any element | Click or tap closes the document it is in. |
+| `data-close` | any element | Click or tap closes the document it is in, after a short fade (the stylesheet animates `body.closing`). |
+| `data-backdrop` | with `data-close` | Closes only when the click is on this element itself, not on something above it. The dialog template's veil has both, so clicking outside a dialog closes it. |
 | `data-cvar="name"` | `input`, `select`, `textarea` | Shows the cvar when the document opens and writes it when the player changes the control. |
 | `data-cvar="name"` | any other element | Shows the cvar's value as the element's text. |
 | `data-reply="action"` | any element | Only in pages from a server, see [MODDING.md](MODDING.md#pages-from-a-server). |
@@ -181,9 +182,11 @@ the data.
 
 `ui/settings.rml` is the Settings dialog of the QuakeC menu in RML: tabs for
 Video, Effects, Audio, Game, Input (with the key binder), User and Misc. It
-has the options people change most, one line a control, bound to cvars with
-`data-cvar`; "More settings..." opens the QuakeC dialog for the rest (HUD
-layout, language, ...). Binding a key: tap one of the two key buttons of an
+has the options of the QuakeC dialog, one line a control, bound to cvars with
+`data-cvar` (video, effects, audio, game with items, messages, aim assist and
+touch controls, input, user, misc, and a reset dialog); "HUD and language..."
+opens the QuakeC dialog for the HUD layout editor and the language list.
+"Apply video settings" closes the page and restarts the video. Binding a key: tap one of the two key buttons of an
 action, then press the new key or mouse button (Escape cancels); the engine
 hands that press to the page instead of anywhere else
 (`UIE_CaptureKeys` in `ui_rml_engine.c`).
