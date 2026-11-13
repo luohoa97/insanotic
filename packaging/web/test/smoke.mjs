@@ -35,7 +35,12 @@ const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
 const errors = [];
 page.on("pageerror", (e) => errors.push(String(e)));
 await page.goto(`http://127.0.0.1:${port}/`);
-await page.waitForFunction(() => !document.getElementById("start").disabled, null, { timeout: 180000 });
+// staging the game data (download, then IndexedDB) takes a while: show progress
+const ticker = setInterval(async () => {
+	try { console.log("..", await page.textContent("#status")); } catch (e) {}
+}, 20000);
+await page.waitForFunction(() => !document.getElementById("start").disabled, null, { timeout: 900000 });
+clearInterval(ticker);
 console.log("status:", await page.textContent("#status"));
 // WEB_MAP=<name>: use Quick match and wait until the engine reports that map
 const map = process.env.WEB_MAP || "";
