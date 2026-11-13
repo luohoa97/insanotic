@@ -245,7 +245,11 @@ set(ENGINE_SOURCES
 	menu.c mvm_cmds.c ui_rml_engine.c
 	snd_main.c snd_mem.c snd_mix.c snd_ogg.c snd_wav.c snd_sdl.c
 	cd_shared.c cd_null.c
-	bih.c crypto.c cl_collision.c cl_demo.c cl_dyntexture.c cl_input.c
+	bih.c
+	touch_aim.c touch_assist.c touch_dodge.c touch_ledge.c touch_hook.c
+	touch_nade.c touch_pause.c touch_turn.c touch_tactics.c touch_wepquery.c
+	touch_autowalk.c
+	crypto.c cl_collision.c cl_demo.c cl_dyntexture.c cl_input.c
 	cl_main.c cl_parse.c cl_particles.c cl_screen.c cl_video.c clvm_cmds.c
 	cmd.c collision.c common.c console.c csprogs.c curves.c cvar.c
 	dpsoftrast.c dpvsimpledecode.c filematch.c fractalnoise.c fs.c ft2.c
