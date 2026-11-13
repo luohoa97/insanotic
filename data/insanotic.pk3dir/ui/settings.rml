@@ -236,7 +236,7 @@
 				<div class="section">Layout</div>
 				<div class="hint">Move and resize the HUD panels by hand. Out of a match this opens a map to practice on.</div>
 				<div class="row"><div class="control" style="margin-left: 0;">
-					<div class="button primary only-ingame" data-cmd="_hud_configure 1" data-close>Edit the HUD layout</div>
+					<div class="button primary only-ingame" data-cmd="togglemenu 0; _hud_configure 1" data-close>Edit the HUD layout</div>
 					<div class="button primary only-menu" data-cmd="map _hudsetup; _hud_configure 1" data-close>Edit the HUD layout (starts a map)</div>
 				</div></div>
 				<div class="section">Scoreboard</div>
