@@ -1,0 +1,125 @@
+<rml>
+<head>
+	<title>Credits</title>
+	<link type="text/template" href="templates/dialog.rml"/>
+	<link type="text/rcss" href="lists.rcss"/>
+	<link type="text/rcss" href="credits.rcss"/>
+</head>
+<body template="dialog">
+	<!-- The credits of the QuakeC menu (credits.qc), in RML. Generated from
+	     that list: when a name is added there, add it here too. -->
+	<div class="dialog-bar">
+		<div class="dialog-title">Credits</div>
+		<div class="dialog-close" data-close>&#215;</div>
+	</div>
+	<div class="dialog-body">
+		<div class="list credits">
+			<div class="ctitle">Insanotic</div>
+			<div class="cfunc">Creator</div>
+			<div class="people"><div class="person">Neil Luo</div></div>
+			<div class="ctitle">Xonotic Core Team</div>
+			<div class="people"><div class="person">Rudolf &quot;divVerent&quot; Polzer</div><div class="person">Ant &quot;Antibody&quot; Zucaro</div><div class="person">Antonio &quot;terencehill&quot; Piu</div><div class="person">Marvin &quot;Mirio&quot; Beck</div><div class="person">Merlijn Hofstra</div><div class="person">Ruszkai &quot;CuBe0wL&quot; Ákos</div><div class="person">Tyler &quot;-z-&quot; Mulligan</div></div>
+			<div class="ctitle">Extended Team</div>
+			<div class="people"><div class="person">bones_was_here</div><div class="person">David &quot;Cloudwalk&quot; Knapp</div><div class="person">Freddy</div><div class="person">Halogene</div><div class="person">Jan &quot;zykure&quot; Behrens</div><div class="person">Morosophos</div><div class="person">MrBougo</div><div class="person">nilyt/nyov</div><div class="person">Nitroxis</div><div class="person">packer</div><div class="person">Severin &quot;sev&quot; Meyer</div><div class="person">Thomas &quot;illwieckz&quot; Debesse</div><div class="person">Victor &quot;LegendGuard&quot; Jaume</div><div class="person">Yannick &quot;SpiKe&quot; Le Guen</div><div class="person">z411</div></div>
+			<div class="cfunc">Website</div>
+			<div class="people"><div class="person">Ant &quot;Antibody&quot; Zucaro (web)</div><div class="person">Freddy</div><div class="person">Merlijn Hofstra</div><div class="person">Tyler &quot;-z-&quot; Mulligan (web / game)</div></div>
+			<div class="cfunc">Stats</div>
+			<div class="people"><div class="person">Ant &quot;Antibody&quot; Zucaro</div><div class="person">Jan &quot;zykure&quot; Behrens</div></div>
+			<div class="cfunc">Art</div>
+			<div class="people"><div class="person">Severin &quot;sev&quot; Meyer</div><div class="person">Sahil &quot;DiaboliK&quot; Singhal</div><div class="person">Peter &quot;Morphed&quot; Pielak</div><div class="person">Sam &quot;LJFHutch&quot; Hutchinson</div><div class="person">Pearce &quot;theShadow&quot; Michal</div><div class="person">KingPimpCommander</div></div>
+			<div class="cfunc">Animation</div>
+			<div class="people"><div class="person">Sahil &quot;DiaboliK&quot; Singhal</div><div class="person">nifrek</div></div>
+			<div class="cfunc">Campaign</div>
+			<div class="people"><div class="person">Marvin &quot;Mirio&quot; Beck</div></div>
+			<div class="cfunc">Level Design</div>
+			<div class="people"><div class="person">Amadeusz &quot;amade/proraide&quot; Sławiński</div><div class="person">Ben &quot;MooKow&quot; Banker</div><div class="person">cityy</div><div class="person">Cortez</div><div class="person">Cuinn &quot;Cuinnton&quot; Herrick</div><div class="person">Debugger</div><div class="person">Hugo &quot;Calinou&quot; Locurcio</div><div class="person">Jakob &quot;tZork&quot; Markström Gröhn</div><div class="person">Konrad &quot;Justin&quot; Slawinski</div><div class="person">Maddin</div><div class="person">L0</div><div class="person">Łukasz &quot;kuniu the frogg&quot; Polek</div><div class="person">Maik &quot;SavageX&quot; Merten</div><div class="person">Marvin &quot;Mirio&quot; Beck</div><div class="person">MintOX</div><div class="person">packer</div><div class="person">Pearce &quot;theShadow&quot; Michal</div><div class="person">Rasmus &quot;FruitieX&quot; Eskola</div><div class="person">Ruszkai &quot;CuBe0wL&quot; Ákos</div><div class="person">Severin &quot;sev&quot; Meyer</div><div class="person">ShadoW</div><div class="person">t0uYK8Ne</div><div class="person">Yannick &quot;SpiKe&quot; Le Guen</div></div>
+			<div class="cfunc">Music / Sound FX</div>
+			<div class="people"><div class="person">AquaNova (Archer)</div><div class="person">blkrbt</div><div class="person">chooksta</div><div class="person">Independent.nu</div><div class="person">Lea &quot;TheAudioMonkey&quot; Edwards</div><div class="person">[master]mind</div><div class="person">Merlijn Hofstra</div><div class="person">Mick Rippon</div><div class="person">Nick &quot;bitbomb&quot; Lucca</div><div class="person">remaxim</div><div class="person">Saulo &quot;mand1nga&quot; Gil</div><div class="person">{SC0RP} - Ian &quot;ID&quot; Dorrell</div><div class="person">Stephan</div><div class="person">unfa</div></div>
+			<div class="cfunc">Game Code</div>
+			<div class="people"><div class="person">Antonio &quot;terencehill&quot; Piu</div><div class="person">bones_was_here</div><div class="person">Dr. Jaska</div><div class="person">Jakob &quot;tZork&quot; Markström Gröhn</div><div class="person">martin-t</div><div class="person">Mattia &quot;Melanosuchus&quot; Basaglia</div><div class="person">Matthias &quot;matthiaskrgr&quot; Krüger</div><div class="person">Rasmus &quot;FruitieX&quot; Eskola</div><div class="person">Rudolf &quot;divVerent&quot; Polzer</div><div class="person">Samual &quot;Ares&quot; Lenks</div><div class="person">TimePath</div><div class="person">Victor &quot;LegendGuard&quot; Jaume</div><div class="person">z411</div><div class="person">Zac &quot;Mario&quot; Jardine</div></div>
+			<div class="cfunc">Marketing / PR</div>
+			<div class="people"><div class="person">Tyler &quot;-z-&quot; Mulligan</div><div class="person">Ruszkai &quot;CuBe0wL&quot; Ákos</div><div class="person">Samual &quot;Ares&quot; Lenks</div><div class="person">Saulo &quot;mand1nga&quot; Gil</div></div>
+			<div class="cfunc">Legal</div>
+			<div class="people"><div class="person">Rudolf &quot;divVerent&quot; Polzer</div><div class="person">Merlijn Hofstra</div></div>
+			<div class="ctitle">Game Engine</div>
+			<div class="cfunc">DarkPlaces</div>
+			<div class="people"><div class="person">Ashley Rose &quot;LadyHavoc&quot; Hale</div></div>
+			<div class="cfunc">Engine Additions</div>
+			<div class="people"><div class="person">David &quot;Cloudwalk&quot; Knapp</div><div class="person">Rudolf &quot;divVerent&quot; Polzer</div><div class="person">Samual &quot;Ares&quot; Lenks</div></div>
+			<div class="ctitle">Compiler</div>
+			<div class="cfunc">GMQCC</div>
+			<div class="people"><div class="person">Wolfgang &quot;Blub\0&quot; Bumiller</div><div class="person">Dale &quot;graphitemaster&quot; Weiler</div></div>
+			<div class="ctitle">Other Active Contributors</div>
+			<div class="people"><div class="person">Jeff</div><div class="person">Mircea &quot;Taoki&quot; Kitsune</div><div class="person">Penguinum</div><div class="person">slava</div></div>
+			<div class="ctitle">Translators</div>
+			<div class="cfunc">Asturian</div>
+			<div class="people"><div class="person">Llumex03</div><div class="person">Tornes &quot;Tornes.Llume&quot; Ḷḷume</div><div class="person">Ximielga</div></div>
+			<div class="cfunc">Belarusian</div>
+			<div class="people"><div class="person">Mihail &quot;meequz&quot; Varantsou</div></div>
+			<div class="cfunc">Bulgarian</div>
+			<div class="people"><div class="person">Alexander &quot;alex4o&quot; Bonin</div><div class="person">ifohancroft</div><div class="person">Krasimir &quot;kmikov&quot; Mikov</div><div class="person">lokster</div><div class="person">Nik &quot;cozmo&quot; Dim</div><div class="person">set_killer</div><div class="person">ubone</div></div>
+			<div class="cfunc">Chinese (China)</div>
+			<div class="people"><div class="person">Antonidas</div><div class="person">Armcoon</div><div class="person">CodingJellyfish</div><div class="person">gee &quot;Largee&quot; Lar</div><div class="person">jiegushijia</div><div class="person">kalawore</div><div class="person">Liang &quot;dxkliu&quot; Liu</div><div class="person">Losier &quot;losierb&quot; Blackheath</div><div class="person">Matthew &quot;wjjmatthew&quot; Wu</div><div class="person">moetale</div><div class="person">NaitLee</div><div class="person">sapphireliu</div></div>
+			<div class="cfunc">Chinese (Hong Kong)</div>
+			<div class="people"><div class="person">Antonidas</div><div class="person">CodingJellyfish</div><div class="person">gee &quot;Largee&quot; Lar</div><div class="person">jiegushijia</div><div class="person">kalawore</div><div class="person">Losier &quot;losierb&quot; Blackheath</div><div class="person">Matthew &quot;wjjmatthew&quot; Wu</div><div class="person">Liang &quot;dxkliu&quot; Liu</div><div class="person">moetale</div><div class="person">NaitLee</div><div class="person">sapphireliu</div></div>
+			<div class="cfunc">Chinese (Taiwan)</div>
+			<div class="people"><div class="person">Alisha</div><div class="person">Armcoon</div><div class="person">Jeff &quot;s8321414&quot; Huang</div><div class="person">msn1018927464</div><div class="person">NaitLee</div></div>
+			<div class="cfunc">Czech</div>
+			<div class="people"><div class="person">Adam &quot;Admi335&quot; Říha</div><div class="person">fasdasd &quot; kitfildom&quot; sdasd</div><div class="person">gamingforyou875</div><div class="person">Jan &quot;kockahonza&quot; Kocka</div><div class="person">Jiří &quot;Havro&quot; Vrána</div><div class="person">shogun assassin/woky</div><div class="person">Superovoce</div><div class="person">Tomáš &quot;CZHeron&quot; Volavka</div></div>
+			<div class="cfunc">Dutch</div>
+			<div class="people"><div class="person">Alexander &quot;freefang&quot; van Dam</div><div class="person">Contijn &quot;Sojiro84&quot; Buijs</div><div class="person">Joeke &quot;Mappack&quot; de Graaf</div><div class="person">Jonathan &quot;Jonakeys&quot; van der Steege</div><div class="person">PinkRobot</div><div class="person">vegiburger</div></div>
+			<div class="cfunc">English (Australia)</div>
+			<div class="people"><div class="person">Matthew &quot;matthewwu2003&quot; Wu</div><div class="person">Laurene &quot;sunflowers&quot; Albrand</div><div class="person">Stuart &quot;Cefiar&quot; Young</div><div class="person">Zac &quot;Mario&quot; Jardine</div></div>
+			<div class="cfunc">Finnish</div>
+			<div class="people"><div class="person">Dr. Jaska</div><div class="person">Heidi Wenger</div><div class="person">Henry &quot;Exitium&quot; Sanmark</div><div class="person">Jaakko Saarikko</div><div class="person">Jonas &quot;PowaTree&quot; Sahlberg</div><div class="person">LINUX SAUNA</div><div class="person">Oftox</div><div class="person">Oi Suomi On!</div><div class="person">Rasmus &quot;FruitieX&quot; Eskola</div></div>
+			<div class="cfunc">French</div>
+			<div class="people"><div class="person">Gwlanbzh</div><div class="person">Hugo &quot;Calinou&quot; Locurcio</div><div class="person">Kim &quot;coughingmouse&quot; Lee</div><div class="person">Maxime &quot;Taximus&quot; Paradis</div><div class="person">Nicolas &quot;signed&quot; Formichella</div><div class="person">RedGuff</div><div class="person">Thomas &quot;illwieckz&quot; Debesse</div><div class="person">Yannick &quot;SpiKe&quot; Le Guen</div></div>
+			<div class="cfunc">German</div>
+			<div class="people"><div class="person">cvcxc</div><div class="person">Erik &quot;Ablu&quot; Schilling</div><div class="person">Jope &quot;Sless&quot; Withers</div><div class="person">Larson &quot;skps&quot; März</div><div class="person">Marvin &quot;Mirio&quot; Beck</div><div class="person">Paul &quot;Snapper&quot;</div><div class="person">Robert &quot;HbmMods&quot; Katzinsky</div><div class="person">Rudolf &quot;divVerent&quot; Polzer</div><div class="person">TheTrueBrot</div><div class="person">Wuzzy</div><div class="person">Yepoleb</div></div>
+			<div class="cfunc">Greek</div>
+			<div class="people"><div class="person">Hector &quot;The_Smasher_1992&quot; Champipis</div><div class="person">Konstantinos &quot;LDinos&quot; Mihalenas</div><div class="person">MasterWord</div><div class="person">Mensious Mensious</div><div class="person">Savoritias</div><div class="person">Vindex</div><div class="person">Yannis &quot;Evropi&quot; Anthymidis</div></div>
+			<div class="cfunc">Hungarian</div>
+			<div class="people"><div class="person">Ács &quot;acszoltan111&quot; Zoltán</div><div class="person">MmAaXx500</div><div class="person">Peter &quot;fpeterhu&quot; Ferenczy</div><div class="person">Ruszkai &quot;CuBe0wL&quot; Ákos</div><div class="person">xaN1C4n3</div></div>
+			<div class="cfunc">Indonesian</div>
+			<div class="people"><div class="person">Angeline Meilia</div><div class="person">Ariesandy Hidayat</div><div class="person">red koala</div></div>
+			<div class="cfunc">Irish</div>
+			<div class="people"><div class="person">Kevin &quot;kscanne&quot; Scannell</div></div>
+			<div class="cfunc">Italian</div>
+			<div class="people"><div class="person">Antonio &quot;terencehill&quot; Piu</div><div class="person">Felice &quot;MaidenBeast&quot; Sallustio</div><div class="person">Jessica Amoruso</div><div class="person">stdi</div><div class="person">XCostaX</div></div>
+			<div class="cfunc">Japanese</div>
+			<div class="people"><div class="person">Antoni Das</div><div class="person">Lento</div><div class="person">Space Ace</div><div class="person">RYU &quot;ryusho2523&quot; N.</div><div class="person">Victor &quot;LegendGuard&quot; Jaume</div><div class="person">z411</div></div>
+			<div class="cfunc">Kazakh</div>
+			<div class="people"><div class="person">Артем &quot;bystrov.arterm&quot; Быстров</div></div>
+			<div class="cfunc">Korean</div>
+			<div class="people"><div class="person">BYEONGJIN &quot;ahnkoon&quot; AN</div><div class="person">Jisoo &quot;LimJiSoo0719&quot; Lim</div><div class="person">Kim &quot;coughingmouse&quot; Lee</div><div class="person">Seokho Son</div></div>
+			<div class="cfunc">Latin</div>
+			<div class="people"><div class="person">oblector o</div></div>
+			<div class="cfunc">Polish</div>
+			<div class="people"><div class="person">4m</div><div class="person">Alex &quot;tiprogrammierer.alex&quot; Progger</div><div class="person">Amadeusz &quot;amade/proraide&quot; Sławiński</div><div class="person">Artur &quot;artur9010&quot; Motyka</div><div class="person">Cris &quot;Kshyso&quot; Sus</div><div class="person">Jakub &quot;_Mpcs&quot; Niklas</div><div class="person">Jakub &quot;KubeQ11&quot; Pędziszewski</div><div class="person">John &quot;Myran&quot; Smith</div><div class="person">Karol &quot;kRkk&quot; Kosek</div><div class="person">Kriss &quot;Kriss7475&quot; Chr</div><div class="person">Piotr &quot;vipkoza&quot; Kozica</div><div class="person">qqiLMFjv1iBfT3p6TNxjUThsaTVIXhQc</div><div class="person">Rafał &quot;Okava&quot; Szymański</div><div class="person">Robert &quot;Szkodnix&quot; Wolniak</div><div class="person">Saikuru &quot;saikuru0&quot; Zero</div><div class="person">Sertomas</div><div class="person">SFS Atlas</div><div class="person">Wojciech &quot;g_host&quot; Sikora</div></div>
+			<div class="cfunc">Portuguese</div>
+			<div class="people"><div class="person">Ivan Paulos &quot;greylica&quot; Tomé</div><div class="person">Jean Trindade &quot;Muleke_Trairao&quot; Pereira</div><div class="person">lecalam</div><div class="person">NotThatPrivate</div><div class="person">Ricardo Manuel &quot;hellgardia&quot; da Cruz Coelho da Silva</div><div class="person">Rui &quot;xendez&quot;</div><div class="person">xXxCHAOTICxXx</div></div>
+			<div class="cfunc">Portuguese (Brazil)</div>
+			<div class="people"><div class="person">Jean Trindade &quot;Muleke_Trairao&quot; Pereira</div><div class="person">Rui &quot;xendez&quot;</div><div class="person">yy0zz</div><div class="person">zerowhy</div></div>
+			<div class="cfunc">Romanian</div>
+			<div class="people"><div class="person">Adrian-Ciprian &quot;adrian.tinjala&quot; Tînjală</div><div class="person">busterdbk</div><div class="person">Cuzenco &quot;andonis1616&quot; Andrei Robert</div><div class="person">Iulian &quot;ElektroBoom&quot; Oancea</div><div class="person">Mircea &quot;Taoki&quot; Kitsune</div><div class="person">Sorin &quot;unic_sorin&quot; Botirla</div><div class="person">Tudor &quot;TropiKo&quot; Ionel</div></div>
+			<div class="cfunc">Russian</div>
+			<div class="people"><div class="person">Alex &quot;alextalker7&quot; Talker</div><div class="person">Alexandr &quot;zrg&quot;</div><div class="person">Andrei &quot;adem4ik&quot; Stepanov</div><div class="person">Andrey &quot;dekrY&quot; P.</div><div class="person">Артём &quot;Temak&quot; Котлубай</div><div class="person">Artem Vorotnikov</div><div class="person">Blueberryy</div><div class="person">gravicappa</div><div class="person">Hot Dog</div><div class="person">Lord Canistra</div><div class="person">Morosophos</div><div class="person">Nikoli</div><div class="person">Sergej &quot;Clearness High&quot; Lutsyk</div><div class="person">Simple88</div></div>
+			<div class="cfunc">Serbian</div>
+			<div class="people"><div class="person">Marko M. Kostić</div><div class="person">Pendulla</div><div class="person">Rafael &quot;Ristovski&quot;</div></div>
+			<div class="cfunc">Spanish</div>
+			<div class="people"><div class="person">Alan &quot;aagp&quot; Garcia</div><div class="person">Antonio &quot;Antoniosirc&quot; Sirera</div><div class="person">Ari_tent</div><div class="person">brunodeleo</div><div class="person">Damian &quot;starfire24680&quot; Kurek</div><div class="person">Excruciatus &quot;crucesignatus&quot; X</div><div class="person">Kammy</div><div class="person">roader_gentoo</div><div class="person">Rodrigo Mouton Laudin</div><div class="person">SouL</div><div class="person">Starfire24680</div><div class="person">Victor &quot;LegendGuard&quot; Jaume</div><div class="person">Vitama Piru Leta</div><div class="person">Yllelder</div><div class="person">z411</div></div>
+			<div class="cfunc">Swedish</div>
+			<div class="people"><div class="person">Gustaf &quot;Hanicef&quot; Alhäll</div><div class="person">Karl-Oskar &quot;machine&quot; Rikås</div><div class="person">marcus256</div></div>
+			<div class="cfunc">Turkish</div>
+			<div class="people"><div class="person">Abdurrahman &quot;akkus12345&quot; AKKUŞ</div><div class="person">Ahmet &quot;ahmetlii&quot;</div><div class="person">Çağlar &quot;caglarturali&quot; Turalı</div><div class="person">Demiray &quot;tulliana&quot; Muhterem</div><div class="person">Gokdeniz.Kucukali</div><div class="person">ibra kap</div><div class="person">Lucifer &quot;Lucifer25x&quot; Morningstar</div><div class="person">yutyocraft</div></div>
+			<div class="cfunc">Ukrainian</div>
+			<div class="people"><div class="person">Dmitro &quot;Gamebot&quot; Sokhin</div><div class="person">Ihor &quot;uandreew&quot; Andreev</div><div class="person">Illia &quot;imbirWIthSugar&quot; Serediuk</div><div class="person">Oleh &quot;BlaXpirit&quot; Prypin</div><div class="person">Vasyl &quot;Harmata&quot; Melnyk</div><div class="person">Yuriy &quot;herrniemand&quot; Ackermann</div></div>
+			<div class="ctitle">Past Contributors</div>
+			<div class="people"><div class="person">Akari</div><div class="person">Alexander &quot;naryl&quot; Suhoverhov</div><div class="person">Alexander &quot;motorsep&quot; Zubov</div><div class="person">Amos &quot;torus&quot; Dudley</div><div class="person">Andreas &quot;Black&quot; Kirsch</div><div class="person">Attila &quot;WW3&quot; Houtkooper</div><div class="person">BigMac</div><div class="person">Braden &quot;meoblast001&quot; Walters</div><div class="person">Brain Younds</div><div class="person">BuddyFriendGuy</div><div class="person">Chris &quot;amethyst7&quot; Matz</div><div class="person">Christian Ice</div><div class="person">Clinton &quot;Kaziganthe&quot; Freeman</div><div class="person">Dan &quot;Digger&quot; Korostelev</div><div class="person">Dan &quot;Wazat&quot; Hale</div><div class="person">Diomedes</div><div class="person">Dokujisan</div><div class="person">Donkey</div><div class="person">dstrek</div><div class="person">Dustin Geeraert</div><div class="person">Edgenetwork</div><div class="person">Edward &quot;Ed&quot; Holness</div><div class="person">Eric &quot;Munyul Verminard&quot; Sambach</div><div class="person">Erik &quot;Ablu&quot; Schilling</div><div class="person">Fabien &quot;H. Reaper&quot; Tschirhart</div><div class="person">Florian Paul &quot;lda17h&quot; Schmidt</div><div class="person">FrikaC</div><div class="person">Garth &quot;Zombie&quot; Hendy</div><div class="person">GATTS</div><div class="person">Gerd &quot;Elysis&quot; Raudenbusch</div><div class="person">Gottfried &quot;Toddd&quot; Hofmann</div><div class="person">Henning &quot;Tymo&quot; Janssen</div><div class="person">Innovati</div><div class="person">JH0nny</div><div class="person">Jitspoe</div><div class="person">Jody Gallagher</div><div class="person">Jope &quot;Sless&quot; Withers</div><div class="person">Jubilant</div><div class="person">Juergen &quot;LowDragon&quot; Timm</div><div class="person">KadaverJack</div><div class="person">Kevin &quot;Tyrann&quot; Shanahan</div><div class="person">Kristian &quot;morfar&quot; Johansson</div><div class="person">Kurt Dereli</div><div class="person">lcatlnx</div><div class="person">Lee David Ash</div><div class="person">Lee Vermeulen</div><div class="person">leileilol</div><div class="person">Lyberta</div><div class="person">magorian</div><div class="person">Marius &quot;GreEn`mArine&quot; Shekow</div><div class="person">Marko &quot;Urre&quot; Permanto</div><div class="person">Mathieu &quot;Elric&quot; Olivier</div><div class="person">Mattrew &quot;Tronyn&quot; Rye</div><div class="person">MauveBib</div><div class="person">Mephisto</div><div class="person">michaelb</div><div class="person">Michael &quot;Tenshihan&quot; Quinn</div><div class="person">Mepper</div><div class="person">Munyul</div><div class="person">Netzwerg</div><div class="person">NoelCower</div><div class="person">Parapraxis</div><div class="person">parasti</div><div class="person">Paul &quot;Strahlemann&quot; Evers</div><div class="person">Paul Scott</div><div class="person">Petithomme</div><div class="person">PlasmaSheep</div><div class="person">Przemysław &quot;atheros&quot; Grzywacz</div><div class="person">Q1 Retexturing Project</div><div class="person">Qantourisc</div><div class="person">Oleh &quot;BlaXpirit&quot; Prypin</div><div class="person">Rick &quot;Rat&quot; Kelley</div><div class="person">Robert &quot;ai&quot; Kuroto</div><div class="person">Ronan</div><div class="person">Sajt</div><div class="person">Samual &quot;Ares&quot; Lenks</div><div class="person">Saulo &quot;mand1nga&quot; Gil</div><div class="person">Shaggy</div><div class="person">Shank</div><div class="person">s1lence</div><div class="person">Simon O’Callaghan</div><div class="person">Soelen</div><div class="person">SomeGuy</div><div class="person">SoulKeeper_p</div><div class="person">Spike</div><div class="person">Spirit</div><div class="person">Stephan &quot;esteel&quot; Stahl</div><div class="person">Steve Vermeulen</div><div class="person">Supajoe</div><div class="person">Sydes</div><div class="person">Tei</div><div class="person">The player with the unnecessarily long name</div><div class="person">Tomaz</div><div class="person">Ulrich Galbraith</div><div class="person">Vortex</div><div class="person">William Libert</div><div class="person">William &quot;Willis&quot; Weilep</div><div class="person">Yves &quot;EviLair&quot; Allaire</div><div class="person">Zac &quot;Mario&quot; Jardine</div><div class="person">Zenex</div><div class="person">... and a goat</div></div>
+		</div>
+	</div>
+	<div class="dialog-buttons">
+		<div class="button primary" data-close>OK</div>
+	</div>
+</body>
+</rml>
