@@ -96,6 +96,11 @@
 	#content tabset tab { padding-left: 14dp; padding-right: 14dp; }
 }
 
+/* the frame buffer and render scale controls: on phones the screen texture path goes black at random (GLES), so they are not offered */
+body.touch .only-desktop {
+	display: none;
+}
+
 /* the HUD layout button that fits: in a match or from the menu (the engine
    sets "ingame" on this body) */
 .only-ingame {
