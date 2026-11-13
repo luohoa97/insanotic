@@ -45,7 +45,6 @@ body {
 	cursor: pointer;
 	tab-index: auto;
 	nav: auto; /* arrow keys move between the buttons */
-	animation: rise 0.45s cubic-out;
 }
 .card:last-child {
 	margin-right: 0;
@@ -148,9 +147,16 @@ body {
 	color: #ffffff73;
 }
 
+/* the cards come in each time the menu is shown ("open", see components.rcss) */
 @keyframes rise {
-	from { top: 24dp; }
-	to { top: 0dp; }
+	from { top: 16dp; opacity: 0; }
+	to { top: 0dp; opacity: 1; }
+}
+body.open .card {
+	animation: rise 0.22s cubic-out;
+}
+body.reduce-motion .card {
+	animation: none;
 }
 
 /* Phones held sideways: the window is only about 450 dp high (see
