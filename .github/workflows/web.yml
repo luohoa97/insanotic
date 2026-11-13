@@ -55,6 +55,25 @@ jobs:
 
       - run: ls -la packaging/web/dist
 
+      # boots the page in headless Chromium and prints the engine's output
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Smoke test
+        working-directory: packaging/web
+        run: |
+          npm install --no-save --no-package-lock playwright
+          npx playwright install --with-deps chromium
+          node test/smoke.mjs dist smoke.png
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: web-smoke
+          path: packaging/web/smoke.png
+          if-no-files-found: ignore
+
       - uses: actions/upload-artifact@v4
         with:
           name: web
