@@ -109,24 +109,75 @@ def ffmpeg(*args):
                    check=True, stdin=subprocess.DEVNULL)
 
 
+def opus_packet_samples(pkt):
+    """Samples (48 kHz) in one Opus packet, from its TOC byte."""
+    toc, config, code = pkt[0], pkt[0] >> 3, pkt[0] & 3
+    if config < 12:
+        frame = (480, 960, 1920, 2880)[config & 3]
+    elif config < 16:
+        frame = (480, 960)[config & 1]
+    else:
+        frame = (120, 240, 480, 960)[config & 3]
+    return frame * (1 if code == 0 else 2 if code < 3 else pkt[1] & 63)
+
+
+def opus_is_sane(data):
+    """False when the page granule positions of an Ogg Opus file disagree with
+    the audio in the pages. libopusfile refuses such a file (OP_EBADTIMESTAMP)
+    and the game then cannot play the sound. Only the last page may be short."""
+    pos, total, last_gp, seen = 0, 0, None, 0
+    while pos + 27 <= len(data):
+        if data[pos:pos + 4] != b"OggS":
+            return False
+        nseg = data[pos + 26]
+        table = data[pos + 27:pos + 27 + nseg]
+        gp = struct.unpack_from("<q", data, pos + 6)[0]
+        body = pos + 27 + nseg
+        size = 0
+        for lacing in table:
+            size += lacing
+            if lacing < 255:  # a packet ends here
+                if seen >= 2 and size:
+                    total += opus_packet_samples(data[body:body + size])
+                seen += 1
+                body += size
+                size = 0
+        body += size
+        eos = data[pos + 5] & 4
+        if seen > 2 and gp >= 0 and not eos and gp != total:
+            return False
+        if eos and seen > 2 and gp > total:
+            return False
+        pos = body
+    return seen > 2
+
+
 def to_opus(name, data):
     """Ogg Vorbis to Ogg Opus; None when it cannot be done."""
     # sound effects do well at a low rate, music gets more
     rate = "56k" if name.startswith("sound/") and "cdtracks" not in name else "96k"
     with tempfile.TemporaryDirectory() as t:
-        src, dst = os.path.join(t, "in.ogg"), os.path.join(t, "out.opus")
+        src, wav, dst = os.path.join(t, "in.ogg"), os.path.join(t, "mid.wav"), os.path.join(t, "out.opus")
         with open(src, "wb") as f:
             f.write(data)
         try:
-            # -map_metadata keeps the loop and ReplayGain tags the engine reads
-            ffmpeg("-i", src, "-map", "0:a:0", "-map_metadata", "0", "-c:a", "libopus",
+            # Decode to 48 kHz PCM first and encode from that. Feeding the
+            # Vorbis decoder straight into libopus makes ffmpeg write page
+            # granule positions that libopusfile rejects when the source is not
+            # 48 kHz (hagar_fire, rocket_fire); a PCM source does not.
+            ffmpeg("-i", src, "-map", "0:a:0", "-ar", "48000", "-c:a", "pcm_s16le", wav)
+            # the -map_metadata options keep the loop and ReplayGain tags the engine reads
+            ffmpeg("-i", wav, "-i", src, "-map", "0:a:0", "-map_metadata", "1", "-map_metadata:s:a:0", "1:s:a:0", "-c:a", "libopus",
                    "-b:a", rate, "-vbr", "on", "-application", "audio", dst)
             with open(dst, "rb") as f:
                 out = f.read()
         except (subprocess.CalledProcessError, OSError) as e:
             print("  %s: kept as Ogg (%s)" % (name, e), file=sys.stderr)
             return None
-    return out if out and len(out) < len(data) else None
+    if not opus_is_sane(out):
+        print("  %s: kept as Ogg (bad Opus timestamps)" % name, file=sys.stderr)
+        return None
+    return out if len(out) < len(data) else None
 
 
 def dds_info(data):
