@@ -66,7 +66,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           mkdir -p packaging/web/dist/data
-          if gh release download web-data -R "$GITHUB_REPOSITORY" -p 'web-pack-*.pk3' -p web-map.txt -D packaging/web/data-dl; then
+          if gh release download web-data -R "$GITHUB_REPOSITORY" -p 'web-pack-*.pk3' -p web-map.txt -D packaging/web/data-dl \
+             && compgen -G 'packaging/web/data-dl/web-pack-*.pk3' >/dev/null; then
             for f in packaging/web/data-dl/web-pack-*.pk3; do
               mv "$f" "packaging/web/dist/data/zzz-$(basename "$f")"
             done

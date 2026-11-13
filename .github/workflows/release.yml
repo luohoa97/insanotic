@@ -240,7 +240,8 @@ jobs:
           (cd stage && zip -qr "../$pack/zzz-insanotic.pk3" .)
           map=""
           # the map and what it loads, built by the "Web data" workflow
-          if gh release download web-data -R "$GITHUB_REPOSITORY" -p 'web-pack-*.pk3' -p web-map.txt -D web-data; then
+          if gh release download web-data -R "$GITHUB_REPOSITORY" -p 'web-pack-*.pk3' -p web-map.txt -D web-data \
+             && compgen -G 'web-data/web-pack-*.pk3' >/dev/null; then
             for f in web-data/web-pack-*.pk3; do mv "$f" "$pack/zzz-$(basename "$f")"; done
             map=$(cat web-data/web-map.txt)
           fi
