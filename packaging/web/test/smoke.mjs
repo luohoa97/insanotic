@@ -35,10 +35,29 @@ const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
 const errors = [];
 page.on("pageerror", (e) => errors.push(String(e)));
 await page.goto(`http://127.0.0.1:${port}/`);
-await page.waitForFunction(() => !document.getElementById("start").disabled, null, { timeout: 180000 });
+// staging the game data (download, then IndexedDB) takes a while: show progress
+const ticker = setInterval(async () => {
+	try { console.log("..", await page.textContent("#status")); } catch (e) {}
+}, 20000);
+await page.waitForFunction(() => !document.getElementById("start").disabled, null, { timeout: 900000 });
+clearInterval(ticker);
 console.log("status:", await page.textContent("#status"));
-await page.click("#start");
-await page.waitForTimeout(30000);
+// WEB_MAP=<name>: use Quick match and wait until the engine reports that map
+const map = process.env.WEB_MAP || "";
+let mapLoaded = false;
+if (map) {
+	await page.waitForFunction(() => !document.getElementById("quick").hidden, null, { timeout: 10000 });
+	await page.click("#quick");
+	for (let i = 0; i < 36 && !mapLoaded; i++) {
+		await page.waitForTimeout(10000);
+		await page.evaluate(() => window.insanotic && window.insanotic.command("status"));
+		await page.waitForTimeout(1000);
+		mapLoaded = new RegExp("map:\\s+" + map + "\\b").test(await page.textContent("#log"));
+	}
+} else {
+	await page.click("#start");
+	await page.waitForTimeout(30000);
+}
 await page.screenshot({ path: shot });
 const log = await page.textContent("#log");
 console.log("---- engine output ----\n" + log + "\n---- page errors ----\n" + (errors.join("\n") || "(none)"));
@@ -46,4 +65,6 @@ await browser.close();
 server.close();
 const booted = /DarkPlaces|Insanotic|Game is|Xonotic|GL_RENDERER|video mode/i.test(log);
 if (!booted) { console.error("no sign of the engine running"); process.exit(1); }
+if (map && !mapLoaded) { console.error("the map " + map + " did not load"); process.exit(1); }
+if (map) console.log("map loaded: " + map);
 if (errors.length) process.exit(1);

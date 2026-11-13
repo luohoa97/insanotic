@@ -11,7 +11,9 @@
 //      browser's rule that audio starts after a click).
 //
 // manifest.json: { "packs": [ { "name": "x.pk3", "url": "data/x.pk3", "size": 123 } ],
-//                  "args": [ "+map", "..." ] }
+//                  "map": "dance", "args": [ ... ] }
+// "map" (the map the packs hold) adds a "Quick match" button that starts it
+// at once; Play opens the main menu.
 // A different manifest can be given as ?manifest=<url>.
 "use strict";
 (function () {
@@ -106,7 +108,7 @@
 		startBtn.disabled = false;
 	};
 
-	function start(manifest) {
+	function start(manifest, extra) {
 		const stage = $("stage"), canvas = $("canvas");
 		$("panel").style.display = "none";
 		stage.style.display = "block";
@@ -114,9 +116,15 @@
 		const w = Math.round(window.innerWidth * dpr), h = Math.round(window.innerHeight * dpr);
 		const args = ["-xonotic", "-basedir", GAME, "-userdir", USER, "-nohome", "-nocurl",
 			"+vid_fullscreen", "0", "+vid_width", String(w), "+vid_height", String(h)]
-			.concat(manifest.args || []);
+			.concat(manifest.args || [], extra || []);
 		canvas.focus();
 		engine.callMain(args);
+		// run a console command in the engine (also what tests use)
+		window.insanotic = {
+			engine: engine,
+			command: (text) => engine.ccall("Web_Command", null, ["string"], [text]),
+			log: () => logEl.textContent,
+		};
 	}
 
 	async function boot() {
@@ -135,6 +143,12 @@
 			status("Ready.");
 			startBtn.disabled = false;
 			startBtn.onclick = () => start(manifest);
+			if (manifest.map) {
+				const quick = $("quick");
+				quick.hidden = false;
+				quick.disabled = false;
+				quick.onclick = () => start(manifest, ["+map", manifest.map]);
+			}
 		} catch (e) {
 			status("Setting up the game data failed: " + e);
 			log(String(e && e.stack || e));

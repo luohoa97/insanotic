@@ -227,6 +227,8 @@ jobs:
       # what Insanotic adds to the Xonotic release packs, as one pack that
       # sorts after them (the packs themselves are not hosted here)
       - name: Package
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -eu
           tar -xzf linux/insanotic-*-linux-x86_64.tar.gz -C linux
@@ -236,9 +238,14 @@ jobs:
           cp -a "$src"/xonotic-data.pk3dir/. stage/
           cp -a "$src"/insanotic.pk3dir/. stage/
           (cd stage && zip -qr "../$pack/zzz-insanotic.pk3" .)
-          size=$(stat -c %s "$pack/zzz-insanotic.pk3")
-          printf '{ "packs": [ { "name": "zzz-insanotic.pk3", "url": "data/zzz-insanotic.pk3", "size": %d } ], "args": [] }\n' "$size" \
-            > packaging/web/dist/manifest.json
+          map=""
+          # the map and what it loads, built by the "Web data" workflow
+          if gh release download web-data -R "$GITHUB_REPOSITORY" -p 'web-pack-*.pk3' -p web-map.txt -D web-data \
+             && compgen -G 'web-data/web-pack-*.pk3' >/dev/null; then
+            for f in web-data/web-pack-*.pk3; do mv "$f" "$pack/zzz-$(basename "$f")"; done
+            map=$(cat web-data/web-map.txt)
+          fi
+          python3 packaging/web/make-manifest.py packaging/web/dist "$map"
           tar -C packaging/web/dist -czf web-site.tar.gz .
 
       - uses: actions/upload-artifact@v4
