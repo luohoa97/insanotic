@@ -140,10 +140,9 @@ before and after in its job summary. Sizes of the published android set: data
   to `.ogg` (libopusfile, loaded at run time on desktop, built in on Android),
   and a request for `foo.ogg` or `foo.wav` finds `foo.opus`.
 - The `android` set also turns S3TC textures (`dds/foo.dds`) into ASTC in a
-  KTX 1 file with all mip levels (`dds/foo.ktx`): 8x8 blocks for color, 6x6
-  for normal maps and 2D graphics in the published set (`ASTC_COLOR` and
-  `ASTC_DETAIL` change that; the script's own defaults, 6x6 and 4x4, make a
-  better looking set that is half as big again as the official packs). The engine uploads them as they are when the GPU has
+  KTX 1 file with all mip levels (`dds/foo.ktx`): 6x6 blocks for color, 4x4
+  for normal maps and 2D graphics (`ASTC_COLOR` and `ASTC_DETAIL` change that;
+  bigger blocks make smaller, blurrier files). The engine uploads them as they are when the GPU has
   `GL_KHR_texture_compression_astc_ldr`, and otherwise reads the `.dds`
   (`r_texture_astc_load 0` turns ASTC off).
 
