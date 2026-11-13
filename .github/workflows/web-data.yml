@@ -44,7 +44,7 @@ jobs:
       - name: Install
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends build-essential libsdl2-dev libfreetype-dev zlib1g-dev \
+          sudo apt-get install -y --no-install-recommends build-essential libsdl2-dev libfreetype-dev zlib1g-dev libjpeg-dev \
             xvfb libgl1-mesa-dri libglx-mesa0 unzip
 
       - name: Engine, game data and QC
@@ -52,7 +52,7 @@ jobs:
           git clone --depth 1 "$ENGINE_REPO" darkplaces
           git clone --depth 1 "$DATA_REPO" data/xonotic-data.pk3dir
           git clone --depth 1 --branch "$GMQCC_TAG" "$GMQCC_REPO" gmqcc
-          make -j"$(nproc)" insanotic-client insanotic-qc
+          make -j"$(nproc)" insanotic-client insanotic-qc INSANOTIC_DP_FLAGS=DP_LINK_JPEG=shared
 
       - name: Official packs
         run: |
