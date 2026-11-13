@@ -12,10 +12,9 @@
 #
 # Use packaging/web/build.sh, which sets this up.
 #
-# The overall layout (engine as one wasm module started from a JS loader that
-# stages the game data first) follows the web build in
-# dixonSolutions/Xonotic-Touch (GPL-3.0-or-later); this file is written for
-# the Insanotic engine tree.
+# A browser build also exists in dixonSolutions/Xonotic-Touch
+# (GPL-3.0-or-later); nothing here is copied from it, this is written for the
+# Insanotic engine tree.
 #
 # Input:
 #   INSANOTIC_ENGINE_DIR  the darkplaces/ checkout

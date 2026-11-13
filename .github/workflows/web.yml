@@ -34,8 +34,19 @@ jobs:
           version: ${{ env.EMSDK_VERSION }}
           actions-cache-folder: emsdk-cache
 
+      # the engine branch of the same name as this pull request's, when there
+      # is one (engine and packaging change together), else main
       - name: Fetch the engine
-        run: git clone --depth 1 --branch "${{ inputs.engine_ref || 'main' }}" "$ENGINE_REPO" darkplaces
+        env:
+          INPUT_REF: ${{ inputs.engine_ref }}
+          HEAD_REF: ${{ github.head_ref }}
+        run: |
+          ref=${INPUT_REF:-main}
+          if [ -z "$INPUT_REF" ] && [ -n "$HEAD_REF" ] && git ls-remote --exit-code --heads "$ENGINE_REPO" "$HEAD_REF" >/dev/null 2>&1; then
+            ref=$HEAD_REF
+          fi
+          echo "engine: $ref"
+          git clone --depth 1 --branch "$ref" "$ENGINE_REPO" darkplaces
 
       - name: Build
         env:
