@@ -28,8 +28,8 @@
 				<label class="check"><input type="checkbox" class="checkbox" data-cvar="vid_fullscreen"/> Full screen</label>
 				<label class="check"><input type="checkbox" class="checkbox" data-cvar="vid_vsync"/> Vertical synchronization</label>
 				<label class="check"><input type="checkbox" class="checkbox" data-cvar="ui_reduce_motion"/> Reduce menu motion</label>
-				<label class="check"><input type="checkbox" class="checkbox" data-cvar="r_viewfbo" data-on="2" data-off="0"/> High-quality frame buffer</label>
-				<div class="row"><div class="caption">Render scale</div><div class="control"><input type="range" class="range" min="0.5" max="2" step="0.25" data-cvar="r_viewscale"/></div></div>
+				<label class="check only-desktop"><input type="checkbox" class="checkbox" data-cvar="r_viewfbo" data-on="2" data-off="0"/> High-quality frame buffer</label>
+				<div class="row only-desktop"><div class="caption">Render scale</div><div class="control"><input type="range" class="range" min="0.5" max="2" step="0.25" data-cvar="r_viewscale"/></div></div>
 				<div class="row"><div class="caption">Antialiasing</div><div class="control"><select data-cvar="vid_samples"><option value="1">Off</option><option value="2">2x</option><option value="4">4x</option><option value="8">8x</option></select></div></div>
 				<div class="row"><div class="caption">Anisotropic filtering</div><div class="control"><select data-cvar="gl_texture_anisotropy"><option value="1">Off</option><option value="2">2x</option><option value="4">4x</option><option value="8">8x</option><option value="16">16x</option></select></div></div>
 				<div class="section">Colors</div>
