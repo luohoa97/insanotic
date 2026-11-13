@@ -1,0 +1,35 @@
+/* Team selection: a button per team the match has, in the team's color. The
+   engine sets "red", "blue", "yellow" and "pink" on the body. */
+
+#content {
+	width: 520dp;
+	margin-left: -260dp;
+	margin-top: -140dp;
+}
+.teams {
+	display: flex;
+	flex-direction: row;
+	margin-bottom: 10dp;
+}
+.teams .team {
+	flex: 1 1 0;
+	min-width: 0;
+	margin-left: 10dp;
+	padding: 26dp 4dp 24dp 4dp;
+	display: none;
+	font-weight: bold;
+}
+.teams .team:first-child {
+	margin-left: 0;
+}
+body.red .team.red, body.blue .team.blue, body.yellow .team.yellow, body.pink .team.pink {
+	display: block;
+}
+.team.red { background-color: #7a2a2a; border-color: #ff8080; }
+.team.blue { background-color: #2a3f7a; border-color: #80a0ff; }
+.team.yellow { background-color: #7a6a1f; border-color: #ffe680; }
+.team.pink { background-color: #7a2a6a; border-color: #ff80e6; }
+.team.red:hover, .team.red:focus-visible { background-color: #a03a3a; }
+.team.blue:hover, .team.blue:focus-visible { background-color: #3a58a8; }
+.team.yellow:hover, .team.yellow:focus-visible { background-color: #a8932a; }
+.team.pink:hover, .team.pink:focus-visible { background-color: #a83a90; }

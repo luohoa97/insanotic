@@ -10,7 +10,7 @@
 #   - closing that dialog brings it back,
 #   - on a touch screen a drag scrolls a list (tests/ui/scrolltest.rml), and a
 #     tap on one of its rows runs that row's command,
-#   - the Quick settings dialog shows cvars and writes them back (data-cvar),
+#   - the test page tests/ui/quicksettings.rml shows cvars and writes them back (data-cvar),
 #   - pages from a server (tests/ui/evil/page.rml, and the example_page
 #     plugin): a Lua plugin opens one and hears its answer, a hostile page
 #     cannot run a local command or read a cvar, its band closes it, and
@@ -97,7 +97,7 @@ expect "tapping a row runs its command" "RmlUi: command echo ROW_" "$log"
 # Quick settings: the Video tab has a slider on fov. A click in the middle of
 # its track sets fov to roughly 80 (the track runs from 60 to 130).
 echo "== bindings"
-log=$(timeout 120 "$ENGINE" -xonotic -basedir "$PWD" -userdir "$USERDIR" \
+log=$(timeout 120 "$ENGINE" -xonotic -game tests -basedir "$PWD" -userdir "$USERDIR" \
 	+developer 1 +_cl_name RmlTest +vid_fullscreen 0 +vid_width 1280 +vid_height 720 +vid_touchscreen 0 \
 	+fov 120 \
 	+defer 12 "rml_show quicksettings" \
@@ -193,7 +193,7 @@ expect "Escape cancels the capture and leaves the page open" "settings (shown)" 
 # commits, with a character that is more than one byte), and Ctrl+V pastes
 # the system clipboard. The Player tab of Quick settings has the name field.
 echo "== text input"
-log=$(timeout 120 "$ENGINE" -xonotic -basedir "$PWD" -userdir "$USERDIR" \
+log=$(timeout 120 "$ENGINE" -xonotic -game tests -basedir "$PWD" -userdir "$USERDIR" \
 	+developer 1 +_cl_name RmlTest +vid_fullscreen 0 +vid_width 1280 +vid_height 720 +vid_touchscreen 0 \
 	+defer 12 "rml_show quicksettings" \
 	+defer 13 "rml_click 609 274" \

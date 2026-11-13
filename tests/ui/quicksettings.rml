@@ -1,10 +1,11 @@
 <rml>
 <head>
 	<title>Quick settings</title>
-	<link type="text/template" href="templates/dialog.rml"/>
+	<link type="text/template" href="/ui/templates/dialog.rml"/>
 </head>
 <body template="dialog">
-	<!-- The settings people reach for most, on one screen. Every control that
+	<!-- A test page (the shipped game has one Settings page): small, with a slider,
+	     a text field and radios on three tabs. The settings people reach for most, on one screen. Every control that
 	     has data-cvar shows that cvar when the dialog opens and writes it when
 	     the player changes it, nothing else is needed. -->
 	<div class="dialog-bar">

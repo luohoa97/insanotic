@@ -1,0 +1,74 @@
+/* The in-game menu. The engine sets "demo", "campaign" and "solo" on the
+   body (ui_rml_engine.c); everything that depends on them is here. */
+
+#content {
+	width: 440dp;
+	margin-left: -220dp;
+	margin-top: -210dp;
+}
+#content .dialog-body {
+	padding: 16dp 18dp 8dp 18dp;
+}
+
+.pair {
+	display: flex;
+	flex-direction: row;
+	margin-bottom: 10dp;
+}
+.pair .button {
+	flex: 1 1 0;
+	min-width: 0;
+	margin-left: 10dp;
+	padding-left: 8dp;
+	padding-right: 8dp;
+}
+.pair .button:first-child {
+	margin-left: 0;
+}
+
+/* which words and buttons show */
+.only-campaign, .only-demo, .only-solo {
+	display: none;
+}
+.word {
+	display: none;
+}
+.only-online {
+	display: inline;
+}
+body.campaign .only-campaign {
+	display: block;
+}
+body.campaign .not-campaign {
+	display: none;
+}
+body.demo .not-demo {
+	display: none;
+}
+
+/* the leave button names what is being left; one word shows at a time,
+   a later rule beats an earlier one of the same weight */
+.leave .word {
+	display: none;
+}
+.leave .only-online {
+	display: inline;
+}
+body.solo .leave .only-online, body.campaign .leave .only-online, body.demo .leave .only-online {
+	display: none;
+}
+body.solo .leave .only-solo {
+	display: inline;
+}
+body.campaign .leave .only-solo {
+	display: none;
+}
+body.campaign .leave .only-campaign {
+	display: inline;
+}
+body.demo .leave .only-solo, body.demo .leave .only-campaign {
+	display: none;
+}
+body.demo .leave .only-demo {
+	display: inline;
+}

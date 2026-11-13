@@ -1,0 +1,17 @@
+<rml>
+<head>
+	<title>Reset settings</title>
+	<link type="text/template" href="templates/dialog.rml"/>
+</head>
+<body template="dialog">
+	<div class="dialog-bar">
+		<div class="dialog-title">Reset settings</div>
+		<div class="dialog-close" data-close>&#215;</div>
+	</div>
+	<div class="dialog-body">Are you sure you want to reset all settings? This creates a backup config in your data directory.</div>
+	<div class="dialog-buttons">
+		<div class="button danger" data-cmd="saveconfig backup.cfg; exec default.cfg; rml_hide resetsettings; rml_hide settings" data-close>Yes</div>
+		<div class="button primary" data-close>No</div>
+	</div>
+</body>
+</rml>

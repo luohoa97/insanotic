@@ -13,7 +13,8 @@ There is no scripting. A document is wired up with attributes:
 | Attribute | On | Does |
 |---|---|---|
 | `data-cmd="..."` | any element | Click or tap runs that console command. |
-| `data-close` | any element | Click or tap closes the document it is in. |
+| `data-close` | any element | Click or tap closes the document it is in, after a short fade (the stylesheet animates `body.closing`). |
+| `data-backdrop` | with `data-close` | Closes only when the click is on this element itself, not on something above it. The dialog template's veil has both, so clicking outside a dialog closes it. |
 | `data-cvar="name"` | `input`, `select`, `textarea` | Shows the cvar when the document opens and writes it when the player changes the control. |
 | `data-cvar="name"` | any other element | Shows the cvar's value as the element's text. |
 | `data-reply="action"` | any element | Only in pages from a server, see [MODDING.md](MODDING.md#pages-from-a-server). |
@@ -59,7 +60,7 @@ a dialog is mostly its content:
 ```
 
 `ui/quit.rml` is this dialog; the Quit button of the main menu opens it.
-`ui/quicksettings.rml` uses most of the components below with real cvars.
+`tests/ui/quicksettings.rml` (a test page) and `ui/settings.rml` use most of the components below with real cvars.
 Add `class="wide"` to the `.dialog` (write the template's window yourself, or
 override its width in your own stylesheet) for the 760 dp variant.
 
@@ -180,13 +181,26 @@ the data.
 ## The Settings page
 
 `ui/settings.rml` is the Settings dialog of the QuakeC menu in RML: tabs for
-Video, Effects, Audio, Game, Input (with the key binder), User and Misc. It
-has the options people change most, one line a control, bound to cvars with
-`data-cvar`; "More settings..." opens the QuakeC dialog for the rest (HUD
-layout, language, ...). Binding a key: tap one of the two key buttons of an
+Video, Effects, Audio, Game, Input (with the key binder), User, HUD and Misc. It is the only settings screen. It
+has the options of the QuakeC dialog, one line a control, bound to cvars with
+`data-cvar` (video, effects, audio, game with items, messages, aim assist and
+touch controls, input, user with the language, HUD with the layout editor
+button, misc, and a reset dialog).
+"Apply video settings" closes the page and restarts the video. Binding a key: tap one of the two key buttons of an
 action, then press the new key or mouse button (Escape cancels); the engine
 hands that press to the page instead of anywhere else
 (`UIE_CaptureKeys` in `ui_rml_engine.c`).
+
+## In-game menu and team selection
+
+`ui/gamemenu.rml` is what Escape opens during a match, and `ui/teamselect.rml`
+the team choice of a team match; they replace the QuakeC GameMenu and
+TeamSelect dialogs while `menu_rmlui` is on (the QuakeC menu hands over in
+`m_goto`). The engine puts classes on their `<body>` so a stylesheet can react
+to the game without scripting: `campaign`, `solo` and `demo` on gamemenu (the
+Leave button names what is being left: campaign, singleplayer, multiplayer
+or a demo), and `red`, `blue`, `yellow`, `pink` on teamselect (the teams the
+match has). See `ui_rml_engine.c`, `UI_RML_Draw`.
 
 ## What the engine's renderer cannot do
 

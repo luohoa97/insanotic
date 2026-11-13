@@ -12,8 +12,9 @@
 	     data-off for checkboxes whose values are not 1 and 0, data-map="db"
 	     for volumes). The screen sizes, the key bindings and the menu skins
 	     come from the data model "settings" (darkplaces/ui_rml_models.cpp).
-	     What is not here (HUD layout, language, ...) is in "More settings",
-	     the QuakeC dialog. This file is long and regular: one line a control. -->
+	     This is the one settings screen: the HUD tab and the language
+	     choice replace what the QuakeC dialog had. This file is long and
+	     regular: one line a control. -->
 	<div class="dialog-bar">
 		<div class="dialog-title">Settings</div>
 		<div class="dialog-close" data-close>&#215;</div>
@@ -41,7 +42,7 @@
 				<div class="section">Other</div>
 				<label class="check"><input type="checkbox" class="checkbox" data-cvar="gl_finish"/> Wait for the GPU to finish each frame</label>
 				<label class="check"><input type="checkbox" class="checkbox" data-cvar="v_flipped"/> Flip the view horizontally</label>
-				<div class="row"><div class="control" style="margin-left: 0;"><div class="button primary" data-cmd="vid_restart">Apply video settings</div></div></div>
+				<div class="row"><div class="control" style="margin-left: 0;"><div class="button primary" data-cmd="rml_hide settings; vid_restart">Apply video settings</div></div></div>
 			</panel>
 			<tab>Effects</tab>
 			<panel>
@@ -146,6 +147,51 @@
 				<label class="check"><input type="checkbox" class="checkbox" data-cvar="crosshair_hittest"/> Hit tests for the crosshair</label>
 				<label class="check"><input type="checkbox" class="checkbox" data-cvar="crosshair_hitindication" data-on="0.5" data-off="0"/> Animate crosshair when hitting an enemy</label>
 				<label class="check"><input type="checkbox" class="checkbox" data-cvar="crosshair_pickup" data-on="0.25" data-off="0"/> Animate crosshair when picking up an item</label>
+				<div class="section">Items and players</div>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="cl_simple_items"/> Simple 2D images instead of item models</label>
+				<div class="row"><div class="caption">Unavailable item alpha</div><div class="control"><input type="range" class="range" min="0" max="1" step="0.1" data-cvar="cl_ghost_items"/></div></div>
+				<div class="row"><div class="caption">Unavailable item color</div><div class="control"><select data-cvar="cl_ghost_items_color"><option value="-1 -1 -1">Black</option><option value="0.1 0.1 0.1">Dark</option><option value="0.6 0.6 0.6">Tinted</option><option value="1 1 1">Normal</option><option value="-1 -1 3">Blue</option></select></div></div>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="cl_forceplayermodels"/> Force player models to mine</label>
+				<div class="row"><div class="caption">Force player colors to mine</div><div class="control"><select data-cvar="cl_forceplayercolors"><option value="0">Never</option><option value="1">Except in team games</option><option value="3">Only in Duel</option><option value="4">Only in team games</option><option value="5">In team games and Duel</option><option value="2">Always</option></select></div></div>
+				<div class="row"><div class="caption">Body fading</div><div class="control"><input type="range" class="range" min="0" max="2" step="0.2" data-cvar="cl_deathglow"/></div></div>
+				<div class="row"><div class="caption">Gibs</div><div class="control"><select data-cvar="cl_nogibs"><option value="1">None</option><option value="0.75">Few</option><option value="0.5">Many</option><option value="0">Lots</option></select></div></div>
+				<div class="section">Messages</div>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="notification_show_sprees"/> Information about killing sprees</label>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="notification_show_sprees_center"/> Spree information in centerprints</label>
+				<div class="row"><div class="caption">Sprees in info messages</div><div class="control"><select data-cvar="notification_show_sprees_info"><option value="0">Disabled</option><option value="1">Target</option><option value="2">Attacker</option><option value="3">Both</option></select></div></div>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="notification_show_location"/> Frag location in death messages</label>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="con_notify" data-on="4" data-off="0"/> Console messages in the top left corner</label>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="notification_allow_chatboxprint" data-on="2" data-off="1"/> All info messages in the chatbox</label>
+				<div class="section">Aim assist</div>
+				<div class="hint">Only in your own games and on servers that allow it (sv_allow_assist).</div>
+				<div class="row"><div class="caption">Aim assist</div><div class="control"><select data-cvar="aim_assist_mode"><option value="0">Off</option><option value="1">Touch only</option><option value="2">Always</option></select></div></div>
+				<div class="row"><div class="caption">Pull cone (degrees)</div><div class="control"><input type="range" class="range" min="1" max="30" step="1" data-cvar="aim_assist_cone"/></div></div>
+				<div class="row"><div class="caption">Min pull</div><div class="control"><input type="range" class="range" min="0" max="10" step="0.5" data-cvar="aim_assist_pull_min"/></div></div>
+				<div class="row"><div class="caption">Max pull</div><div class="control"><input type="range" class="range" min="0" max="20" step="0.5" data-cvar="aim_assist_pull_max"/></div></div>
+				<div class="row"><div class="caption">Range</div><div class="control"><input type="range" class="range" min="500" max="8000" step="250" data-cvar="aim_assist_range"/></div></div>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="aim_assist_lead"/> Lead moving enemies</label>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="aim_assist_feet"/> Splash weapons aim at the feet</label>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="aim_assist_rifle_head"/> Rifle aims for the head</label>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="aim_assist_steer"/> Steer and detonate Devastator rockets</label>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="aim_assist_turn"/> Turn toward whoever hits you</label>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="aim_assist_hit_marker"/> Show where hits come from</label>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="aim_assist_autofire"/> Auto-fire</label>
+				<div class="row"><div class="caption">Auto-fire range</div><div class="control"><input type="range" class="range" min="250" max="8000" step="250" data-cvar="aim_assist_autofire_range"/></div></div>
+				<div class="row"><div class="caption">Auto-fire hitbox</div><div class="control"><input type="range" class="range" min="1" max="2" step="0.05" data-cvar="aim_assist_hitbox_scale"/></div></div>
+				<div class="row"><div class="caption">Auto-fire delay</div><div class="control"><input type="range" class="range" min="0" max="0.5" step="0.02" data-cvar="aim_assist_autofire_delay"/></div></div>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="aim_assist_lock"/> Lock the shot onto the enemy</label>
+				<div class="row"><div class="caption">Lock cone</div><div class="control"><input type="range" class="range" min="0" max="15" step="0.5" data-cvar="aim_assist_autofire_cone"/></div></div>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="aim_assist_autoswitch"/> Switch to the best weapon</label>
+				<div class="row"><div class="caption">Hands off (seconds)</div><div class="control"><input type="range" class="range" min="0" max="15" step="1" data-cvar="aim_assist_switch_manual"/></div></div>
+				<div class="section">Touch controls</div>
+				<div class="row"><div class="caption">Show</div><div class="control"><select data-cvar="touch_controls_force"><option value="0">Automatic</option><option value="1">Always</option><option value="-1">Never</option></select></div></div>
+				<div class="row"><div class="caption">Size</div><div class="control"><input type="range" class="range" min="0.5" max="2" step="0.05" data-cvar="touch_controls_size"/></div></div>
+				<div class="row"><div class="caption">Opacity</div><div class="control"><input type="range" class="range" min="0.2" max="1" step="0.05" data-cvar="touch_controls_opacity"/></div></div>
+				<div class="row"><div class="caption">Look speed</div><div class="control"><input type="range" class="range" min="0.05" max="1" step="0.01" data-cvar="touch_controls_look_sensitivity"/></div></div>
+				<div class="row"><div class="caption">Joystick dead zone</div><div class="control"><input type="range" class="range" min="0" max="0.5" step="0.01" data-cvar="touch_controls_stick_deadzone"/></div></div>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="touch_controls_fire_look"/> Turn the view while dragging on FIRE</label>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="touch_controls_autohop"/> Bunny hop while holding JUMP</label>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="touch_controls_airstrafe"/> Air strafing</label>
 			</panel>
 			<tab>Input</tab>
 			<panel>
@@ -181,7 +227,36 @@
 				<div class="section">Content</div>
 				<label class="check"><input type="checkbox" class="checkbox" data-cvar="cl_gentle"/> Disable gore effects and harsh language</label>
 				<div class="section">Language</div>
-				<div class="hint">The text language is set in the full settings (More settings...).</div>
+				<div class="row"><div class="caption">Text language</div><div class="control"><select data-cvar="_menu_prvm_language"><option value="ast">Asturianu</option><option value="id_ID">Bahasa Indonesia</option><option value="de">Deutsch</option><option value="de_CH">Deutsch (Schweiz)</option><option value="en">English</option><option value="en_AU">English (Australia)</option><option value="es">Español</option><option value="fr">Français</option><option value="ga">Irish</option><option value="it">Italiano</option><option value="la">Lingua Latina</option><option value="hu">Magyar</option><option value="nl">Nederlands</option><option value="pl">Polski</option><option value="pt">Português</option><option value="pt_BR">Português (Brasil)</option><option value="ro">Romana</option><option value="fi">Suomi</option><option value="sv">Svenska</option><option value="tr">Türkçe</option><option value="cs">Čeština</option><option value="el">Ελληνική</option><option value="be">Беларуская</option><option value="bg">Български</option><option value="ru">Русский</option><option value="sr">Српски</option><option value="uk">Українська</option><option value="zh_TW">中文（正體字）</option><option value="zh_CN">中文（简体字）</option><option value="zh_HK">中文（香港字）</option><option value="ja_JP">日本語</option><option value="ko">한국의</option></select></div></div>
+				<div class="row"><div class="control" style="margin-left: 0;"><div class="button" data-cmd="prvm_language &quot;$_menu_prvm_language&quot;; menu_restart">Apply language (restarts the menu)</div></div></div>
+				<div class="hint">Text in a match you are already in changes when you join again.</div>
+			</panel>
+			<tab>HUD</tab>
+			<panel>
+				<div class="section">Layout</div>
+				<div class="hint">Move and resize the HUD panels by hand. Out of a match this opens a map to practice on.</div>
+				<div class="row"><div class="control" style="margin-left: 0;">
+					<div class="button primary only-ingame" data-cmd="togglemenu 0; _hud_configure 1" data-close>Edit the HUD layout</div>
+					<div class="button primary only-menu" data-cmd="map _hudsetup; _hud_configure 1" data-close>Edit the HUD layout (starts a map)</div>
+				</div></div>
+				<div class="section">Scoreboard</div>
+				<div class="row"><div class="caption">Background alpha</div><div class="control"><input type="range" class="range" min="0" max="1" step="0.05" data-cvar="hud_panel_scoreboard_bg_alpha"/></div></div>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="hud_panel_scoreboard_table_highlight"/> Highlight rows and columns</label>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="hud_panel_scoreboard_accuracy"/> Show accuracy underneath the scoreboard</label>
+				<div class="row"><div class="caption">Team sizes</div><div class="control"><select data-cvar="hud_panel_scoreboard_team_size_position"><option value="0">Off</option><option value="1">Left</option><option value="2">Right</option></select></div></div>
+				<div class="section">Waypoints</div>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="cl_hidewaypoints" data-on="0" data-off="1"/> Show waypoint markers for objectives</label>
+				<div class="row"><div class="caption">Alpha</div><div class="control"><input type="range" class="range" min="0.1" max="1" step="0.05" data-cvar="g_waypointsprite_alpha"/></div></div>
+				<div class="row"><div class="caption">Font size</div><div class="control"><input type="range" class="range" min="5" max="16" step="1" data-cvar="g_waypointsprite_fontsize"/></div></div>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="g_waypointsprite_text"/> Names instead of icons</label>
+				<div class="section">Damage</div>
+				<div class="row"><div class="caption">Overlay</div><div class="control"><input type="range" class="range" min="0" max="1" step="0.05" data-cvar="hud_damage"/></div></div>
+				<div class="row"><div class="caption">Fade rate</div><div class="control"><input type="range" class="range" min="0.25" max="1" step="0.05" data-cvar="hud_damage_fade_rate"/></div></div>
+				<div class="section">Player names</div>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="hud_shownames"/> Show names above players</label>
+				<div class="row"><div class="caption">Alpha</div><div class="control"><input type="range" class="range" min="0.1" max="1" step="0.05" data-cvar="hud_shownames_alpha"/></div></div>
+				<div class="row"><div class="caption">Font size</div><div class="control"><input type="range" class="range" min="5" max="16" step="1" data-cvar="hud_shownames_fontsize"/></div></div>
+				<div class="row"><div class="caption">Maximum distance</div><div class="control"><input type="range" class="range" min="2000" max="10000" step="500" data-cvar="hud_shownames_maxdistance"/></div></div>
 			</panel>
 			<tab>Misc</tab>
 			<panel>
@@ -201,11 +276,13 @@
 				<label class="check"><input type="checkbox" class="checkbox" data-cvar="showtime"/> Show the current date and time</label>
 				<label class="check"><input type="checkbox" class="checkbox" data-cvar="developer"/> Developer mode</label>
 				<div class="row"><div class="control" style="margin-left: 0;"><div class="button" data-cmd="menu_restart">Apply (restart the menu)</div></div></div>
+				<div class="section">Reset</div>
+				<div class="hint">Resets every setting to its default. A backup is saved as backup.cfg in your data directory.</div>
+				<div class="row"><div class="control" style="margin-left: 0;"><div class="button danger" data-cmd="rml_show resetsettings">Reset all settings...</div></div></div>
 			</panel>
 		</tabset>
 	</div>
 	<div class="dialog-buttons">
-		<div class="button" data-cmd="menu_cmd directmenu settings" data-close>More settings...</div>
 		<div class="button primary" data-close>Done</div>
 	</div>
 </body>

@@ -42,7 +42,7 @@
 	right: 70dp;
 	top: 18dp;
 	font-size: 13dp;
-	color: #ccd9e6;
+	color: #a1a1aa;
 }
 #content .list {
 	flex: 1 1 0;
@@ -61,7 +61,7 @@
 	flex: none;
 	padding: 13dp 10dp 0 0;
 	font-size: 15dp;
-	color: #ccd9e6;
+	color: #a1a1aa;
 }
 .bar-row > .grow {
 	flex: 1 1 0;
@@ -102,7 +102,7 @@
    list, and its name stays in the Map column. */
 .srv {
 	position: relative;
-	background-color: #0b1222;
+	background-color: #0c0c0f;
 }
 .srv .shade {
 	position: absolute;
@@ -119,10 +119,10 @@
 	decorator: none;
 }
 .srv.nopic .c-map {
-	color: #7f8fa6;
+	color: #71717a;
 }
 .srv.nopic.selected {
-	background-color: #1a2a4a;
+	background-color: #27272a;
 }
 .srv-head {
 	background-color: transparent;
@@ -176,8 +176,8 @@
 	position: relative;
 	height: 96dp;
 	margin-bottom: 12dp;
-	border: 1dp #ffffff40;
-	background-color: #0d1424;
+	border: 1dp #3f3f46;
+	background-color: #0c0c0f;
 	cursor: pointer;
 	tab-index: auto;
 	nav: auto;
@@ -202,7 +202,7 @@
 }
 .hero .sub {
 	font-size: 14dp;
-	color: #ccd9e6;
+	color: #a1a1aa;
 	font-weight: normal;
 	margin-top: 4dp;
 }
@@ -227,8 +227,8 @@
 	position: relative;
 	display: block;
 	height: 116dp;
-	border-bottom: 1dp #ffffff14;
-	background-color: #0d1424;
+	border-bottom: 1dp #27272a;
+	background-color: #0c0c0f;
 	cursor: pointer;
 	tab-index: auto;
 	nav: auto;
@@ -260,7 +260,7 @@
 }
 .level .desc {
 	font-size: 13dp;
-	color: #ccd9e6;
+	color: #a1a1aa;
 }
 .level .badge {
 	position: absolute;
@@ -274,7 +274,7 @@
 	background-color: #207a30;
 }
 .level.locked .badge {
-	background-color: #ffffff30;
+	background-color: #3f3f46;
 }
 
 .only-short {
@@ -383,7 +383,7 @@
 	width: 620dp;
 	margin-left: -310dp;
 	top: 6%;
-	background-color: #0d1424;
+	background-color: #0c0c0f;
 	border: 1dp #4da6ff;
 	display: flex;
 	flex-direction: column;
@@ -392,7 +392,7 @@
 	flex: none;
 	position: relative;
 	height: 190dp;
-	background-color: #080d18;
+	background-color: #09090b;
 }
 /* with players the panel is tall and the list scrolls; without it ends
    after the facts */
@@ -402,7 +402,7 @@
 .info .none {
 	flex: none;
 	padding: 14dp 14dp 6dp 14dp;
-	color: #8899aa;
+	color: #71717a;
 	font-size: 16dp;
 }
 .info .pic .nopic {
@@ -412,12 +412,12 @@
 	top: 40%;
 	text-align: center;
 	font-size: 26dp;
-	color: #6b7d99;
+	color: #71717a;
 }
 .info .t {
 	flex: none;
 	padding: 12dp 14dp 8dp 14dp;
-	background-color: #121c33;
+	background-color: #18181b;
 	border-bottom: 1dp #4da6ff;
 	font-size: 19dp;
 	font-weight: bold;
@@ -428,7 +428,7 @@
 	flex: none;
 	padding: 10dp 14dp 4dp 14dp;
 	font-size: 15dp;
-	color: #ccd9e6;
+	color: #a1a1aa;
 }
 .info .facts b {
 	color: #ffffff;
@@ -447,7 +447,7 @@
 }
 .info .plist .item > div { flex: none; width: 60dp; }
 .info .plist .item > .n { flex: 1 1 0; min-width: 0; overflow: hidden; white-space: nowrap; }
-.info .plist .spec { color: #8899aa; }
+.info .plist .spec { color: #71717a; }
 .info .btns .button {
 	min-width: 0;
 	padding-left: 16dp;

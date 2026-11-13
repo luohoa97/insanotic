@@ -1,0 +1,38 @@
+<rml>
+<head>
+	<title>Game menu</title>
+	<link type="text/template" href="templates/dialog.rml"/>
+	<link type="text/rcss" href="gamemenu.rcss"/>
+</head>
+<body template="dialog">
+	<!-- The menu Escape opens during a match (it replaces the QuakeC
+	     GameMenu dialog). The engine puts the classes "campaign", "solo" and
+	     "demo" on this body, and the stylesheet shows the words and buttons
+	     that fit. Every button closes the menu as well as running its
+	     command. -->
+	<div class="dialog-bar">
+		<div class="dialog-title">Game menu</div>
+		<div class="dialog-close" data-close>&#215;</div>
+	</div>
+	<div class="dialog-body">
+		<div class="button primary block" data-close>Resume</div>
+		<div class="pair not-demo">
+			<div class="button not-campaign" data-cmd="join" data-close>Join</div>
+			<div class="button only-campaign" data-cmd="resetmatch" data-close>Restart level</div>
+			<div class="button" data-cmd="spec" data-close>Spectate</div>
+		</div>
+		<div class="pair">
+			<div class="button" data-cmd="rml_show settings">Settings</div>
+			<div class="button" data-cmd="menu_cmd nexposee" data-close>Main menu</div>
+		</div>
+		<div class="button block not-demo" data-cmd="quickmenu" data-close>Quick menu</div>
+		<div class="button danger block leave" data-cmd="defer 0.4 disconnect; defer 0.4 wait; defer 0.4 &quot;g_campaign 0&quot;; defer 0.4 menu_sync" data-close>
+			<span class="word only-demo">Stop demo</span>
+			<span class="word only-campaign">Leave campaign</span>
+			<span class="word only-solo">Leave singleplayer</span>
+			<span class="word only-online">Leave multiplayer</span>
+		</div>
+		<div class="button block" data-cmd="rml_show quit">Quit</div>
+	</div>
+</body>
+</rml>

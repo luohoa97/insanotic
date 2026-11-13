@@ -48,7 +48,7 @@
 	display: flex;
 	flex-direction: row;
 	min-height: 48dp;
-	border-bottom: 1dp #ffffff14;
+	border-bottom: 1dp #27272a;
 }
 .bind .what {
 	flex: 1 1 0;
@@ -65,8 +65,8 @@
 	padding-top: 8dp;
 	text-align: center;
 	font-size: 14dp;
-	border: 1dp #ffffff40;
-	background-color: #080d18;
+	border: 1dp #3f3f46;
+	background-color: #09090b;
 	cursor: pointer;
 	tab-index: auto;
 	nav: auto;
@@ -94,4 +94,16 @@
 	.bind .key { width: 70dp; margin-left: 4dp; font-size: 12dp; }
 	.bind .key.x { width: 40dp; }
 	#content tabset tab { padding-left: 14dp; padding-right: 14dp; }
+}
+
+/* the HUD layout button that fits: in a match or from the menu (the engine
+   sets "ingame" on this body) */
+.only-ingame {
+	display: none;
+}
+body.ingame .only-ingame {
+	display: inline-block;
+}
+body.ingame .only-menu {
+	display: none;
 }
