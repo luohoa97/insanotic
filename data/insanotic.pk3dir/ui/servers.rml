@@ -30,7 +30,7 @@
 			<div class="c-players" data-class-sorted="sort == 'players'" data-event-click="sort('players')">Players</div>
 		</div>
 		<div class="list" id="serverlist">
-			<div class="item srv" data-for="s : rows" data-class-selected="s.address == selected" data-class-nopic="s.image == ''"
+			<div class="item srv" data-for="s : rows" data-class-selected="s.address == selected" data-class-nopic="s.image == ''" data-class-gone="s.gone"
 				data-style-decorator="s.image != '' ? 'image(' + s.image + ' cover center center)' : 'none'" data-event-click="select(s.address)">
 				<div class="shade"></div>
 				<div class="cells">
