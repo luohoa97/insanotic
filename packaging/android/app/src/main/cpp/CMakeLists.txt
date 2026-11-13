@@ -262,7 +262,10 @@ set(ENGINE_SOURCES
 	prvm_exec.c r_explosion.c r_lerpanim.c r_lightning.c r_modules.c
 	r_shadow.c r_sky.c r_sprites.c sbar.c sv_demo.c sv_lua.c lua_sandbox.c
 	cl_lua.c sv_main.c sv_move.c sv_phys.c sv_user.c svbsp.c svvm_cmds.c
-	sys_shared.c vid_shared.c view.c wad.c world.c zone.c)
+	sys_shared.c vid_shared.c view.c wad.c world.c zone.c
+	touch_aim.c touch_assist.c touch_dodge.c touch_ledge.c touch_hook.c
+	touch_nade.c touch_pause.c touch_turn.c touch_tactics.c touch_wepquery.c
+	touch_autowalk.c)
 
 set(SRC)
 foreach(f ${ENGINE_SOURCES})
