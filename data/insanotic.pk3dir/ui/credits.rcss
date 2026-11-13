@@ -29,3 +29,12 @@
 	font-size: 17dp;
 	padding: 2dp 0;
 }
+
+@media (max-width: 660dp) {
+	#content {
+		left: 2%;
+		right: 2%;
+		width: auto;
+		margin-left: 0;
+	}
+}
