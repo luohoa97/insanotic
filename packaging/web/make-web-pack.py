@@ -32,7 +32,8 @@ if args.pick_map:
     best = None
     for p, z in opened:
         for i in z.infolist():
-            if i.filename.startswith("maps/") and i.filename.endswith(".bsp"):
+            if i.filename.startswith("maps/") and i.filename.endswith(".bsp") \
+                    and not os.path.basename(i.filename).startswith("_"):  # _init is the menu's empty map
                 if best is None or i.file_size < best[0]:
                     best = (i.file_size, os.path.basename(i.filename)[:-4])
     print(best[1])
