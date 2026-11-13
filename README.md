@@ -126,7 +126,7 @@ libraries are downloaded and built from source on the first build. Set
 ## Repacked game data
 
 The official 0.8.6 packs are big and slow for a phone, so Insanotic can use
-repacked copies, published as assets of a GitHub release (`assets-0.8.6-r2`;
+repacked copies, published as assets of a GitHub release (`assets-0.8.6-r3`;
 not stored in git). `misc/insanotic/repack-assets.sh` makes them, and the
 "Repack assets" workflow runs it and uploads the result with a table of sizes
 before and after in its job summary. Sizes of the published android set: data
