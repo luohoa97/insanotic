@@ -24,6 +24,18 @@ body {
 	bottom: 0;
 }
 
+#veil {
+	display: none;
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 0;
+	bottom: 0;
+}
+body.ingame #veil {
+	display: block;
+}
+
 /* the three big buttons share a row across the middle of the screen */
 #big {
 	position: absolute;

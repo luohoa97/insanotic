@@ -12,6 +12,8 @@
 	     behind this one only when this document is not used. -->
 	<img id="logo" src="logo.png"/>
 	<div id="stage">
+		<!-- during a match the menu is an overlay: a tap on the empty part of it closes it, as Escape does -->
+		<div id="veil" data-cmd="togglemenu" data-backdrop></div>
 		<div id="big">
 			<div class="card" id="singleplayer" data-cmd="rml_show singleplayer">
 				<div class="shade"></div>
