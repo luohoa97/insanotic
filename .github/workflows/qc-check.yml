@@ -1,0 +1,15 @@
+name: QC check
+on:
+  push:
+    branches: [claude/project-thread-emwn1f]
+jobs:
+  qc:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          sudo apt-get update && sudo apt-get install -y --no-install-recommends build-essential
+          git clone --depth 1 https://github.com/luohoa97/insanotic-darkplaces.git darkplaces
+          git clone --depth 1 --branch claude/project-thread-emwn1f https://github.com/luohoa97/insanotic-data.git data/xonotic-data.pk3dir
+          git clone --depth 1 --branch xonotic-v0.8.6 https://gitlab.com/xonotic/gmqcc.git gmqcc
+          make insanotic-qc
