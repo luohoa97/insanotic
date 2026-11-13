@@ -40,3 +40,45 @@
 body.demo .dialog-buttons .button {
 	opacity: 0.4;
 }
+
+/* On a phone the dialog fills the screen. #content is an id, so it beats
+   the .dialog rules in components.rcss and its fixed width and negative
+   margins have to be undone here, or the dialog sits off screen. */
+@media (max-height: 500dp) {
+	#content {
+		left: 3%;
+		right: 3%;
+		top: 2%;
+		width: auto;
+		margin-left: 0;
+		margin-top: 0;
+	}
+	.banner {
+		height: 90dp;
+		margin-bottom: 8dp;
+	}
+	.btitle {
+		font-size: 24dp;
+	}
+	.details {
+		max-height: 110dp;
+		font-size: 15dp;
+	}
+}
+@media (orientation: portrait) {
+	#content {
+		left: 3%;
+		right: 3%;
+		width: auto;
+		margin-left: 0;
+		margin-top: -200dp;
+	}
+}
+@media (max-width: 700dp) {
+	#content {
+		left: 3%;
+		right: 3%;
+		width: auto;
+		margin-left: 0;
+	}
+}
