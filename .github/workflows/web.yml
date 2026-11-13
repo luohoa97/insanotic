@@ -66,12 +66,12 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           mkdir -p packaging/web/dist/data
-          if gh release download web-data -R "$GITHUB_REPOSITORY" -p web-pack.pk3 -p web-map.txt -D packaging/web/data-dl; then
-            mv packaging/web/data-dl/web-pack.pk3 packaging/web/dist/data/zzz-web-pack.pk3
+          if gh release download web-data -R "$GITHUB_REPOSITORY" -p 'web-pack-*.pk3' -p web-map.txt -D packaging/web/data-dl; then
+            for f in packaging/web/data-dl/web-pack-*.pk3; do
+              mv "$f" "packaging/web/dist/data/zzz-$(basename "$f")"
+            done
             map=$(cat packaging/web/data-dl/web-map.txt)
-            size=$(stat -c %s packaging/web/dist/data/zzz-web-pack.pk3)
-            printf '{ "packs": [ { "name": "zzz-web-pack.pk3", "url": "data/zzz-web-pack.pk3", "size": %d } ], "map": "%s", "args": [] }\n' "$size" "$map" \
-              > packaging/web/dist/manifest.json
+            python3 packaging/web/make-manifest.py packaging/web/dist "$map"
             echo "WEB_MAP=$map" >> "$GITHUB_ENV"
           else
             echo "no web data published yet: booting without it"

@@ -238,18 +238,13 @@ jobs:
           cp -a "$src"/xonotic-data.pk3dir/. stage/
           cp -a "$src"/insanotic.pk3dir/. stage/
           (cd stage && zip -qr "../$pack/zzz-insanotic.pk3" .)
-          size=$(stat -c %s "$pack/zzz-insanotic.pk3")
-          packs=$(printf '{ "name": "zzz-insanotic.pk3", "url": "data/zzz-insanotic.pk3", "size": %d }' "$size")
           map=""
           # the map and what it loads, built by the "Web data" workflow
-          if gh release download web-data -R "$GITHUB_REPOSITORY" -p web-pack.pk3 -p web-map.txt -D web-data; then
-            # sorts before zzz-insanotic.pk3, so the Insanotic files win
-            mv web-data/web-pack.pk3 "$pack/web-pack.pk3"
+          if gh release download web-data -R "$GITHUB_REPOSITORY" -p 'web-pack-*.pk3' -p web-map.txt -D web-data; then
+            for f in web-data/web-pack-*.pk3; do mv "$f" "$pack/zzz-$(basename "$f")"; done
             map=$(cat web-data/web-map.txt)
-            wsize=$(stat -c %s "$pack/web-pack.pk3")
-            packs=$(printf '{ "name": "web-pack.pk3", "url": "data/web-pack.pk3", "size": %d }, %s' "$wsize" "$packs")
           fi
-          printf '{ "packs": [ %s ], "map": "%s", "args": [] }\n' "$packs" "$map" > packaging/web/dist/manifest.json
+          python3 packaging/web/make-manifest.py packaging/web/dist "$map"
           tar -C packaging/web/dist -czf web-site.tar.gz .
 
       - uses: actions/upload-artifact@v4

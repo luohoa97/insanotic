@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 """Builds the browser's game data: the files one map load actually opens.
 
-    make-web-pack.py --data DIR --preload insanotic_preload.txt --out web-pack.pk3
+    make-web-pack.py --data DIR --preload insanotic_preload.txt --out web-pack
 
 DIR is a game data directory (what the engine ran from): the official
 xonotic-*.pk3 packs and the pk3dirs next to them. The preload list is what the
@@ -10,7 +10,9 @@ engine wrote (insanotic_preload.txt: every file a map load and its first
 seconds of play opened, see FS_RecordStart in the engine). Each listed file is
 taken from where the engine found it (a pk3dir wins over a pack, as in the
 engine) and written to one pk3. The font packs go in whole (the menu opens them
-before the list starts). Also prints the map name when --pick-map is given:
+before the list starts). The result is split into web-pack-01.pk3, -02, ...
+of at most --part-mb each: a browser stores a file in IndexedDB as one value
+(Chromium refuses more than ~128 MB), so one big pack cannot be kept. Also prints the map name when --pick-map is given:
 the smallest map in the maps pack.
 """
 import argparse, glob, os, sys, zipfile
@@ -18,7 +20,8 @@ import argparse, glob, os, sys, zipfile
 ap = argparse.ArgumentParser()
 ap.add_argument("--data", required=True)
 ap.add_argument("--preload")
-ap.add_argument("--out")
+ap.add_argument("--out", help="output prefix: PREFIX-01.pk3, PREFIX-02.pk3, ...")
+ap.add_argument("--part-mb", type=int, default=80)
 ap.add_argument("--pick-map", action="store_true")
 ap.add_argument("--extra", action="append", default=[], help="file name to add besides the list")
 args = ap.parse_args()
@@ -41,15 +44,23 @@ if args.pick_map:
 
 names = [l.strip() for l in open(args.preload) if l.strip()] + args.extra
 seen, missing, total = set(), [], 0
-with zipfile.ZipFile(args.out, "w", zipfile.ZIP_DEFLATED, compresslevel=9) as out:
-    def add(name, data):
-        global total
-        if name in seen:
-            return
-        seen.add(name)
-        out.writestr(name, data)
-        total += len(data)
+parts, out = [], None
+limit = args.part_mb * 1048576
 
+def add(name, data):
+    global total, out
+    if name in seen:
+        return
+    seen.add(name)
+    if out is None or os.path.getsize(parts[-1]) > limit:
+        if out: out.close()
+        parts.append("%s-%02d.pk3" % (args.out, len(parts) + 1))
+        out = zipfile.ZipFile(parts[-1], "w", zipfile.ZIP_DEFLATED, compresslevel=9)
+    out.writestr(name, data)
+    out.fp.flush()
+    total += len(data)
+
+if True:
     for name in names:
         data = None
         for d in reversed(dirs):
@@ -88,7 +99,8 @@ with zipfile.ZipFile(args.out, "w", zipfile.ZIP_DEFLATED, compresslevel=9) as ou
             for i in z.infolist():
                 if not i.is_dir():
                     add(i.filename, z.read(i.filename))
-print("%d files, %.1f MB uncompressed, %.1f MB pack; %d listed names not found"
-      % (len(seen), total / 1048576, os.path.getsize(args.out) / 1048576, len(missing)))
+out.close()
+print("%d files, %.1f MB uncompressed, %d packs (%.1f MB); %d listed names not found"
+      % (len(seen), total / 1048576, len(parts), sum(os.path.getsize(x) for x in parts) / 1048576, len(missing)))
 for m in missing[:40]:
     print("  not found:", m)
