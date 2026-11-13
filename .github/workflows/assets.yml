@@ -5,7 +5,7 @@
 # them as the assets of a GitHub release, which is where the Android app
 # fetches them from. The packs are not in git. Run it by hand (Actions >
 # Repack assets) or push a tag assets-*; the release is named after the tag
-# (default assets-0.8.6-r2). The job summary lists the sizes before and after.
+# (default assets-0.8.6-r3). The job summary lists the sizes before and after.
 name: Repack assets
 
 on:
@@ -13,16 +13,16 @@ on:
     inputs:
       tag:
         description: Release to publish the packs to
-        default: assets-0.8.6-r2
+        default: assets-0.8.6-r3
       profiles:
         description: Pack sets to build (android, desktop)
         default: android desktop
       astc_color:
         description: ASTC block size of color textures
-        default: 8x8
+        default: 6x6
       astc_detail:
         description: ASTC block size of normal maps and 2D graphics
-        default: 6x6
+        default: 4x4
   push:
     tags:
       - 'assets-*'
@@ -71,8 +71,8 @@ jobs:
 
       - name: Repack
         env:
-          ASTC_COLOR: ${{ inputs.astc_color || '8x8' }}
-          ASTC_DETAIL: ${{ inputs.astc_detail || '6x6' }}
+          ASTC_COLOR: ${{ inputs.astc_color || '6x6' }}
+          ASTC_DETAIL: ${{ inputs.astc_detail || '4x4' }}
           PROFILES: ${{ inputs.profiles || 'android desktop' }}
         run: |
           for p in $PROFILES; do
