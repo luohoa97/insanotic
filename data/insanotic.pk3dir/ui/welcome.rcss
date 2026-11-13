@@ -1,0 +1,84 @@
+#content {
+	width: 640dp;
+	margin-left: -320dp;
+	margin-top: -250dp;
+}
+.banner {
+	position: relative;
+	height: 150dp;
+	background-color: #18181b;
+	margin-bottom: 14dp;
+}
+.banner .shade {
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	height: 60%;
+	decorator: vertical-gradient(#00000000 #000000d0);
+}
+.banner .btext {
+	position: absolute;
+	left: 18dp;
+	bottom: 12dp;
+}
+.btype {
+	font-size: 14dp;
+	color: #4da6ff;
+}
+.btitle {
+	font-size: 30dp;
+	font-weight: bold;
+}
+.details {
+	max-height: 200dp;
+	overflow-y: auto;
+	white-space: pre-line;
+	font-size: 16dp;
+	color: #a1a1aa;
+}
+body.demo .dialog-buttons .button {
+	opacity: 0.4;
+}
+
+/* On a phone the dialog fills the screen. #content is an id, so it beats
+   the .dialog rules in components.rcss and its fixed width and negative
+   margins have to be undone here, or the dialog sits off screen. */
+@media (max-height: 500dp) {
+	#content {
+		left: 3%;
+		right: 3%;
+		top: 2%;
+		width: auto;
+		margin-left: 0;
+		margin-top: 0;
+	}
+	.banner {
+		height: 90dp;
+		margin-bottom: 8dp;
+	}
+	.btitle {
+		font-size: 24dp;
+	}
+	.details {
+		max-height: 110dp;
+		font-size: 15dp;
+	}
+}
+@media (orientation: portrait) {
+	#content {
+		left: 3%;
+		right: 3%;
+		width: auto;
+		margin-left: 0;
+		margin-top: -200dp;
+	}
+}
+@media (max-width: 700dp) {
+	#content {
+		left: 3%;
+		right: 3%;
+		width: auto;
+		margin-left: 0;
+	}
+}

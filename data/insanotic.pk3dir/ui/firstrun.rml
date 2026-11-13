@@ -1,0 +1,28 @@
+<rml>
+<head>
+	<title>Welcome</title>
+	<link type="text/template" href="templates/dialog.rml"/>
+	<link type="text/rcss" href="firstrun.rcss"/>
+</head>
+<body template="dialog">
+	<!-- Shown once, the first time the game starts with the default player
+	     name (replaces the QuakeC FirstRun dialog). Save writes the config
+	     and restarts the menu, which is also how a language change applies. -->
+	<div class="dialog-bar">
+		<div class="dialog-title">Welcome to Insanotic</div>
+	</div>
+	<div class="dialog-body">
+		<div class="hint">Pick a name and your language to get started. You can change both later in Settings.</div>
+		<div class="row"><div class="caption">Player name</div><div class="control"><input type="text" class="text" data-cvar="_cl_name"/></div></div>
+		<div class="row"><div class="caption">Text language</div><div class="control"><select data-cvar="_menu_prvm_language"><option value="ast">Asturianu</option><option value="id_ID">Bahasa Indonesia</option><option value="de">Deutsch</option><option value="de_CH">Deutsch (Schweiz)</option><option value="en">English</option><option value="en_AU">English (Australia)</option><option value="es">Español</option><option value="fr">Français</option><option value="ga">Irish</option><option value="it">Italiano</option><option value="la">Lingua Latina</option><option value="hu">Magyar</option><option value="nl">Nederlands</option><option value="pl">Polski</option><option value="pt">Português</option><option value="pt_BR">Português (Brasil)</option><option value="ro">Romana</option><option value="fi">Suomi</option><option value="sv">Svenska</option><option value="tr">Türkçe</option><option value="cs">Čeština</option><option value="el">Ελληνική</option><option value="be">Беларуская</option><option value="bg">Български</option><option value="ru">Русский</option><option value="sr">Српски</option><option value="uk">Українська</option><option value="zh_TW">中文（正體字）</option><option value="zh_CN">中文（简体字）</option><option value="zh_HK">中文（香港字）</option><option value="ja_JP">日本語</option><option value="ko">한국의</option></select></div></div>
+		<div class="section">Player statistics</div>
+		<div class="hint">May stats.xonotic.org show your nickname? You can change this in the profile later.</div>
+		<label class="check"><input type="radio" class="radio" name="stats" value="1" data-cvar="cl_allow_uid2name"/> Yes</label>
+		<label class="check"><input type="radio" class="radio" name="stats" value="0" data-cvar="cl_allow_uid2name"/> No</label>
+		<label class="check"><input type="radio" class="radio" name="stats" value="-1" data-cvar="cl_allow_uid2name"/> Undecided</label>
+	</div>
+	<div class="dialog-buttons">
+		<div class="button primary" data-cmd="prvm_language &quot;$_menu_prvm_language&quot;; saveconfig; menu_restart" data-close>Save settings</div>
+	</div>
+</body>
+</rml>

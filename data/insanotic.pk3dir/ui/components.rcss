@@ -28,7 +28,6 @@
 	top: 0;
 	bottom: 0;
 	background-color: #000000a6;
-	animation: backdrop-in 0.2s cubic-out;
 }
 
 .dialog {
@@ -40,7 +39,7 @@
 	margin-top: -180dp;
 	background-color: #0c0c0f;
 	border: 1dp #3f3f46;
-	animation: dialog-in 0.22s cubic-out;
+	transform-origin: 50% 50%;
 }
 .dialog.wide {
 	width: 760dp;
@@ -97,28 +96,41 @@
 	text-align: right;
 }
 
+/* Motion for every page: one shared set. The engine puts "open" on a page's
+   body each time it is shown (so the entrance replays), "closing" for the
+   ~0.12 s before it hides it, and "reduce-motion" when ui_reduce_motion is 1.
+   Entrance: ease-out, 0.18 s, fade + slight rise and scale. Exit: shorter,
+   ease-in, fade + slight drop, no scale back. */
 @keyframes dialog-in {
-	from { opacity: 0; }
-	to { opacity: 1; }
+	from { opacity: 0; transform: translateY(8dp) scale(0.97); }
+	to { opacity: 1; transform: translateY(0dp) scale(1); }
 }
 @keyframes backdrop-in {
 	from { background-color: #00000000; }
 	to { background-color: #000000a6; }
 }
-/* the engine puts "closing" on a document for the 0.16 s before it hides it */
 @keyframes dialog-out {
-	from { opacity: 1; }
-	to { opacity: 0; }
+	from { opacity: 1; transform: translateY(0dp); }
+	to { opacity: 0; transform: translateY(4dp); }
 }
 @keyframes backdrop-out {
 	from { background-color: #000000a6; }
 	to { background-color: #00000000; }
 }
-body.closing .backdrop {
-	animation: backdrop-out 0.18s cubic-in;
+body.open .backdrop {
+	animation: backdrop-in 0.18s cubic-out;
 }
-body.closing .dialog {
-	animation: dialog-out 0.18s cubic-in;
+body.open .dialog {
+	animation: dialog-in 0.18s cubic-out;
+}
+body.open.closing .backdrop {
+	animation: backdrop-out 0.11s cubic-in;
+}
+body.open.closing .dialog {
+	animation: dialog-out 0.11s cubic-in;
+}
+body.reduce-motion .backdrop, body.reduce-motion .dialog {
+	animation: none;
 }
 
 /* ---- buttons ---------------------------------------------------------- */
@@ -560,5 +572,22 @@ progress.bar fill {
 	}
 	.row {
 		margin-bottom: 14dp;
+	}
+}
+
+/* ---- narrow windows ---------------------------------------------------- */
+
+/* A dialog is 560 or 760 dp wide; a window narrower than that (a desktop
+   window dragged small, a split screen) gets the dialog's width from the
+   window instead of cutting it off. */
+@media (max-width: 800dp) {
+	.dialog, .dialog.wide {
+		left: 3%;
+		right: 3%;
+		width: auto;
+		margin-left: 0;
+	}
+	.dialog-body.scroll {
+		max-height: 260dp;
 	}
 }

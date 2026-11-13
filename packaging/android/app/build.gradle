@@ -169,7 +169,15 @@ android {
 	}
 
 	buildTypes {
+		debug {
+			// its own app id and name so a dev build installs next to the nightly
+			// instead of failing on the signature
+			applicationIdSuffix '.dev'
+			versionNameSuffix '-dev'
+			manifestPlaceholders = [appLabel: 'Insanotic Dev']
+		}
 		release {
+			manifestPlaceholders = [appLabel: '@string/app_name']
 			// R8 shrinks the Kotlin/Compose code; proguard-rules.pro keeps what
 			// SDL's native code calls by name
 			minifyEnabled true
@@ -187,6 +195,7 @@ android {
 		jvmTarget = '17'
 	}
 	buildFeatures {
+		buildConfig true
 		compose true
 	}
 

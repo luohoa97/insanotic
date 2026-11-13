@@ -493,3 +493,26 @@
 		bottom: 3%;
 	}
 }
+
+/* ---- narrow windows ---------------------------------------------------- */
+
+/* The same as the portrait rules above, for a landscape window that is
+   narrower than the 900 dp the list pages are laid out for. */
+@media (max-width: 940dp) {
+	#content {
+		left: 2%;
+		right: 2%;
+		width: auto;
+		margin-left: 0;
+		top: 2%;
+		bottom: 2%;
+	}
+}
+@media (max-width: 660dp) {
+	.info {
+		width: auto;
+		left: 2%;
+		right: 2%;
+		margin-left: 0;
+	}
+}
