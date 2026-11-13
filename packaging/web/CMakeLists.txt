@@ -93,7 +93,7 @@ set(ENGINE_SOURCES
 	cmd.c collision.c common.c console.c csprogs.c curves.c cvar.c
 	dpsoftrast.c dpvsimpledecode.c filematch.c fractalnoise.c fs.c ft2.c
 	utf8lib.c gl_backend.c gl_draw.c gl_rmain.c gl_rsurf.c gl_textures.c
-	hmac.c host.c host_cmd.c image.c image_png.c jpeg.c keys.c lhnet.c
+	hmac.c host.c host_cmd.c image.c image_png.c image_png_link.c jpeg.c keys.c lhnet.c
 	libcurl.c mathlib.c matrixlib.c mdfour.c meshqueue.c
 	mod_skeletal_animatevertices_sse.c mod_skeletal_animatevertices_generic.c
 	model_alias.c model_brush.c model_shared.c model_sprite.c netconn.c
@@ -101,7 +101,10 @@ set(ENGINE_SOURCES
 	prvm_exec.c r_explosion.c r_lerpanim.c r_lightning.c r_modules.c
 	r_shadow.c r_sky.c r_sprites.c sbar.c sv_demo.c sv_lua.c lua_sandbox.c
 	cl_lua.c sv_main.c sv_move.c sv_phys.c sv_user.c svbsp.c svvm_cmds.c
-	sys_shared.c vid_shared.c view.c wad.c world.c zone.c)
+	sys_shared.c vid_shared.c view.c wad.c world.c zone.c
+	touch_aim.c touch_assist.c touch_dodge.c touch_ledge.c touch_hook.c
+	touch_nade.c touch_pause.c touch_turn.c touch_tactics.c touch_wepquery.c
+	touch_autowalk.c)
 set(SRC)
 foreach(f ${ENGINE_SOURCES})
 	list(APPEND SRC "${DP}/${f}")
