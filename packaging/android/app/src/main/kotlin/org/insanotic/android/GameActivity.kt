@@ -11,7 +11,7 @@ import org.libsdl.app.SDLActivity
 class GameActivity : SDLActivity() {
 	companion object {
 		/** the newest insanotic-android-update-N.cfg in src/gamedata */
-		private const val UPDATES = 1
+		private const val UPDATES = 2
 	}
 
 	override fun onPause() {
@@ -23,6 +23,29 @@ class GameActivity : SDLActivity() {
 	override fun onResume() {
 		super.onResume()
 		PausedService.stop(this)
+		requestFastestDisplayMode()
+	}
+
+	/**
+	 * Many tablets (Xiaomi Pad 5: 60/90/120 Hz) start apps at 60 Hz. Ask for
+	 * the highest refresh rate at the current resolution so vsync can hit 100+.
+	 */
+	private fun requestFastestDisplayMode() {
+		if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.M) return
+		try {
+			val display = windowManager.defaultDisplay
+			val cur = display.mode
+			val best = display.supportedModes
+				.filter { it.physicalWidth == cur.physicalWidth && it.physicalHeight == cur.physicalHeight }
+				.maxByOrNull { it.refreshRate } ?: return
+			val attrs = window.attributes
+			if (attrs.preferredDisplayModeId != best.modeId) {
+				attrs.preferredDisplayModeId = best.modeId
+				window.attributes = attrs
+			}
+		} catch (e: Exception) {
+			// a refresh rate hint is never worth a crash
+		}
 	}
 
 	override fun onDestroy() {
