@@ -232,7 +232,8 @@ set_target_properties(pngdl PROPERTIES OUTPUT_NAME png)
 # ---------------------------------------------------------------------------
 # The engine. This list is OBJ_SDL (+ OBJ_COMMON, OBJ_MENU, OBJ_SND_COMMON,
 # OBJ_LUA, OBJ_RML) from darkplaces/makefile.inc with the Android choices applied:
-# no CD audio (cd_null), no video capture (cap_*), sys_sdl/vid_sdl/thread_sdl.
+# no video capture (cap_*, CONFIG_VIDEO_CAPTURE stays undefined), sys_sdl/vid_sdl/thread_sdl.
+# Engine tree: DarkPlaces master based (the upstream-master branch of insanotic-darkplaces).
 # ---------------------------------------------------------------------------
 set(DP "${INSANOTIC_ENGINE_DIR}")
 
@@ -244,21 +245,26 @@ set(ENGINE_SOURCES
 	builddate.c sys_sdl.c vid_sdl.c thread_sdl.c
 	menu.c mvm_cmds.c ui_rml_engine.c
 	snd_main.c snd_mem.c snd_mix.c snd_ogg.c snd_wav.c snd_sdl.c
-	cd_shared.c cd_null.c
-	bih.c crypto.c cl_collision.c cl_demo.c cl_dyntexture.c cl_input.c
-	cl_main.c cl_parse.c cl_particles.c cl_screen.c cl_video.c clvm_cmds.c
-	cmd.c collision.c common.c console.c csprogs.c curves.c cvar.c
-	dpsoftrast.c dpvsimpledecode.c filematch.c fractalnoise.c fs.c ft2.c
+	cd_shared.c
+	bih.c crypto.c cl_cmd.c cl_collision.c cl_demo.c
+	cl_ents.c cl_ents4.c cl_ents5.c cl_ents_nq.c cl_ents_qw.c cl_input.c
+	cl_main.c cl_parse.c cl_particles.c cl_screen.c cl_video.c
+	cl_video_libavw.c clvm_cmds.c
+	cmd.c collision.c com_crc16.c com_ents.c com_ents4.c com_game.c
+	com_infostring.c com_msg.c common.c console.c csprogs.c curves.c cvar.c
+	dpvsimpledecode.c filematch.c fractalnoise.c fs.c ft2.c
 	utf8lib.c gl_backend.c gl_draw.c gl_rmain.c gl_rsurf.c gl_textures.c
-	hmac.c host.c host_cmd.c image.c image_png.c jpeg.c keys.c lhnet.c
+	hmac.c host.c image.c image_png.c jpeg.c keys.c lhnet.c
 	libcurl.c mathlib.c matrixlib.c mdfour.c meshqueue.c
 	mod_skeletal_animatevertices_sse.c mod_skeletal_animatevertices_generic.c
 	model_alias.c model_brush.c model_shared.c model_sprite.c netconn.c
-	palette.c polygon.c portals.c protocol.c prvm_cmds.c prvm_edict.c
-	prvm_exec.c r_explosion.c r_lerpanim.c r_lightning.c r_modules.c
-	r_shadow.c r_sky.c r_sprites.c sbar.c sv_demo.c sv_lua.c lua_sandbox.c
-	cl_lua.c sv_main.c sv_move.c sv_phys.c sv_user.c svbsp.c svvm_cmds.c
-	sys_shared.c vid_shared.c view.c wad.c world.c zone.c)
+	palette.c phys.c polygon.c portals.c protocol.c prvm_cmds.c prvm_edict.c
+	prvm_exec.c r_explosion.c r_lightning.c r_modules.c
+	r_shadow.c r_sky.c r_sprites.c r_stats.c sbar.c sv_ccmds.c sv_demo.c
+	sv_ents.c sv_ents4.c sv_ents5.c sv_ents_csqc.c sv_ents_nq.c
+	sv_lua.c lua_sandbox.c cl_lua.c sv_main.c sv_move.c sv_phys.c sv_save.c
+	sv_send.c sv_user.c svbsp.c svvm_cmds.c
+	sys_shared.c taskqueue.c vid_shared.c view.c wad.c world.c zone.c)
 
 set(SRC)
 foreach(f ${ENGINE_SOURCES})
@@ -299,7 +305,6 @@ target_compile_definitions(main PRIVATE
 	_FILE_OFFSET_BITS=64
 	__KERNEL_STRICT_NAMES
 	CONFIG_MENU
-	CONFIG_CD
 	LINK_TO_LIBJPEG
 	"BUILDTYPE=android-${INSANOTIC_VERSION}"
 	"INSANOTIC_VERSION=${INSANOTIC_VERSION}"
