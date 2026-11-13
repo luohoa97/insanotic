@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Insanotic</title>
+<style>
+	:root { color-scheme: dark; --bg: #09090b; --card: #18181b; --border: #27272a; --fg: #fafafa; --muted: #a1a1aa; --accent: #fafafa; --accent-fg: #18181b; }
+	* { box-sizing: border-box; }
+	html, body { margin: 0; height: 100%; background: var(--bg); color: var(--fg); font: 14px/1.5 system-ui, sans-serif; }
+	#stage { position: fixed; inset: 0; display: none; }
+	#canvas { width: 100%; height: 100%; display: block; outline: none; }
+	#panel { max-width: 34rem; margin: 10vh auto; padding: 1.5rem; background: var(--card); border: 1px solid var(--border); border-radius: 6px; }
+	h1 { margin: 0 0 .25rem; font-size: 1.25rem; }
+	p { margin: .5rem 0; color: var(--muted); }
+	button, .btn { font: inherit; color: var(--accent-fg); background: var(--accent); border: 0; border-radius: 4px; padding: .5rem 1rem; cursor: pointer; }
+	button[disabled] { opacity: .5; cursor: default; }
+	.btn2 { color: var(--fg); background: transparent; border: 1px solid var(--border); }
+	progress { width: 100%; height: .5rem; margin: .75rem 0; }
+	#status { min-height: 1.5em; color: var(--fg); }
+	#log { display: none; max-height: 12rem; overflow: auto; margin-top: 1rem; padding: .5rem; background: var(--bg); border: 1px solid var(--border); border-radius: 4px; font: 12px/1.4 ui-monospace, monospace; white-space: pre-wrap; }
+	.row { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: 1rem; }
+	a { color: var(--fg); }
+</style>
+</head>
+<body>
+<div id="stage"><canvas id="canvas" tabindex="-1" oncontextmenu="event.preventDefault()"></canvas></div>
+<div id="panel">
+	<h1>Insanotic</h1>
+	<p>Runs in your browser (WebAssembly, WebGL). The game data downloads once and is kept in this browser.</p>
+	<div id="status">Loading the engine…</div>
+	<progress id="bar" value="0" max="1" hidden></progress>
+	<div class="row">
+		<button id="start" disabled>Play</button>
+		<label class="btn btn2">Add Xonotic .pk3 files<input id="pick" type="file" accept=".pk3" multiple hidden></label>
+		<button id="showlog" class="btn2" type="button">Log</button>
+	</div>
+	<div id="log"></div>
+	<p><a href="https://github.com/luohoa97/insanotic">Source</a> · GPL-3.0-or-later</p>
+</div>
+<script src="insanotic.js"></script>
+<script src="loader.js"></script>
+</body>
+</html>

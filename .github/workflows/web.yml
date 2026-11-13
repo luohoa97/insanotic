@@ -1,0 +1,80 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+#
+# Builds the WebAssembly client (packaging/web) on its own, so a change to it
+# is checked before it is merged. The release workflow builds the same thing
+# again for GitHub Pages (https://luohoa97.github.io/insanotic/play/).
+name: Web
+
+on:
+  pull_request:
+    paths:
+      - 'packaging/web/**'
+      - '.github/workflows/web.yml'
+  workflow_dispatch:
+    inputs:
+      engine_ref:
+        description: Branch of insanotic-darkplaces to build
+        default: main
+
+permissions:
+  contents: read
+
+env:
+  ENGINE_REPO: https://github.com/luohoa97/insanotic-darkplaces.git
+  EMSDK_VERSION: 3.1.74
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: ${{ env.EMSDK_VERSION }}
+          actions-cache-folder: emsdk-cache
+
+      # the engine branch of the same name as this pull request's, when there
+      # is one (engine and packaging change together), else main
+      - name: Fetch the engine
+        env:
+          INPUT_REF: ${{ inputs.engine_ref }}
+          HEAD_REF: ${{ github.head_ref }}
+        run: |
+          ref=${INPUT_REF:-main}
+          if [ -z "$INPUT_REF" ] && [ -n "$HEAD_REF" ] && git ls-remote --exit-code --heads "$ENGINE_REPO" "$HEAD_REF" >/dev/null 2>&1; then
+            ref=$HEAD_REF
+          fi
+          echo "engine: $ref"
+          git clone --depth 1 --branch "$ref" "$ENGINE_REPO" darkplaces
+
+      - name: Build
+        env:
+          INSANOTIC_VERSION: ci-${{ github.sha }}
+        run: packaging/web/build.sh darkplaces
+
+      - run: ls -la packaging/web/dist
+
+      # boots the page in headless Chromium and prints the engine's output
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Smoke test
+        working-directory: packaging/web
+        run: |
+          npm install --no-save --no-package-lock playwright
+          npx playwright install --with-deps chromium
+          node test/smoke.mjs dist smoke.png
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: web-smoke
+          path: packaging/web/smoke.png
+          if-no-files-found: ignore
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: web
+          path: packaging/web/dist

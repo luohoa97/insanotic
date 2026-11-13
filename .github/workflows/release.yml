@@ -196,6 +196,56 @@ jobs:
         with:
           path: site
 
+  # the browser build (packaging/web): the engine as WebAssembly plus a page
+  # that stages the game data; published under /play/ of the Pages site
+  web:
+    needs: [version, linux]
+    runs-on: ubuntu-latest
+    env:
+      EMSDK_VERSION: 3.1.74
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: ${{ env.EMSDK_VERSION }}
+          actions-cache-folder: emsdk-cache
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: linux
+          path: linux
+
+      - name: Fetch the engine
+        run: git clone --depth 1 "$ENGINE_REPO" darkplaces
+
+      - name: Build
+        env:
+          INSANOTIC_VERSION: ${{ needs.version.outputs.version }}
+        run: packaging/web/build.sh darkplaces
+
+      # what Insanotic adds to the Xonotic release packs, as one pack that
+      # sorts after them (the packs themselves are not hosted here)
+      - name: Package
+        run: |
+          set -eu
+          tar -xzf linux/insanotic-*-linux-x86_64.tar.gz -C linux
+          src=$(echo linux/insanotic-*-linux-x86_64/data)
+          pack=packaging/web/dist/data
+          mkdir -p "$pack" stage
+          cp -a "$src"/xonotic-data.pk3dir/. stage/
+          cp -a "$src"/insanotic.pk3dir/. stage/
+          (cd stage && zip -qr "../$pack/zzz-insanotic.pk3" .)
+          size=$(stat -c %s "$pack/zzz-insanotic.pk3")
+          printf '{ "packs": [ { "name": "zzz-insanotic.pk3", "url": "data/zzz-insanotic.pk3", "size": %d } ], "args": [] }\n' "$size" \
+            > packaging/web/dist/manifest.json
+          tar -C packaging/web/dist -czf web-site.tar.gz .
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: web
+          path: web-site.tar.gz
+
   android:
     needs: version
     runs-on: ubuntu-latest
@@ -285,7 +335,7 @@ jobs:
       - name: Give the files fixed names
         run: |
           cd dist
-          rm -f artifact.tar # the Pages site, not a download
+          rm -f artifact.tar web-site.tar.gz # the Pages site, not a download
           mv insanotic-*-android.apk insanotic-android.apk
           mv insanotic-*-linux-x86_64.tar.gz insanotic-linux-x86_64.tar.gz
           mv insanotic-*.flatpak insanotic.flatpak
@@ -309,9 +359,10 @@ jobs:
             Linux: unpack insanotic-linux-x86_64.tar.gz and run ./insanotic.sh.
           files: dist/*
 
+  # the site: the Flatpak repository at the root, the browser build in /play/
   pages:
     if: github.ref == 'refs/heads/main' || github.event_name == 'schedule'
-    needs: flatpak
+    needs: [flatpak, web]
     runs-on: ubuntu-latest
     permissions:
       pages: write
@@ -320,8 +371,34 @@ jobs:
       name: github-pages
       url: ${{ steps.deploy.outputs.page_url }}
     steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: github-pages
+          path: parts/github-pages
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: web
+          path: parts/web
+
+      - name: Merge the parts
+        run: |
+          set -eu
+          mkdir -p site/play
+          tar -xf parts/github-pages/artifact.tar -C site
+          tar -xzf parts/web/web-site.tar.gz -C site/play
+          echo '<p><a href=play/>Play in the browser</a> (WebAssembly; needs a recent Chrome, Firefox or Safari).</p>' >> site/index.html
+          touch site/.nojekyll
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          name: site
+          path: site
+
       - id: deploy
         uses: actions/deploy-pages@v4
+        with:
+          artifact_name: site
 
   release:
     if: startsWith(github.ref, 'refs/tags/v')
@@ -333,7 +410,7 @@ jobs:
           path: dist
           merge-multiple: true
 
-      - run: rm -f dist/artifact.tar # the Pages site, not a download
+      - run: rm -f dist/artifact.tar dist/web-site.tar.gz # the Pages site, not a download
 
       - uses: softprops/action-gh-release@v2
         with:
