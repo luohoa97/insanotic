@@ -10,6 +10,44 @@
 	padding: 16dp 18dp 8dp 18dp;
 }
 
+/* Phones. components.rcss makes dialogs fill the screen, but an id selector
+   (#content above) outranks its class selectors, so the fixed width and the
+   negative margins kept winning and pushed the menu off the screen. The
+   phone rules are repeated here, on the id, and written out twice because
+   RmlUi media queries have no "or". A short screen also gets tighter buttons
+   and a body that scrolls, so the last button is never cut off. */
+@media (max-height: 500dp) {
+	#content {
+		left: 50%;
+		right: auto;
+		top: 2%;
+		width: 440dp;
+		margin-left: -220dp;
+		margin-top: 0;
+	}
+	#content .dialog-body {
+		padding: 10dp 14dp 4dp 14dp;
+		max-height: 360dp;
+		overflow-y: auto;
+	}
+	#content .button {
+		padding-top: 9dp;
+		padding-bottom: 7dp;
+	}
+	#content .button.block, #content .pair {
+		margin-bottom: 6dp;
+	}
+}
+@media (orientation: portrait) {
+	#content {
+		left: 3%;
+		right: 3%;
+		width: auto;
+		margin-left: 0;
+		margin-top: -210dp;
+	}
+}
+
 .pair {
 	display: flex;
 	flex-direction: row;
