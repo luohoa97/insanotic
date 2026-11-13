@@ -24,6 +24,7 @@
 	top: 0;
 	bottom: 0;
 	background-color: #000000a6;
+	animation: backdrop-in 0.2s cubic-out;
 }
 
 .dialog {
@@ -35,7 +36,7 @@
 	margin-top: -180dp;
 	background-color: #0d1424;
 	border: 1dp #ffffff40;
-	animation: dialog-in 0.18s cubic-out;
+	animation: dialog-in 0.22s cubic-out;
 }
 .dialog.wide {
 	width: 760dp;
@@ -95,6 +96,25 @@
 @keyframes dialog-in {
 	from { opacity: 0; }
 	to { opacity: 1; }
+}
+@keyframes backdrop-in {
+	from { background-color: #00000000; }
+	to { background-color: #000000a6; }
+}
+/* the engine puts "closing" on a document for the 0.16 s before it hides it */
+@keyframes dialog-out {
+	from { opacity: 1; }
+	to { opacity: 0; }
+}
+@keyframes backdrop-out {
+	from { background-color: #000000a6; }
+	to { background-color: #00000000; }
+}
+body.closing .backdrop {
+	animation: backdrop-out 0.18s cubic-in;
+}
+body.closing .dialog {
+	animation: dialog-out 0.18s cubic-in;
 }
 
 /* ---- buttons ---------------------------------------------------------- */
