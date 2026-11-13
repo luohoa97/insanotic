@@ -1,5 +1,9 @@
-/* The Insanotic widget set for RmlUi documents: flat dark panels, a blue
-   accent, the look of the QuakeC menu. Link it after common.rcss, or use
+/* The Insanotic widget set for RmlUi documents: flat zinc panels and a blue
+   accent. The palette, spacing and focus rings follow shadcn/ui (MIT,
+   Copyright (c) 2023 shadcn) and the way controls respond (press anywhere on
+   a slider, keyboard, focus) follows Base UI (MIT, Copyright (c) MUI), see
+   the Credits in README.md. RmlUi's renderer does not draw circles well, so
+   knobs, switches and radio buttons are rectangles. Link it after common.rcss, or use
    the "dialog" template (templates/dialog.rml), which links both. How to
    use each component is in docs/UI.md.
 
@@ -7,12 +11,12 @@
    high, so the same markup works with a finger. */
 
 /* ---- the colors, in one place for anyone who wants to change them -------
-   panel      #0d1424    raised surface
-   field      #080d18    wells: text fields, tracks
-   line       #ffffff40  thin borders
+   panel      #0c0c0f    raised surface
+   field      #09090b    wells: text fields, tracks
+   line       #3f3f46  thin borders
    accent     #4da6ff    focus, hover, selected
    accent-dim #2b78c9    filled buttons and checked boxes
-   muted      #ccd9e6    secondary text
+   muted      #a1a1aa    secondary text
    danger     #b03030                                                       */
 
 /* ---- dialog ---------------------------------------------------------- */
@@ -34,8 +38,8 @@
 	width: 560dp;
 	margin-left: -280dp;
 	margin-top: -180dp;
-	background-color: #0d1424;
-	border: 1dp #ffffff40;
+	background-color: #0c0c0f;
+	border: 1dp #3f3f46;
 	animation: dialog-in 0.22s cubic-out;
 }
 .dialog.wide {
@@ -46,7 +50,7 @@
 
 .dialog-bar {
 	height: 52dp;
-	background-color: #121c33;
+	background-color: #18181b;
 	border-bottom: 1dp #4da6ff;
 }
 .dialog-title {
@@ -124,8 +128,8 @@ body.closing .dialog {
 	min-width: 110dp;
 	padding: 14dp 22dp 12dp 22dp;
 	margin-left: 10dp;
-	border: 1dp #ffffff40;
-	background-color: #121c33;
+	border: 1dp #3f3f46;
+	background-color: #18181b;
 	font-size: 18dp;
 	text-align: center;
 	cursor: pointer;
@@ -138,7 +142,7 @@ body.closing .dialog {
 }
 .button:hover, .button:focus-visible {
 	border-color: #4da6ff;
-	background-color: #1a2a4a;
+	background-color: #27272a;
 }
 .button:active {
 	background-color: #2b78c9;
@@ -197,7 +201,7 @@ body.closing .dialog {
 }
 .hint {
 	font-size: 13dp;
-	color: #ccd9e6;
+	color: #a1a1aa;
 }
 .section {
 	font-size: 14dp;
@@ -234,11 +238,8 @@ input.checkbox, input.radio {
 	width: 26dp;
 	height: 26dp;
 	border: 2dp #ffffff80;
-	background-color: #080d18;
+	background-color: #09090b;
 	tab-index: auto;
-}
-input.radio {
-	border-radius: 13dp;
 }
 input.checkbox:hover, input.radio:hover, input.checkbox:focus-visible, input.radio:focus-visible {
 	border-color: #4da6ff;
@@ -263,10 +264,9 @@ input.radio:checked {
 input.checkbox.switch {
 	width: 20dp;
 	height: 24dp;
-	border: 2dp #ffffff40;
+	border: 2dp #3f3f46;
 	border-left: 26dp #ffffffcc;
-	border-radius: 14dp;
-	background-color: #080d18;
+	background-color: #09090b;
 }
 input.checkbox.switch:checked {
 	width: 20dp;
@@ -274,7 +274,6 @@ input.checkbox.switch:checked {
 	background-color: #2b78c9;
 	border: 2dp #4da6ff;
 	border-right: 26dp #ffffff;
-	border-radius: 14dp;
 }
 label.check.sw {
 	padding-left: 70dp;
@@ -295,20 +294,20 @@ input.range slidertrack {
 	height: 8dp;
 	border-top: 20dp #0000;
 	border-bottom: 20dp #0000;
-	decorator: vertical-gradient(#ffffff33 #ffffff33);
+	decorator: vertical-gradient(#3f3f46 #3f3f46);
 }
 input.range sliderprogress {
 	height: 8dp;
 	decorator: vertical-gradient(#4da6ff #4da6ff);
 }
 input.range sliderbar {
-	width: 28dp;
-	height: 28dp;
-	margin-top: 10dp; /* the bar is placed from the top of the 48 dp strip; the line is at 24 dp */
-	border-radius: 14dp;
-	background-color: #ffffff;
+	width: 14dp;
+	height: 30dp;
+	margin-top: 9dp; /* the bar is placed from the top of the 48 dp strip; the line is at 24 dp */
+	background-color: #fafafa;
+	border: 1dp #3f3f46;
 }
-input.range sliderbar:hover, input.range sliderbar:active {
+input.range sliderbar:hover, input.range sliderbar:active, input.range:focus-visible sliderbar {
 	background-color: #4da6ff;
 }
 input.range sliderarrowdec, input.range sliderarrowinc {
@@ -323,8 +322,8 @@ input.text, input.password, input.number, textarea {
 	box-sizing: border-box;
 	height: 48dp;
 	padding: 13dp 12dp 0 12dp;
-	border: 1dp #ffffff40;
-	background-color: #080d18;
+	border: 1dp #3f3f46;
+	background-color: #09090b;
 	color: #ffffff;
 	font-size: 17dp;
 	caret-color: #4da6ff;
@@ -350,8 +349,8 @@ select {
 	position: relative;
 	width: 100%;
 	height: 48dp;
-	border: 1dp #ffffff40;
-	background-color: #080d18;
+	border: 1dp #3f3f46;
+	background-color: #09090b;
 	tab-index: auto;
 	cursor: pointer;
 }
@@ -371,7 +370,7 @@ select selectarrow {
 	height: 0;
 	border-left: 7dp #0000;
 	border-right: 7dp #0000;
-	border-top: 9dp #ccd9e6;
+	border-top: 9dp #a1a1aa;
 }
 select selectbox {
 	position: absolute;
@@ -379,7 +378,7 @@ select selectbox {
 	right: -1dp;
 	top: 47dp;
 	max-height: 288dp;
-	background-color: #0d1424;
+	background-color: #0c0c0f;
 	border: 1dp #4da6ff;
 	overflow-y: auto;
 }
@@ -400,14 +399,14 @@ select option:checked {
 
 tabset tabs {
 	display: block;
-	border-bottom: 1dp #ffffff40;
+	border-bottom: 1dp #3f3f46;
 }
 tabset tab {
 	display: inline-block;
 	min-height: 24dp;
 	padding: 13dp 20dp 11dp 20dp;
 	font-size: 17dp;
-	color: #ccd9e6;
+	color: #a1a1aa;
 	cursor: pointer;
 	tab-index: auto;
 	nav: auto;
@@ -431,14 +430,14 @@ tabset panels {
    ends), and by the wheel. Give it a height. */
 .list {
 	overflow-y: auto;
-	border: 1dp #ffffff26;
-	background-color: #080d18;
+	border: 1dp #27272a;
+	background-color: #09090b;
 }
 .list .item {
 	display: block;
 	min-height: 24dp;
 	padding: 12dp 14dp 12dp 14dp;
-	border-bottom: 1dp #ffffff14;
+	border-bottom: 1dp #27272a;
 	cursor: pointer;
 	tab-index: auto;
 	nav: auto;
@@ -460,13 +459,13 @@ table.table tr {
 table.table th, table.table td {
 	display: table-cell;
 	padding: 12dp 14dp 10dp 14dp;
-	border-bottom: 1dp #ffffff14;
+	border-bottom: 1dp #27272a;
 }
 table.table th {
 	color: #4da6ff;
 	font-size: 14dp;
 	text-align: left;
-	background-color: #121c33;
+	background-color: #18181b;
 }
 table.table tr:hover td {
 	background-color: #4da6ff22;
@@ -482,8 +481,8 @@ progress.bar {
 	display: block;
 	width: 100%;
 	height: 14dp;
-	background-color: #080d18;
-	border: 1dp #ffffff40;
+	background-color: #09090b;
+	border: 1dp #3f3f46;
 }
 progress.bar fill {
 	background-color: #4da6ff;
@@ -495,8 +494,8 @@ progress.bar fill {
 	position: relative;
 	display: block;
 	height: 150dp;
-	border: 1dp #ffffff40;
-	background-color: #0d1424;
+	border: 1dp #3f3f46;
+	background-color: #0c0c0f;
 	cursor: pointer;
 	tab-index: auto;
 	nav: auto;

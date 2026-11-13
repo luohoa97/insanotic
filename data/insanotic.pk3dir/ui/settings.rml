@@ -12,8 +12,9 @@
 	     data-off for checkboxes whose values are not 1 and 0, data-map="db"
 	     for volumes). The screen sizes, the key bindings and the menu skins
 	     come from the data model "settings" (darkplaces/ui_rml_models.cpp).
-	     What is not here (HUD layout, language, ...) is in "More settings",
-	     the QuakeC dialog. This file is long and regular: one line a control. -->
+	     This is the one settings screen: the HUD tab and the language
+	     choice replace what the QuakeC dialog had. This file is long and
+	     regular: one line a control. -->
 	<div class="dialog-bar">
 		<div class="dialog-title">Settings</div>
 		<div class="dialog-close" data-close>&#215;</div>
@@ -226,7 +227,36 @@
 				<div class="section">Content</div>
 				<label class="check"><input type="checkbox" class="checkbox" data-cvar="cl_gentle"/> Disable gore effects and harsh language</label>
 				<div class="section">Language</div>
-				<div class="hint">The text language is set in the HUD and language settings (bottom left).</div>
+				<div class="row"><div class="caption">Text language</div><div class="control"><select data-cvar="_menu_prvm_language"><option value="ast">Asturianu</option><option value="id_ID">Bahasa Indonesia</option><option value="de">Deutsch</option><option value="de_CH">Deutsch (Schweiz)</option><option value="en">English</option><option value="en_AU">English (Australia)</option><option value="es">Español</option><option value="fr">Français</option><option value="ga">Irish</option><option value="it">Italiano</option><option value="la">Lingua Latina</option><option value="hu">Magyar</option><option value="nl">Nederlands</option><option value="pl">Polski</option><option value="pt">Português</option><option value="pt_BR">Português (Brasil)</option><option value="ro">Romana</option><option value="fi">Suomi</option><option value="sv">Svenska</option><option value="tr">Türkçe</option><option value="cs">Čeština</option><option value="el">Ελληνική</option><option value="be">Беларуская</option><option value="bg">Български</option><option value="ru">Русский</option><option value="sr">Српски</option><option value="uk">Українська</option><option value="zh_TW">中文（正體字）</option><option value="zh_CN">中文（简体字）</option><option value="zh_HK">中文（香港字）</option><option value="ja_JP">日本語</option><option value="ko">한국의</option></select></div></div>
+				<div class="row"><div class="control" style="margin-left: 0;"><div class="button" data-cmd="prvm_language &quot;$_menu_prvm_language&quot;; menu_restart">Apply language (restarts the menu)</div></div></div>
+				<div class="hint">Text in a match you are already in changes when you join again.</div>
+			</panel>
+			<tab>HUD</tab>
+			<panel>
+				<div class="section">Layout</div>
+				<div class="hint">Move and resize the HUD panels by hand. Out of a match this opens a map to practice on.</div>
+				<div class="row"><div class="control" style="margin-left: 0;">
+					<div class="button primary only-ingame" data-cmd="_hud_configure 1" data-close>Edit the HUD layout</div>
+					<div class="button primary only-menu" data-cmd="map _hudsetup; _hud_configure 1" data-close>Edit the HUD layout (starts a map)</div>
+				</div></div>
+				<div class="section">Scoreboard</div>
+				<div class="row"><div class="caption">Background alpha</div><div class="control"><input type="range" class="range" min="0" max="1" step="0.05" data-cvar="hud_panel_scoreboard_bg_alpha"/></div></div>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="hud_panel_scoreboard_table_highlight"/> Highlight rows and columns</label>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="hud_panel_scoreboard_accuracy"/> Show accuracy underneath the scoreboard</label>
+				<div class="row"><div class="caption">Team sizes</div><div class="control"><select data-cvar="hud_panel_scoreboard_team_size_position"><option value="0">Off</option><option value="1">Left</option><option value="2">Right</option></select></div></div>
+				<div class="section">Waypoints</div>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="cl_hidewaypoints" data-on="0" data-off="1"/> Show waypoint markers for objectives</label>
+				<div class="row"><div class="caption">Alpha</div><div class="control"><input type="range" class="range" min="0.1" max="1" step="0.05" data-cvar="g_waypointsprite_alpha"/></div></div>
+				<div class="row"><div class="caption">Font size</div><div class="control"><input type="range" class="range" min="5" max="16" step="1" data-cvar="g_waypointsprite_fontsize"/></div></div>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="g_waypointsprite_text"/> Names instead of icons</label>
+				<div class="section">Damage</div>
+				<div class="row"><div class="caption">Overlay</div><div class="control"><input type="range" class="range" min="0" max="1" step="0.05" data-cvar="hud_damage"/></div></div>
+				<div class="row"><div class="caption">Fade rate</div><div class="control"><input type="range" class="range" min="0.25" max="1" step="0.05" data-cvar="hud_damage_fade_rate"/></div></div>
+				<div class="section">Player names</div>
+				<label class="check"><input type="checkbox" class="checkbox" data-cvar="hud_shownames"/> Show names above players</label>
+				<div class="row"><div class="caption">Alpha</div><div class="control"><input type="range" class="range" min="0.1" max="1" step="0.05" data-cvar="hud_shownames_alpha"/></div></div>
+				<div class="row"><div class="caption">Font size</div><div class="control"><input type="range" class="range" min="5" max="16" step="1" data-cvar="hud_shownames_fontsize"/></div></div>
+				<div class="row"><div class="caption">Maximum distance</div><div class="control"><input type="range" class="range" min="2000" max="10000" step="500" data-cvar="hud_shownames_maxdistance"/></div></div>
 			</panel>
 			<tab>Misc</tab>
 			<panel>
@@ -253,7 +283,6 @@
 		</tabset>
 	</div>
 	<div class="dialog-buttons">
-		<div class="button" data-cmd="menu_cmd directmenu settings" data-close>HUD and language...</div>
 		<div class="button primary" data-close>Done</div>
 	</div>
 </body>

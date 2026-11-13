@@ -21,14 +21,11 @@
 			<div class="button only-campaign" data-cmd="resetmatch" data-close>Restart level</div>
 			<div class="button" data-cmd="spec" data-close>Spectate</div>
 		</div>
-		<div class="pair not-demo">
-			<div class="button" data-cmd="rml_show settings">Settings</div>
-			<div class="button" data-cmd="rml_show quicksettings">Quick settings</div>
-		</div>
 		<div class="pair">
+			<div class="button" data-cmd="rml_show settings">Settings</div>
 			<div class="button" data-cmd="menu_cmd nexposee" data-close>Main menu</div>
-			<div class="button not-demo" data-cmd="quickmenu" data-close>Quick menu</div>
 		</div>
+		<div class="button block not-demo" data-cmd="quickmenu" data-close>Quick menu</div>
 		<div class="button danger block leave" data-cmd="defer 0.4 disconnect; defer 0.4 wait; defer 0.4 &quot;g_campaign 0&quot;; defer 0.4 menu_sync" data-close>
 			<span class="word only-demo">Stop demo</span>
 			<span class="word only-campaign">Leave campaign</span>

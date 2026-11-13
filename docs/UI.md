@@ -60,7 +60,7 @@ a dialog is mostly its content:
 ```
 
 `ui/quit.rml` is this dialog; the Quit button of the main menu opens it.
-`ui/quicksettings.rml` uses most of the components below with real cvars.
+`tests/ui/quicksettings.rml` (a test page) and `ui/settings.rml` use most of the components below with real cvars.
 Add `class="wide"` to the `.dialog` (write the template's window yourself, or
 override its width in your own stylesheet) for the 760 dp variant.
 
@@ -181,11 +181,11 @@ the data.
 ## The Settings page
 
 `ui/settings.rml` is the Settings dialog of the QuakeC menu in RML: tabs for
-Video, Effects, Audio, Game, Input (with the key binder), User and Misc. It
+Video, Effects, Audio, Game, Input (with the key binder), User, HUD and Misc. It is the only settings screen. It
 has the options of the QuakeC dialog, one line a control, bound to cvars with
 `data-cvar` (video, effects, audio, game with items, messages, aim assist and
-touch controls, input, user, misc, and a reset dialog); "HUD and language..."
-opens the QuakeC dialog for the HUD layout editor and the language list.
+touch controls, input, user with the language, HUD with the layout editor
+button, misc, and a reset dialog).
 "Apply video settings" closes the page and restarts the video. Binding a key: tap one of the two key buttons of an
 action, then press the new key or mouse button (Escape cancels); the engine
 hands that press to the page instead of anywhere else

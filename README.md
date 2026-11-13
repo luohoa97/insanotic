@@ -211,6 +211,12 @@ game, which can only answer that server: see "Pages from a server" in
 Insanotic is made by Neil Luo, on top of Xonotic by Team Xonotic and
 DarkPlaces by Forest "LordHavoc" Hale and contributors.
 
+The look of the menus follows [shadcn/ui](https://ui.shadcn.com) (MIT, Copyright
+(c) 2023 shadcn: the zinc palette, spacing and focus rings) and how controls
+respond follows [Base UI](https://base-ui.com) (MIT, Copyright (c) MUI: a press
+anywhere on a slider moves the thumb, keyboard and focus behaviour). Neither
+library is used as code; their ideas are written as RCSS and RmlUi events.
+
 The menus are drawn by [RmlUi](https://github.com/mikke89/RmlUi) (MIT,
 Copyright 2008-2014 CodePoint Ltd, Shift Technology Ltd, and contributors;
 2019-2026 The RmlUi Team, and contributors), vendored in `darkplaces/rmlui/`
